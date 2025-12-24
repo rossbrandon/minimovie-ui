@@ -87,24 +87,42 @@ const { label = 'Close section', class: className, ...rest } = Astro.props;
         const fixedButton = createFixedButton(label);
         document.body.appendChild(fixedButton);
 
+        let isOpen = false;
+        let triggerOffScreen = false;
+
         const updateVisibility = () => {
-          const isOpen = accordionItem.getAttribute('data-state') === 'open';
-          if (isOpen) {
+          if (isOpen && triggerOffScreen) {
             showButton(fixedButton);
           } else {
             hideButton(fixedButton);
           }
         };
 
-        // Check initial state
-        updateVisibility();
+        const scrollObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              triggerOffScreen =
+                !entry.isIntersecting && entry.boundingClientRect.top < 0;
+              updateVisibility();
+            });
+          },
+          { threshold: 0 }
+        );
 
-        // Watch for accordion state changes
-        const stateObserver = new MutationObserver(updateVisibility);
+        scrollObserver.observe(trigger);
+
+        const stateObserver = new MutationObserver(() => {
+          isOpen = accordionItem.getAttribute('data-state') === 'open';
+          updateVisibility();
+        });
         stateObserver.observe(accordionItem, {
           attributes: true,
           attributeFilter: ['data-state'],
         });
+
+        // Check initial state
+        isOpen = accordionItem.getAttribute('data-state') === 'open';
+        updateVisibility();
 
         fixedButton.addEventListener('click', () => {
           if (accordionItem.getAttribute('data-state') === 'open') {
