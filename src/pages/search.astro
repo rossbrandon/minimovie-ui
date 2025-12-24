@@ -1,21 +1,21 @@
 ---
-import Layout from '@layouts/Layout.astro';
-import { Header } from '@components/layout';
 import { MediaCard } from '@components/cards';
 import {
-  IconSearch,
   IconAlertCircle,
   IconAlertTriangle,
+  IconSearch,
 } from '@components/icons';
+import { Header } from '@components/layout';
 import {
   Pagination,
   PaginationContent,
+  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-  PaginationEllipsis,
 } from '@components/starwind/pagination';
+import Layout from '@layouts/Layout.astro';
 import { search, type SearchType } from '@lib/api';
 import type { SearchResponse } from '@lib/types';
 

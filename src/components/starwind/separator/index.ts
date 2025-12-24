@@ -1,4 +1,4 @@
-import Separator, { separator } from "./Separator.astro";
+import Separator, { separator } from './Separator.astro';
 
 const SeparatorVariants = { separator };
 

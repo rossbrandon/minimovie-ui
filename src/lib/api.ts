@@ -1,4 +1,6 @@
 import { API_BASE_URL, API_TOKEN } from 'astro:env/server';
+
+import { logger } from './logger';
 import type {
   EpisodeDetails,
   MovieDetails,
@@ -7,7 +9,6 @@ import type {
   SeasonDetails,
   SeriesDetails,
 } from './types';
-import { logger } from './logger';
 
 async function fetchAPI<T>(endpoint: string): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;

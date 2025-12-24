@@ -1,5 +1,5 @@
-import Kbd, { kbd } from "./Kbd.astro";
-import KbdGroup, { kbdGroup } from "./KbdGroup.astro";
+import Kbd, { kbd } from './Kbd.astro';
+import KbdGroup, { kbdGroup } from './KbdGroup.astro';
 
 const KbdVariants = { kbd, kbdGroup };
 

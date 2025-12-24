@@ -1,7 +1,7 @@
 ---
+import { IconMovie, IconSearch } from '@components/icons';
 import { Input } from '@components/starwind/input';
 import { Kbd } from '@components/starwind/kbd';
-import { IconSearch, IconMovie } from '@components/icons';
 import { ThemeToggle } from '@components/theme';
 
 interface Props {
@@ -29,13 +29,13 @@ const { searchQuery = '' } = Astro.props;
           id="search-input"
           type="search"
           name="q"
-          placeholder="Find movies, shows, and people..."
+          placeholder="Search..."
           value={searchQuery}
-          class="pl-9 pr-16 w-full"
+          class="pl-9 pr-4 sm:pr-16 w-full"
           size="sm"
         />
         <div
-          class="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5 pointer-events-none"
+          class="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 pointer-events-none"
         >
           <Kbd id="search-modifier-key">Ctrl</Kbd>
           <Kbd>K</Kbd>

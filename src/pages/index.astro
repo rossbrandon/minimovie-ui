@@ -1,8 +1,8 @@
 ---
-import Layout from '@layouts/Layout.astro';
-import { ThemeToggle } from '@components/theme';
 // import { MediaCard } from '@components/cards';
 import { IconMovie, IconSearch, IconTrendingUp } from '@components/icons';
+import { ThemeToggle } from '@components/theme';
+import Layout from '@layouts/Layout.astro';
 // import { search } from '@lib/api';
 
 // let trendingResults: Awaited<ReturnType<typeof search>>['results'] = [];
@@ -45,8 +45,8 @@ import { IconMovie, IconSearch, IconTrendingUp } from '@components/icons';
             <input
               type="search"
               name="q"
-              placeholder="Find movies, shows, and people..."
-              class="flex-1 bg-transparent border-0 outline-none px-3 py-2 text-lg text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
+              placeholder="Search..."
+              class="flex-1 bg-transparent border-0 outline-none px-3 py-2 text-base sm:text-lg text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
               autofocus
             />
             <button

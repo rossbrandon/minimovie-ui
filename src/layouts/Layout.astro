@@ -1,10 +1,11 @@
 ---
+import { Footer } from '@components/layout';
+
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
 import '@fontsource/inter/600.css';
 import '@fontsource/inter/700.css';
 import '@styles/starwind.css';
-import { Footer } from '@components/layout';
 
 interface Props {
   title?: string;
@@ -33,7 +34,9 @@ const { title = 'MiniMovie', description = 'A minimalistic movie database' } =
       // Otherwise, let CSS media queries handle it based on system preference
     </script>
   </head>
-  <body class="min-h-screen bg-background text-foreground antialiased flex flex-col">
+  <body
+    class="min-h-screen bg-background text-foreground antialiased flex flex-col"
+  >
     <slot />
     <Footer />
   </body>

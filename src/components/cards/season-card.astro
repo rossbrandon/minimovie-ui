@@ -1,5 +1,5 @@
 ---
-import { IconVideo, IconCalendar } from '@components/icons';
+import { IconCalendar, IconVideo } from '@components/icons';
 import { formatDate, getInitials, resizeImageUrl } from '@lib/utils';
 
 interface Props {
@@ -12,7 +12,15 @@ interface Props {
   overview?: string;
 }
 
-const { seriesId, seasonNumber, name, posterUrl, episodeCount, airDate, overview } = Astro.props;
+const {
+  seriesId,
+  seasonNumber,
+  name,
+  posterUrl,
+  episodeCount,
+  airDate,
+  overview,
+} = Astro.props;
 
 const href = `/series/${seriesId}/seasons/${seasonNumber}`;
 const initials = getInitials(name);
@@ -24,43 +32,56 @@ const resizedPosterUrl = resizeImageUrl(posterUrl, 'w185');
   class="group flex gap-4 p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
 >
   <div class="shrink-0 w-20 aspect-2/3 overflow-hidden rounded-lg bg-muted">
-    {resizedPosterUrl ? (
-      <img
-        src={resizedPosterUrl}
-        alt={name}
-        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-        loading="lazy"
-      />
-    ) : (
-      <div class="flex h-full w-full items-center justify-center text-lg font-semibold text-muted-foreground">
-        {initials}
-      </div>
-    )}
+    {
+      resizedPosterUrl ? (
+        <img
+          src={resizedPosterUrl}
+          alt={name}
+          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <div class="flex h-full w-full items-center justify-center text-lg font-semibold text-muted-foreground">
+          {initials}
+        </div>
+      )
+    }
   </div>
-  
+
   <div class="flex-1 min-w-0">
-    <h3 class="font-medium text-base group-hover:text-amber-500 transition-colors">
+    <h3
+      class="font-medium text-base group-hover:text-amber-500 transition-colors"
+    >
       {name}
     </h3>
-    
-    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground">
-      {episodeCount && (
-        <div class="flex items-center gap-1">
-          <IconVideo class="h-3.5 w-3.5" />
-          <span>{episodeCount} episodes</span>
-        </div>
-      )}
-      {airDate && (
-        <div class="flex items-center gap-1">
-          <IconCalendar class="h-3.5 w-3.5" />
-          <span>{formatDate(airDate)}</span>
-        </div>
-      )}
+
+    <div
+      class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground"
+    >
+      {
+        episodeCount && (
+          <div class="flex items-center gap-1">
+            <IconVideo class="h-3.5 w-3.5" />
+            <span>{episodeCount} episodes</span>
+          </div>
+        )
+      }
+      {
+        airDate && (
+          <div class="flex items-center gap-1">
+            <IconCalendar class="h-3.5 w-3.5" />
+            <span>{formatDate(airDate)}</span>
+          </div>
+        )
+      }
     </div>
-    
-    {overview && (
-      <p class="mt-2 text-sm text-muted-foreground line-clamp-2">{overview}</p>
-    )}
+
+    {
+      overview && (
+        <p class="mt-2 text-sm text-muted-foreground line-clamp-2">
+          {overview}
+        </p>
+      )
+    }
   </div>
 </a>
-

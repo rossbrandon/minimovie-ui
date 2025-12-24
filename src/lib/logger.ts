@@ -1,4 +1,5 @@
 import { LOG_LEVEL } from 'astro:env/server';
+
 import { type Logger, LogLevel } from './types';
 
 function parseLogLevel(level: string): LogLevel {

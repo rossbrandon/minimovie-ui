@@ -1,11 +1,11 @@
 ---
+import type { FilmCredit } from '@lib/types';
 import {
+  calculateAgeAtDate,
   formatYear,
   getInitials,
-  calculateAgeAtDate,
   resizeImageUrl,
 } from '@lib/utils';
-import type { FilmCredit } from '@lib/types';
 
 interface Props {
   credit: FilmCredit;

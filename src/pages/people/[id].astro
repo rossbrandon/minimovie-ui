@@ -1,26 +1,26 @@
 ---
-import Layout from '@layouts/Layout.astro';
-import { Header } from '@components/layout';
 import { CreditCard } from '@components/cards';
-import { Button } from '@components/starwind/button';
-import { 
-  Accordion, 
-  AccordionItem, 
-  AccordionTrigger, 
-  AccordionContent 
-} from '@components/starwind/accordion';
-import { Separator } from '@components/starwind/separator';
-import { 
+import {
   IconAlertCircle,
   IconCake,
+  IconDeviceTv,
   IconMapPin,
-  IconUser,
   IconMovie,
-  IconDeviceTv
+  IconUser,
 } from '@components/icons';
+import { Header } from '@components/layout';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@components/starwind/accordion';
+import { Button } from '@components/starwind/button';
+import { Separator } from '@components/starwind/separator';
+import Layout from '@layouts/Layout.astro';
 import { getPerson } from '@lib/api';
+import type { FilmCredit, PersonDetails } from '@lib/types';
 import { formatPersonAge, getInitials, resizeImageUrl } from '@lib/utils';
-import type { PersonDetails, FilmCredit } from '@lib/types';
 
 const { id } = Astro.params;
 
@@ -51,198 +51,223 @@ const topCredits = [...movieCredits, ...seriesCredits]
   .sort(sortByDate)
   .slice(0, 8);
 
-const ageInfo = person ? formatPersonAge(person.birthday, person.deathday, person.currentAge) : null;
+const ageInfo = person
+  ? formatPersonAge(person.birthday, person.deathday, person.currentAge)
+  : null;
 
 const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
 ---
 
 <Layout title={person ? `${person.name} - MiniMovie` : 'Person - MiniMovie'}>
   <Header />
-  
+
   <main class="container mx-auto px-4 py-8 flex-1">
-    {error || !person ? (
-      <div class="text-center py-16">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
-          <IconAlertCircle class="h-8 w-8" />
-        </div>
-        <h1 class="text-2xl font-semibold mb-2">Person not found</h1>
-        <p class="text-muted-foreground mb-6">{error || 'The person you\'re looking for doesn\'t exist.'}</p>
-        <Button href="/" variant="outline">
-          Back to Home
-        </Button>
-      </div>
-    ) : (
-      <div class="space-y-8">
-        <!-- Hero Section -->
-        <div class="flex flex-col md:flex-row gap-8">
-          <!-- Photo -->
-          <div class="shrink-0 mx-auto md:mx-0">
-            <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
-              {photoUrl ? (
-                <img
-                  src={photoUrl}
-                  alt={person.name}
-                  class="h-full w-full object-cover"
-                />
-              ) : (
-                <div class="flex h-full w-full items-center justify-center text-4xl font-semibold text-muted-foreground">
-                  {getInitials(person.name)}
-                </div>
-              )}
-            </div>
+    {
+      error || !person ? (
+        <div class="text-center py-16">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
+            <IconAlertCircle class="h-8 w-8" />
           </div>
-          
-          <!-- Info -->
-          <div class="flex-1 space-y-4">
-            <div>
-              <h1 class="text-3xl md:text-4xl font-bold">{person.name}</h1>
-              {person.knownFor && (
-                <p class="text-lg text-muted-foreground mt-1">{person.knownFor}</p>
-              )}
-            </div>
-            
-            <!-- Personal Details -->
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-              {ageInfo && (
-                <div class="flex items-center gap-1.5">
-                  <IconCake class="h-4 w-4" />
-                  <span>{ageInfo}</span>
-                </div>
-              )}
-              {person.placeOfBirth && (
-                <div class="flex items-center gap-1.5">
-                  <IconMapPin class="h-4 w-4" />
-                  <span>{person.placeOfBirth}</span>
-                </div>
-              )}
-              {person.gender && person.gender !== 'Not specified' && (
-                <div class="flex items-center gap-1.5">
-                  <IconUser class="h-4 w-4" />
-                  <span>{person.gender}</span>
-                </div>
-              )}
-            </div>
-            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-              {movieCredits.length > 0 && (
-                <div class="flex items-center gap-1.5">
-                  <IconMovie class="h-4 w-4" />
-                  <span>{movieCredits.length} Movies</span>
-                </div>
-              )}
-              {seriesCredits.length > 0 && (
-                <div class="flex items-center gap-1.5">
-                  <IconDeviceTv class="h-4 w-4" />
-                  <span>{seriesCredits.length} TV Shows</span>
-                </div>
-              )}
-            </div>
-            
-            <!-- Biography -->
-            {person.biography && (
-              <div class="space-y-2">
-                <p class="text-foreground leading-relaxed whitespace-pre-line">{person.biography}</p>
-              </div>
-            )}
-          </div>
+          <h1 class="text-2xl font-semibold mb-2">Person not found</h1>
+          <p class="text-muted-foreground mb-6">
+            {error || "The person you're looking for doesn't exist."}
+          </p>
+          <Button href="/" variant="outline">
+            Back to Home
+          </Button>
         </div>
-        
-        <!-- Top Credits -->
-        {topCredits.length > 0 && (
-          <section class="space-y-4">
-            <h2 class="text-xl font-semibold">Known For</h2>
-            <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
-              {topCredits.map((credit) => (
-                <div class="shrink-0 w-36">
-                  <CreditCard 
-                    credit={credit} 
-                    mediaType={movieCredits.includes(credit) ? 'movie' : 'series'}
-                    personBirthday={person.birthday}
-                    personCurrentAge={person.currentAge}
+      ) : (
+        <div class="space-y-8">
+          {/* Hero Section */}
+          <div class="flex flex-col md:flex-row gap-8">
+            {/* Photo */}
+            <div class="shrink-0 mx-auto md:mx-0">
+              <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
+                {photoUrl ? (
+                  <img
+                    src={photoUrl}
+                    alt={person.name}
+                    class="h-full w-full object-cover"
                   />
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
-        
-        <Separator />
-        
-        <!-- Accordion Sections -->
-        <Accordion type="multiple" class="space-y-2">
-          <!-- Full Filmography - Movies -->
-          {sortedMovieCredits.length > 0 && (
-            <AccordionItem value="movies" class="rounded-lg border border-border bg-card px-4 last:border-b">
-              <AccordionTrigger>
-                <span class="text-lg font-medium">Movies ({sortedMovieCredits.length})</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
-                  {sortedMovieCredits.map((credit) => (
-                    <CreditCard 
-                      credit={credit} 
-                      mediaType="movie"
-                      personBirthday={person.birthday}
-                      personCurrentAge={person.currentAge}
-                    />
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
-          
-          <!-- Full Filmography - TV Series -->
-          {sortedSeriesCredits.length > 0 && (
-            <AccordionItem value="series" class="rounded-lg border border-border bg-card px-4 last:border-b">
-              <AccordionTrigger>
-                <span class="text-lg font-medium">TV Series ({sortedSeriesCredits.length})</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
-                  {sortedSeriesCredits.map((credit) => (
-                    <CreditCard 
-                      credit={credit} 
-                      mediaType="series"
-                      personBirthday={person.birthday}
-                      personCurrentAge={person.currentAge}
-                    />
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          )}
-          
-          <!-- More Info -->
-          <AccordionItem value="more-info" class="rounded-lg border border-border bg-card px-4 last:border-b">
-            <AccordionTrigger>
-              <span class="text-lg font-medium">More Info</span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                {person.alsoKnownAs && person.alsoKnownAs.length > 0 && (
-                  <div class="md:col-span-2">
-                    <p class="text-muted-foreground">Also Known As</p>
-                    <p class="font-medium">{person.alsoKnownAs.join(', ')}</p>
-                  </div>
-                )}
-                {person.imdbId && (
-                  <div>
-                    <p class="text-muted-foreground">IMDB</p>
-                    <a 
-                      href={`https://www.imdb.com/name/${person.imdbId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="font-medium text-primary hover:underline"
-                    >
-                      {person.imdbId}
-                    </a>
+                ) : (
+                  <div class="flex h-full w-full items-center justify-center text-4xl font-semibold text-muted-foreground">
+                    {getInitials(person.name)}
                   </div>
                 )}
               </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      </div>
-    )}
+            </div>
+
+            {/* Info */}
+            <div class="flex-1 space-y-4">
+              <div>
+                <h1 class="text-3xl md:text-4xl font-bold">{person.name}</h1>
+                {person.knownFor && (
+                  <p class="text-lg text-muted-foreground mt-1">
+                    {person.knownFor}
+                  </p>
+                )}
+              </div>
+
+              {/* Personal Details */}
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                {ageInfo && (
+                  <div class="flex items-center gap-1.5">
+                    <IconCake class="h-4 w-4" />
+                    <span>{ageInfo}</span>
+                  </div>
+                )}
+                {person.placeOfBirth && (
+                  <div class="flex items-center gap-1.5">
+                    <IconMapPin class="h-4 w-4" />
+                    <span>{person.placeOfBirth}</span>
+                  </div>
+                )}
+                {person.gender && person.gender !== 'Not specified' && (
+                  <div class="flex items-center gap-1.5">
+                    <IconUser class="h-4 w-4" />
+                    <span>{person.gender}</span>
+                  </div>
+                )}
+              </div>
+              <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                {movieCredits.length > 0 && (
+                  <div class="flex items-center gap-1.5">
+                    <IconMovie class="h-4 w-4" />
+                    <span>{movieCredits.length} Movies</span>
+                  </div>
+                )}
+                {seriesCredits.length > 0 && (
+                  <div class="flex items-center gap-1.5">
+                    <IconDeviceTv class="h-4 w-4" />
+                    <span>{seriesCredits.length} TV Shows</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Biography */}
+              {person.biography && (
+                <div class="space-y-2">
+                  <p class="text-foreground leading-relaxed whitespace-pre-line">
+                    {person.biography}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Top Credits */}
+          {topCredits.length > 0 && (
+            <section class="space-y-4">
+              <h2 class="text-xl font-semibold">Known For</h2>
+              <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
+                {topCredits.map((credit) => (
+                  <div class="shrink-0 w-36">
+                    <CreditCard
+                      credit={credit}
+                      mediaType={
+                        movieCredits.includes(credit) ? 'movie' : 'series'
+                      }
+                      personBirthday={person.birthday}
+                      personCurrentAge={person.currentAge}
+                    />
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
+          <Separator />
+
+          {/* Accordion Sections */}
+          <Accordion type="multiple" class="space-y-2">
+            {/* Full Filmography - Movies */}
+            {sortedMovieCredits.length > 0 && (
+              <AccordionItem
+                value="movies"
+                class="rounded-lg border border-border bg-card px-4 last:border-b"
+              >
+                <AccordionTrigger>
+                  <span class="text-lg font-medium">
+                    Movies ({sortedMovieCredits.length})
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                    {sortedMovieCredits.map((credit) => (
+                      <CreditCard
+                        credit={credit}
+                        mediaType="movie"
+                        personBirthday={person.birthday}
+                        personCurrentAge={person.currentAge}
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {/* Full Filmography - TV Series */}
+            {sortedSeriesCredits.length > 0 && (
+              <AccordionItem
+                value="series"
+                class="rounded-lg border border-border bg-card px-4 last:border-b"
+              >
+                <AccordionTrigger>
+                  <span class="text-lg font-medium">
+                    TV Series ({sortedSeriesCredits.length})
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                    {sortedSeriesCredits.map((credit) => (
+                      <CreditCard
+                        credit={credit}
+                        mediaType="series"
+                        personBirthday={person.birthday}
+                        personCurrentAge={person.currentAge}
+                      />
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {/* More Info */}
+            <AccordionItem
+              value="more-info"
+              class="rounded-lg border border-border bg-card px-4 last:border-b"
+            >
+              <AccordionTrigger>
+                <span class="text-lg font-medium">More Info</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {person.alsoKnownAs && person.alsoKnownAs.length > 0 && (
+                    <div class="md:col-span-2">
+                      <p class="text-muted-foreground">Also Known As</p>
+                      <p class="font-medium">{person.alsoKnownAs.join(', ')}</p>
+                    </div>
+                  )}
+                  {person.imdbId && (
+                    <div>
+                      <p class="text-muted-foreground">IMDB</p>
+                      <a
+                        href={`https://www.imdb.com/name/${person.imdbId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-medium text-primary hover:underline"
+                      >
+                        {person.imdbId}
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+        </div>
+      )
+    }
   </main>
 </Layout>
 
@@ -261,4 +286,3 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
     border-radius: 3px;
   }
 </style>
-
