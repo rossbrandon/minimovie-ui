@@ -1,8 +1,7 @@
 ---
 import Layout from '@layouts/Layout.astro';
 import { Header } from '@components/layout';
-import { PersonCard } from '@components/cards';
-import { WhereToWatch } from '@components/sections';
+import { WhereToWatch, CrewGrid, TopCast } from '@components/sections';
 import { Badge } from '@components/starwind/badge';
 import { Button } from '@components/starwind/button';
 import { 
@@ -13,7 +12,6 @@ import {
 } from '@components/starwind/accordion';
 import { Separator } from '@components/starwind/separator';
 import { 
-  IconArrowLeft, 
   IconCalendar, 
   IconClock, 
   IconAlertCircle,
@@ -38,8 +36,7 @@ try {
 
 const profit = movie ? formatProfit(movie.budget, movie.revenue) : null;
 
-const topCast = movie?.credits?.cast?.slice(0, 10) || [];
-const fullCast = movie?.credits?.cast || [];
+const cast = movie?.credits?.cast || [];
 
 const director = movie?.credits?.directors?.[0];
 const writer = movie?.credits?.writers?.[0];
@@ -59,7 +56,6 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
         <h1 class="text-2xl font-semibold mb-2">Movie not found</h1>
         <p class="text-muted-foreground mb-6">{error || 'The movie you\'re looking for doesn\'t exist.'}</p>
         <Button href="/" variant="outline">
-          <IconArrowLeft class="h-4 w-4 mr-2" />
           Back to Home
         </Button>
       </div>
@@ -113,14 +109,14 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                   )}
                 </div>
               )}
-              {movie.runtime && (
+              {movie.runtime !== undefined && movie.runtime > 0 && (
                 <div class="flex items-center gap-1.5">
                   <IconClock class="h-4 w-4" />
                   <span>{formatRuntime(movie.runtime)}</span>
                 </div>
               )}
               {movie.status && movie.status !== 'Released' && (
-                <Badge variant="ghost" class="text-xs">{movie.status}</Badge>
+                <Badge variant="info" class="text-xs">{movie.status}</Badge>
               )}
             </div>
             
@@ -167,7 +163,7 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                   <h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Key Crew</h3>
                   <div class="grid grid-cols-2 gap-4 text-sm">
                     {director && (
-                      <div class="flex items-center gap-3">
+                      <a href={`/people/${director.id}`} class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors">
                         <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                           {director.photoUrl ? (
                             <img src={director.photoUrl} alt={director.name} class="h-full w-full object-cover" loading="lazy" />
@@ -179,15 +175,15 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                         </div>
                         <div>
                           <p class="text-xs text-muted-foreground">Director</p>
-                          <p class="font-medium text-sm">{director.name}</p>
+                          <p class="font-medium text-sm group-hover:text-amber-500 transition-colors">{director.name}</p>
                           {formatAgeDisplay(director) && (
                             <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(director)}</p>
                           )}
                         </div>
-                      </div>
+                      </a>
                     )}
                     {producer && (
-                      <div class="flex items-center gap-3">
+                      <a href={`/people/${producer.id}`} class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors">
                         <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                           {producer.photoUrl ? (
                             <img src={producer.photoUrl} alt={producer.name} class="h-full w-full object-cover" loading="lazy" />
@@ -199,15 +195,15 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                         </div>
                         <div>
                           <p class="text-xs text-muted-foreground">Producer</p>
-                          <p class="font-medium text-sm">{producer.name}</p>
+                          <p class="font-medium text-sm group-hover:text-amber-500 transition-colors">{producer.name}</p>
                           {formatAgeDisplay(producer) && (
                             <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(producer)}</p>
                           )}
                         </div>
-                      </div>
+                      </a>
                     )}
                     {writer && (
-                      <div class="flex items-center gap-3">
+                      <a href={`/people/${writer.id}`} class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors">
                         <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                           {writer.photoUrl ? (
                             <img src={writer.photoUrl} alt={writer.name} class="h-full w-full object-cover" loading="lazy" />
@@ -219,15 +215,15 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                         </div>
                         <div>
                           <p class="text-xs text-muted-foreground">Writer</p>
-                          <p class="font-medium text-sm">{writer.name}</p>
+                          <p class="font-medium text-sm group-hover:text-amber-500 transition-colors">{writer.name}</p>
                           {formatAgeDisplay(writer) && (
                             <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(writer)}</p>
                           )}
                         </div>
-                      </div>
+                      </a>
                     )}
                     {cinematographer && (
-                      <div class="flex items-center gap-3">
+                      <a href={`/people/${cinematographer.id}`} class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors">
                         <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                           {cinematographer.photoUrl ? (
                             <img src={cinematographer.photoUrl} alt={cinematographer.name} class="h-full w-full object-cover" loading="lazy" />
@@ -239,12 +235,12 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                         </div>
                         <div>
                           <p class="text-xs text-muted-foreground">Cinematographer</p>
-                          <p class="font-medium text-sm">{cinematographer.name}</p>
+                          <p class="font-medium text-sm group-hover:text-amber-500 transition-colors">{cinematographer.name}</p>
                           {formatAgeDisplay(cinematographer) && (
                             <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(cinematographer)}</p>
                           )}
                         </div>
-                      </div>
+                      </a>
                     )}
                   </div>
                 </div>
@@ -253,25 +249,7 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
           </div>
         </div>
         
-        <!-- Top Cast -->
-        {topCast.length > 0 && (
-          <section class="space-y-4">
-            <h2 class="text-xl font-semibold">Top Cast</h2>
-            <div class="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
-              {topCast.map((person) => (
-                <PersonCard
-                  id={person.id}
-                  name={person.name}
-                  photoUrl={person.photoUrl}
-                  role={person.role}
-                  deathday={person.deathday}
-                  ageAtRelease={person.ageAtRelease}
-                  currentAge={person.currentAge}
-                />
-              ))}
-            </div>
-          </section>
-        )}
+        <TopCast cast={cast} />
         
         <Separator />
         
@@ -290,7 +268,7 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
           )}
           
           <!-- Full Cast & Crew -->
-          {fullCast.length > 0 && (
+          {cast.length > 0 && (
             <AccordionItem value="full-cast" class="rounded-lg border border-border bg-card px-4 last:border-b">
               <AccordionTrigger>
                 <span class="text-lg font-medium">Full Cast & Crew</span>
@@ -299,9 +277,9 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                 <div class="space-y-6">
                   {/* Full Cast */}
                   <div>
-                    <h3 class="text-sm font-medium text-muted-foreground mb-3">Cast ({fullCast.length})</h3>
+                    <h3 class="text-sm font-medium text-muted-foreground mb-3">Cast ({cast.length})</h3>
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                      {fullCast.map((person) => (
+                      {cast.map((person) => (
                         <a 
                           href={`/people/${person.id}`}
                           class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
@@ -334,178 +312,12 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                     </div>
                   </div>
                   
-                  {/* Crew Sections */}
-                  {movie.credits?.directors && movie.credits.directors.length > 0 && (
-                    <div>
-                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Directors</h3>
-                      <div class="flex flex-wrap gap-3">
-                        {movie.credits.directors.map((person) => (
-                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              {person.photoUrl ? (
-                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
-                              ) : (
-                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
-                              )}
-                            </div>
-                            <div>
-                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
-                              {person.ageAtRelease && (
-                                <p class="text-xs text-muted-foreground/70">
-                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
-                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
-                                    : person.ageAtRelease}
-                                </p>
-                              )}
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {movie.credits?.writers && movie.credits.writers.length > 0 && (
-                    <div>
-                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Writers</h3>
-                      <div class="flex flex-wrap gap-3">
-                        {movie.credits.writers.map((person) => (
-                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              {person.photoUrl ? (
-                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
-                              ) : (
-                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
-                              )}
-                            </div>
-                            <div>
-                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
-                              {person.ageAtRelease && (
-                                <p class="text-xs text-muted-foreground/70">
-                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
-                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
-                                    : person.ageAtRelease}
-                                </p>
-                              )}
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {movie.credits?.producers && movie.credits.producers.length > 0 && (
-                    <div>
-                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Producers</h3>
-                      <div class="flex flex-wrap gap-3">
-                        {movie.credits.producers.map((person) => (
-                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              {person.photoUrl ? (
-                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
-                              ) : (
-                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
-                              )}
-                            </div>
-                            <div>
-                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
-                              {person.ageAtRelease && (
-                                <p class="text-xs text-muted-foreground/70">
-                                  {formatAgeDisplay(person)}
-                                </p>
-                              )}
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {movie.credits?.composers && movie.credits.composers.length > 0 && (
-                    <div>
-                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Composers</h3>
-                      <div class="flex flex-wrap gap-3">
-                        {movie.credits.composers.map((person) => (
-                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              {person.photoUrl ? (
-                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
-                              ) : (
-                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
-                              )}
-                            </div>
-                            <div>
-                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
-                              {person.ageAtRelease && (
-                                <p class="text-xs text-muted-foreground/70">
-                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
-                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
-                                    : person.ageAtRelease}
-                                </p>
-                              )}
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {movie.credits?.editors && movie.credits.editors.length > 0 && (
-                    <div>
-                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Editors</h3>
-                      <div class="flex flex-wrap gap-3">
-                        {movie.credits.editors.map((person) => (
-                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              {person.photoUrl ? (
-                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
-                              ) : (
-                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
-                              )}
-                            </div>
-                            <div>
-                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
-                              {person.ageAtRelease && (
-                                <p class="text-xs text-muted-foreground/70">
-                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
-                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
-                                    : person.ageAtRelease}
-                                </p>
-                              )}
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {movie.credits?.cinematographers && movie.credits.cinematographers.length > 0 && (
-                    <div>
-                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Cinematographers</h3>
-                      <div class="flex flex-wrap gap-3">
-                        {movie.credits.cinematographers.map((person) => (
-                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              {person.photoUrl ? (
-                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
-                              ) : (
-                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
-                              )}
-                            </div>
-                            <div>
-                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
-                              {person.ageAtRelease && (
-                                <p class="text-xs text-muted-foreground/70">
-                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
-                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
-                                    : person.ageAtRelease}
-                                </p>
-                              )}
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <CrewGrid title="Directors" people={movie.credits?.directors || []} />
+                  <CrewGrid title="Writers" people={movie.credits?.writers || []} />
+                  <CrewGrid title="Producers" people={movie.credits?.producers || []} />
+                  <CrewGrid title="Composers" people={movie.credits?.composers || []} />
+                  <CrewGrid title="Editors" people={movie.credits?.editors || []} />
+                  <CrewGrid title="Cinematographers" people={movie.credits?.cinematographers || []} />
                 </div>
               </AccordionContent>
             </AccordionItem>
@@ -569,19 +381,3 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
     )}
   </main>
 </Layout>
-
-<style>
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
-  .scrollbar-thin::-webkit-scrollbar {
-    height: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: var(--color-muted);
-    border-radius: 3px;
-  }
-</style>

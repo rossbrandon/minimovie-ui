@@ -103,6 +103,61 @@ function formatAgeDisplay(options: AgeDisplayOptions): string | null {
   return `${ageAtRelease}`;
 }
 
+function formatEpisodeCode(seasonNumber: number, episodeNumber: number): string {
+  const season = String(seasonNumber).padStart(2, '0');
+  const episode = String(episodeNumber).padStart(2, '0');
+  return `S${season}E${episode}`;
+}
+
+function formatRating(voteAverage?: number): string | null {
+  if (voteAverage === undefined || voteAverage === null || voteAverage === 0) return null;
+  return `${voteAverage.toFixed(1)}/10`;
+}
+
+function formatPersonAge(birthday?: string, deathday?: string, currentAge?: number): string | null {
+  if (!birthday) return null;
+  
+  if (deathday) {
+    const birthDate = new Date(birthday);
+    const deathDate = new Date(deathday);
+    const ageAtDeath = Math.floor((deathDate.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+    return `${formatDate(birthday)} – ${formatDate(deathday)} (died at ${ageAtDeath})`;
+  }
+  
+  if (currentAge) {
+    return `${formatDate(birthday)} (${currentAge} years old)`;
+  }
+  
+  return formatDate(birthday);
+}
+
+function calculateAgeAtDate(birthday: string, targetDate: string): number | null {
+  if (!birthday || !targetDate) return null;
+  
+  const birthDate = new Date(birthday);
+  const target = new Date(targetDate);
+  
+  if (isNaN(birthDate.getTime()) || isNaN(target.getTime())) return null;
+  
+  const age = Math.floor((target.getTime() - birthDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25));
+  return age >= 0 ? age : null;
+}
+
+type ImageType = 'backdrop' | 'logo' | 'poster' | 'profile' | 'still';
+
+const IMAGE_SIZES: Record<ImageType, string[]> = {
+  backdrop: ['w300', 'w780', 'w1280', 'original'],
+  logo: ['w45', 'w92', 'w154', 'w185', 'w300', 'w500', 'original'],
+  poster: ['w92', 'w154', 'w185', 'w342', 'w500', 'w780', 'original'],
+  profile: ['w45', 'w185', 'h632', 'original'],
+  still: ['w92', 'w185', 'w300', 'original'],
+};
+
+function resizeImageUrl(url: string | undefined, size: string): string | undefined {
+  if (!url) return undefined;
+  return url.replace(/\/w\d+\/|\/h\d+\/|\/original\//g, `/${size}/`);
+}
+
 export {
   formatDate,
   formatYear,
@@ -113,4 +168,9 @@ export {
   getInitials,
   truncateText,
   formatAgeDisplay,
+  formatEpisodeCode,
+  formatRating,
+  formatPersonAge,
+  calculateAgeAtDate,
+  resizeImageUrl,
 };

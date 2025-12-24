@@ -1,5 +1,5 @@
 ---
-import { getInitials, formatAgeDisplay } from '@lib/utils';
+import { getInitials, formatAgeDisplay, resizeImageUrl } from '@lib/utils';
 
 interface Props {
   id: number;
@@ -26,6 +26,7 @@ const {
 } = Astro.props;
 
 const initials = getInitials(name);
+const resizedPhotoUrl = resizeImageUrl(photoUrl, 'w185');
 const ageDisplay = formatAgeDisplay({
   ageAtRelease,
   currentAge,
@@ -41,9 +42,9 @@ const ageDisplay = formatAgeDisplay({
       class="group flex flex-col items-center gap-2 text-center"
     >
       <div class="relative h-20 w-20 overflow-hidden rounded-lg bg-muted">
-        {photoUrl ? (
+        {resizedPhotoUrl ? (
           <img
-            src={photoUrl}
+            src={resizedPhotoUrl}
             alt={name}
             class="h-full w-full object-cover"
             loading="lazy"
@@ -71,9 +72,9 @@ const ageDisplay = formatAgeDisplay({
   ) : (
     <div class="flex flex-col items-center gap-2 text-center">
       <div class="relative h-20 w-20 overflow-hidden rounded-lg bg-muted">
-        {photoUrl ? (
+        {resizedPhotoUrl ? (
           <img
-            src={photoUrl}
+            src={resizedPhotoUrl}
             alt={name}
             class="h-full w-full object-cover"
             loading="lazy"

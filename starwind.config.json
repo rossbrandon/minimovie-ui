@@ -46,6 +46,10 @@
     {
       "name": "pagination",
       "version": "3.0.2"
+    },
+    {
+      "name": "kbd",
+      "version": "1.0.0"
     }
   ]
 }

@@ -1,0 +1,243 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { Header, Breadcrumbs } from '@components/layout';
+import { EpisodeCard } from '@components/cards';
+import { WhereToWatch, CrewGrid, TopCast, KeyCrew } from '@components/sections';
+import { Button } from '@components/starwind/button';
+import { 
+  Accordion, 
+  AccordionItem, 
+  AccordionTrigger, 
+  AccordionContent 
+} from '@components/starwind/accordion';
+import { Separator } from '@components/starwind/separator';
+import { 
+  IconCalendar, 
+  IconAlertCircle,
+  IconVideo,
+  IconStar
+} from '@components/icons';
+import { getSeason, getSeries } from '@lib/api';
+import { formatDate, formatRating, formatAgeDisplay, formatYearsAgo } from '@lib/utils';
+import type { SeasonDetails, SeriesDetails } from '@lib/types';
+
+const { seriesId, seasonNumber } = Astro.params;
+
+let season: SeasonDetails | null = null;
+let series: SeriesDetails | null = null;
+let error: string | null = null;
+
+try {
+  [season, series] = await Promise.all([
+    getSeason(Number(seriesId), Number(seasonNumber)),
+    getSeries(Number(seriesId))
+  ]);
+} catch (e) {
+  console.error('Failed to fetch season:', e);
+  error = 'Failed to load season details.';
+}
+
+const episodes = season?.episodes || [];
+const cast = season?.credits?.cast || [];
+const rating = formatRating(season?.voteAverage);
+
+const keyCrewEntries = [
+  { label: 'Director', person: season?.credits?.directors?.[0] },
+  { label: 'Writer', person: season?.credits?.writers?.[0] },
+  { label: 'Producer', person: season?.credits?.producers?.[0] },
+  { label: 'Cinematographer', person: season?.credits?.cinematographers?.[0] },
+];
+
+const breadcrumbItems = series && season ? [
+  { label: series.name, href: `/series/${seriesId}` },
+  { label: season.name }
+] : [];
+
+const searchQuery = series?.name;
+---
+
+<Layout title={season && series ? `${season.name} - ${series.name} - MiniMovie` : 'Season - MiniMovie'}>
+  <Header />
+  
+  <main class="container mx-auto px-4 py-8 flex-1">
+    {error || !season ? (
+      <div class="text-center py-16">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
+          <IconAlertCircle class="h-8 w-8" />
+        </div>
+        <h1 class="text-2xl font-semibold mb-2">Season not found</h1>
+        <p class="text-muted-foreground mb-6">{error || 'The season you\'re looking for doesn\'t exist.'}</p>
+        <Button href="/" variant="outline">
+          Back to Home
+        </Button>
+      </div>
+    ) : (
+      <div class="space-y-8">
+        <Breadcrumbs items={breadcrumbItems} searchQuery={searchQuery} />
+        
+        <!-- Hero Section -->
+        <div class="flex flex-col md:flex-row gap-8">
+          <!-- Poster -->
+          <div class="shrink-0 mx-auto md:mx-0">
+            <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
+              {season.posterUrl ? (
+                <img
+                  src={season.posterUrl}
+                  alt={season.name}
+                  class="h-full w-full object-cover"
+                />
+              ) : (
+                <div class="flex h-full w-full items-center justify-center text-4xl font-semibold text-muted-foreground">
+                  {season.name.charAt(0)}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <!-- Info -->
+          <div class="flex-1 space-y-4">
+            <div>
+              {series && (
+                <p class="text-sm text-muted-foreground mb-1">{series.name}</p>
+              )}
+              <h1 class="text-3xl md:text-4xl font-bold">{season.name}</h1>
+            </div>
+            
+            <!-- Metadata -->
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+              {season.airDate && (
+                <div class="flex items-center gap-1.5">
+                  <IconCalendar class="h-4 w-4" />
+                  <span>{formatDate(season.airDate)}</span>
+                  {formatYearsAgo(season.airDate) && (
+                    <span class="text-muted-foreground/60">({formatYearsAgo(season.airDate)})</span>
+                  )}
+                </div>
+              )}
+              {episodes.length > 0 && (
+                <div class="flex items-center gap-1.5">
+                  <IconVideo class="h-4 w-4" />
+                  <span>{episodes.length} episodes</span>
+                </div>
+              )}
+              {rating && (
+                <div class="flex items-center gap-1.5 text-amber-500">
+                  <IconStar class="h-4 w-4" />
+                  <span>{rating}</span>
+                </div>
+              )}
+            </div>
+            
+            <!-- Overview -->
+            <div class="space-y-2">
+              <p class="text-foreground leading-relaxed">{season.overview || 'No overview available.'}</p>
+            </div>
+            
+            <KeyCrew entries={keyCrewEntries} />
+          </div>
+        </div>
+        
+        <TopCast cast={cast} />
+        
+        <Separator />
+        
+        <!-- Accordion Sections -->
+        <Accordion type="multiple" defaultValue="episodes" class="space-y-2">
+          <!-- Episodes -->
+          {episodes.length > 0 && (
+            <AccordionItem value="episodes" class="rounded-lg border border-border bg-card px-4 last:border-b">
+              <AccordionTrigger>
+                <span class="text-lg font-medium">Episodes ({episodes.length})</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div class="grid grid-cols-1 gap-3">
+                  {episodes.map((episode) => (
+                    <EpisodeCard
+                      seriesId={Number(seriesId)}
+                      seasonNumber={episode.seasonNumber}
+                      episodeNumber={episode.episodeNumber}
+                      name={episode.name}
+                      stillUrl={episode.stillUrl}
+                      runtime={episode.runtime}
+                      airDate={episode.airDate}
+                      voteAverage={episode.voteAverage}
+                      overview={episode.overview}
+                    />
+                  ))}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+          
+          <!-- Where to Watch -->
+          {season.whereToWatch && (
+            <AccordionItem value="where-to-watch" class="rounded-lg border border-border bg-card px-4 last:border-b">
+              <AccordionTrigger>
+                <span class="text-lg font-medium">Where to Watch</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <WhereToWatch whereToWatch={season.whereToWatch} />
+              </AccordionContent>
+            </AccordionItem>
+          )}
+          
+          <!-- Full Cast & Crew -->
+          {cast.length > 0 && (
+            <AccordionItem value="full-cast" class="rounded-lg border border-border bg-card px-4 last:border-b">
+              <AccordionTrigger>
+                <span class="text-lg font-medium">Full Cast & Crew</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div class="space-y-6">
+                  {/* Full Cast */}
+                  <div>
+                    <h3 class="text-sm font-medium text-muted-foreground mb-3">Cast ({cast.length})</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {cast.map((person) => (
+                        <a 
+                          href={`/people/${person.id}`}
+                          class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                            {person.photoUrl ? (
+                              <img
+                                src={person.photoUrl}
+                                alt={person.name}
+                                class="h-full w-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                                {person.name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <div class="min-w-0 flex-1">
+                            <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">{person.name}</p>
+                            {person.role && (
+                              <p class="text-xs text-muted-foreground truncate">{person.role}</p>
+                            )}
+                            {formatAgeDisplay(person) && (
+                              <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(person)}</p>
+                            )}
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <CrewGrid title="Directors" people={season.credits?.directors || []} />
+                  <CrewGrid title="Writers" people={season.credits?.writers || []} />
+                  <CrewGrid title="Producers" people={season.credits?.producers || []} />
+                  <CrewGrid title="Cinematographers" people={season.credits?.cinematographers || []} />
+                  <CrewGrid title="Editors" people={season.credits?.editors || []} />
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+        </Accordion>
+      </div>
+    )}
+  </main>
+</Layout>
+

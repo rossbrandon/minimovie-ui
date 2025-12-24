@@ -1,0 +1,89 @@
+---
+import { IconClock, IconCalendar, IconStar } from '@components/icons';
+import { formatRuntime, formatDate, formatEpisodeCode, formatRating, resizeImageUrl } from '@lib/utils';
+
+interface Props {
+  seriesId: number;
+  seasonNumber: number;
+  episodeNumber: number;
+  name: string;
+  stillUrl?: string;
+  runtime?: number;
+  airDate?: string;
+  voteAverage?: number;
+  overview?: string;
+}
+
+const { 
+  seriesId, 
+  seasonNumber, 
+  episodeNumber, 
+  name, 
+  stillUrl, 
+  runtime, 
+  airDate, 
+  voteAverage, 
+  overview 
+} = Astro.props;
+
+const href = `/series/${seriesId}/seasons/${seasonNumber}/episodes/${episodeNumber}`;
+const episodeCode = formatEpisodeCode(seasonNumber, episodeNumber);
+const rating = formatRating(voteAverage);
+const resizedStillUrl = resizeImageUrl(stillUrl, 'w300');
+---
+
+<a
+  href={href}
+  class="group flex gap-4 p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
+>
+  <div class="shrink-0 w-40 aspect-video overflow-hidden rounded-lg bg-muted">
+    {resizedStillUrl ? (
+      <img
+        src={resizedStillUrl}
+        alt={name}
+        class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+        loading="lazy"
+      />
+    ) : (
+      <div class="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
+        {episodeCode}
+      </div>
+    )}
+  </div>
+  
+  <div class="flex-1 min-w-0">
+    <div class="flex items-center gap-2">
+      <span class="text-xs font-medium text-muted-foreground">{episodeCode}</span>
+      {rating && (
+        <div class="flex items-center gap-1 text-xs text-amber-500">
+          <IconStar class="h-3 w-3" />
+          <span>{rating}</span>
+        </div>
+      )}
+    </div>
+    
+    <h3 class="font-medium text-base group-hover:text-amber-500 transition-colors mt-0.5">
+      {name}
+    </h3>
+    
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground">
+      {runtime && (
+        <div class="flex items-center gap-1">
+          <IconClock class="h-3.5 w-3.5" />
+          <span>{formatRuntime(runtime)}</span>
+        </div>
+      )}
+      {airDate && (
+        <div class="flex items-center gap-1">
+          <IconCalendar class="h-3.5 w-3.5" />
+          <span>{formatDate(airDate)}</span>
+        </div>
+      )}
+    </div>
+    
+    {overview && (
+      <p class="mt-2 text-sm text-muted-foreground line-clamp-2">{overview}</p>
+    )}
+  </div>
+</a>
+

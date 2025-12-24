@@ -19,3 +19,13 @@ export { default as IconTrendingUp } from '@tabler/icons/outline/trending-up.svg
 export { default as IconTrendingDown } from '@tabler/icons/outline/trending-down.svg';
 export { default as IconAlertCircle } from '@tabler/icons/outline/alert-circle.svg';
 export { default as IconAlertTriangle } from '@tabler/icons/outline/alert-triangle.svg';
+export { default as IconHome } from '@tabler/icons/outline/home.svg';
+export { default as IconStar } from '@tabler/icons/outline/star.svg';
+export { default as IconUsers } from '@tabler/icons/outline/users.svg';
+export { default as IconVideo } from '@tabler/icons/outline/video.svg';
+export { default as IconAntenna } from '@tabler/icons/outline/antenna.svg';
+export { default as IconCake } from '@tabler/icons/outline/cake.svg';
+export { default as IconMapPin } from '@tabler/icons/outline/map-pin.svg';
+export { default as IconGenderMale } from '@tabler/icons/outline/gender-male.svg';
+export { default as IconGenderFemale } from '@tabler/icons/outline/gender-female.svg';
+export { default as IconUser } from '@tabler/icons/outline/user.svg';
