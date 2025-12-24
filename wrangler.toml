@@ -1,9 +1,11 @@
 name = "minimovie-ui"
+main = "./dist/_worker.js/index.js"
 compatibility_date = "2024-12-01"
 compatibility_flags = ["nodejs_compat"]
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
 
 [vars]
 API_BASE_URL = "https://api.minimovie.info"
