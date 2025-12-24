@@ -1,3 +1,4 @@
+import { API_BASE_URL, API_TOKEN } from 'astro:env/server';
 import type {
   EpisodeDetails,
   MovieDetails,
@@ -7,17 +8,10 @@ import type {
   SeriesDetails,
 } from './types';
 
-const API_BASE_URL =
-  import.meta.env.API_BASE_URL || 'https://api.minimovie.info';
-
 async function fetchAPI<T>(endpoint: string): Promise<T> {
-  const token = import.meta.env.API_TOKEN;
-  if (!token) {
-    throw new Error('API token is not set');
-  }
   const response = await fetch(`${API_BASE_URL}${endpoint}`, {
     headers: {
-      Authorization: `Bearer ${token}`,
+      Authorization: `Bearer ${API_TOKEN}`,
     },
   });
 
