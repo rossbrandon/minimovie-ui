@@ -1,0 +1,130 @@
+---
+import type { WhereToWatch } from '@lib/types';
+import {
+  IconPlayerPlay,
+  IconCoin,
+  IconShoppingCart,
+  IconDeviceTv,
+} from '@components/icons';
+import JustWatchLogo from '@assets/justwatch-logo.svg';
+
+interface Props {
+  whereToWatch?: WhereToWatch;
+}
+
+const { whereToWatch } = Astro.props;
+
+const hasStream = (whereToWatch?.stream?.length ?? 0) > 0;
+const hasRent = (whereToWatch?.rent?.length ?? 0) > 0;
+const hasBuy = (whereToWatch?.buy?.length ?? 0) > 0;
+const hasFree = (whereToWatch?.free?.length ?? 0) > 0;
+const hasAds = (whereToWatch?.ads?.length ?? 0) > 0;
+
+const hasContent = hasStream || hasRent || hasBuy || hasFree || hasAds;
+
+interface Section {
+  title: string;
+  providers: { name: string; logoUrl?: string }[];
+  icon: 'play' | 'coin' | 'cart' | 'tv';
+  colorClass: string;
+}
+
+const sections: Section[] = [];
+
+if (hasStream) {
+  sections.push({
+    title: 'Stream',
+    providers: whereToWatch!.stream!,
+    icon: 'play',
+    colorClass: 'text-emerald-500',
+  });
+}
+
+if (hasRent) {
+  sections.push({
+    title: 'Rent',
+    providers: whereToWatch!.rent!,
+    icon: 'coin',
+    colorClass: 'text-amber-500',
+  });
+}
+
+if (hasBuy) {
+  sections.push({
+    title: 'Buy',
+    providers: whereToWatch!.buy!,
+    icon: 'cart',
+    colorClass: 'text-sky-500',
+  });
+}
+
+if (hasFree || hasAds) {
+  const freeProviders = [
+    ...(whereToWatch?.free || []),
+    ...(whereToWatch?.ads || []),
+  ];
+  sections.push({
+    title: 'Free with Ads',
+    providers: freeProviders,
+    icon: 'tv',
+    colorClass: 'text-violet-500',
+  });
+}
+---
+
+{
+  hasContent && (
+    <div class="space-y-4">
+      {sections.map((section) => (
+        <div>
+          <div class="mb-2 flex items-center gap-2">
+            {section.icon === 'play' && (
+              <IconPlayerPlay class={`h-4 w-4 ${section.colorClass}`} />
+            )}
+            {section.icon === 'coin' && (
+              <IconCoin class={`h-4 w-4 ${section.colorClass}`} />
+            )}
+            {section.icon === 'cart' && (
+              <IconShoppingCart class={`h-4 w-4 ${section.colorClass}`} />
+            )}
+            {section.icon === 'tv' && (
+              <IconDeviceTv class={`h-4 w-4 ${section.colorClass}`} />
+            )}
+            <p class={`text-sm font-medium ${section.colorClass}`}>
+              {section.title}
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            {section.providers.map((provider) => (
+              <div class="flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5">
+                {provider.logoUrl ? (
+                  <img
+                    src={provider.logoUrl}
+                    alt={provider.name}
+                    class="h-5 w-5 rounded"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="h-5 w-5 rounded bg-muted-foreground/20" />
+                )}
+                <span class="text-sm text-foreground">{provider.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      <div class="flex items-center gap-1.5 pt-2 text-xs text-muted-foreground">
+        <span>via</span>
+        <a
+          href="https://www.justwatch.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-flex items-center hover:opacity-80 transition-opacity"
+        >
+          <JustWatchLogo class="h-4 w-auto" />
+        </a>
+      </div>
+    </div>
+  )
+}

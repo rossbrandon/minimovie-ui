@@ -1,0 +1,14 @@
+name = "minimovie-ui"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+API_BASE_URL = "https://api.minimovie.info"
+
+[[routes]]
+pattern = "minimovie.info"
+custom_domain = true
+
+[[routes]]
+pattern = "www.minimovie.info"
+custom_domain = true

@@ -1,22 +1,52 @@
+---
+import '@fontsource/inter/400.css';
+import '@fontsource/inter/500.css';
+import '@fontsource/inter/600.css';
+import '@fontsource/inter/700.css';
+import '@styles/starwind.css';
+import { Footer } from '@components/layout';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = 'MiniMovie', description = 'A minimalistic movie database' } =
+  Astro.props;
+---
+
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro Basics</title>
-	</head>
-	<body>
-		<slot />
-	</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="description" content={description} />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <script is:inline>
+      // Only set data-theme if user has explicitly chosen a theme
+      const localStorageTheme = localStorage?.getItem('theme') ?? '';
+      if (['dark', 'light'].includes(localStorageTheme)) {
+        document.documentElement.setAttribute('data-theme', localStorageTheme);
+      }
+      // Otherwise, let CSS media queries handle it based on system preference
+    </script>
+  </head>
+  <body class="min-h-screen bg-background text-foreground antialiased flex flex-col">
+    <slot />
+    <Footer />
+  </body>
 </html>
 
-<style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+<style is:global>
+  :root {
+    --font-sans:
+      'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      sans-serif;
+  }
+
+  body {
+    font-family: var(--font-sans);
+  }
 </style>

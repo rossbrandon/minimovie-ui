@@ -1,0 +1,40 @@
+---
+import { Input } from '@components/starwind/input';
+import { IconSearch, IconMovie } from '@components/icons';
+import { ThemeToggle } from '@components/theme';
+
+interface Props {
+  searchQuery?: string;
+}
+
+const { searchQuery = '' } = Astro.props;
+---
+
+<header
+  class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
+>
+  <div class="w-full flex h-14 items-center px-4">
+    <a href="/" class="flex items-center gap-2 font-semibold text-lg shrink-0">
+      <IconMovie class="h-6 w-6 text-amber-500" />
+      <span>MiniMovie</span>
+    </a>
+
+    <form action="/search" method="GET" class="flex-1 flex justify-center px-4">
+      <div class="relative w-full max-w-xl">
+        <IconSearch
+          class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        />
+        <Input
+          type="search"
+          name="q"
+          placeholder="Find movies, shows, and people..."
+          value={searchQuery}
+          size="sm"
+          class="pl-9 w-full"
+        />
+      </div>
+    </form>
+
+    <ThemeToggle />
+  </div>
+</header>

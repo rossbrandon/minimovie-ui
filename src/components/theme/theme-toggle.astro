@@ -1,0 +1,39 @@
+---
+import { Button } from '@components/starwind/button';
+import { IconSun, IconMoon } from '@components/icons';
+---
+
+<Button
+  variant="ghost"
+  size="icon-sm"
+  id="themeToggle"
+  aria-label="Toggle theme"
+>
+  <IconSun class="h-5 w-5 hidden dark:block" />
+  <IconMoon class="h-5 w-5 block dark:hidden" />
+</Button>
+
+<script>
+  const handleToggleClick = () => {
+    const element = document.documentElement;
+
+    // Determine current theme (from attribute or system preference)
+    let currentTheme = element.getAttribute('data-theme');
+    if (!currentTheme) {
+      currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light';
+    }
+
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    // Set the attribute to override system preference
+    element.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+  };
+
+  document
+    .getElementById('themeToggle')
+    ?.addEventListener('click', handleToggleClick);
+</script>
+

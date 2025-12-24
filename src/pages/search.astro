@@ -1,0 +1,172 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { Header } from '@components/layout';
+import { MediaCard } from '@components/cards';
+import {
+  IconSearch,
+  IconAlertCircle,
+  IconAlertTriangle,
+} from '@components/icons';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationEllipsis,
+} from '@components/starwind/pagination';
+import { search, type SearchType } from '@lib/api';
+import type { SearchResponse } from '@lib/types';
+
+const query = Astro.url.searchParams.get('q') || '';
+const page = parseInt(Astro.url.searchParams.get('page') || '1', 10);
+const type = (Astro.url.searchParams.get('type') as SearchType) || 'all';
+
+let results: SearchResponse = {
+  page: 1,
+  totalPages: 0,
+  totalResults: 0,
+  results: [],
+};
+
+let error: string | null = null;
+
+if (query) {
+  try {
+    results = await search(query, page, type);
+  } catch (e) {
+    console.error('Search failed:', e);
+    error = 'Failed to fetch search results. Please try again.';
+  }
+}
+
+const hasResults = results.results.length > 0;
+const showPagination = results.totalPages > 1;
+
+function buildPageUrl(newPage: number): string {
+  const params = new URLSearchParams();
+  params.set('q', query);
+  params.set('page', String(newPage));
+  if (type !== 'all') params.set('type', type);
+  return `/search?${params}`;
+}
+
+function getVisiblePages(
+  current: number,
+  total: number
+): (number | 'ellipsis')[] {
+  if (total <= 7) {
+    return Array.from({ length: total }, (_, i) => i + 1);
+  }
+
+  if (current <= 3) {
+    return [1, 2, 3, 4, 'ellipsis', total];
+  }
+
+  if (current >= total - 2) {
+    return [1, 'ellipsis', total - 3, total - 2, total - 1, total];
+  }
+
+  return [1, 'ellipsis', current - 1, current, current + 1, 'ellipsis', total];
+}
+
+const visiblePages = getVisiblePages(page, results.totalPages);
+---
+
+<Layout
+  title={query ? `"${query}" - Search - MiniMovie` : 'Search - MiniMovie'}
+>
+  <Header searchQuery={query} />
+
+  <main class="container mx-auto px-4 py-8">
+    {
+      !query ? (
+        <div class="text-center py-16">
+          <IconSearch class="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+          <h1 class="text-2xl font-semibold mb-2">
+            Search for Movies & Series
+          </h1>
+          <p class="text-muted-foreground">
+            Enter a search term in the box above to find movies, TV series, and
+            people.
+          </p>
+        </div>
+      ) : error ? (
+        <div class="text-center py-16">
+          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
+            <IconAlertCircle class="h-8 w-8" />
+          </div>
+          <h1 class="text-2xl font-semibold mb-2">Something went wrong</h1>
+          <p class="text-muted-foreground">{error}</p>
+        </div>
+      ) : !hasResults ? (
+        <div class="text-center py-16">
+          <IconAlertTriangle class="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+          <h1 class="text-2xl font-semibold mb-2">No results found</h1>
+          <p class="text-muted-foreground">
+            Nothing found for "
+            <span class="font-medium text-foreground">{query}</span>". Try a
+            different search term.
+          </p>
+        </div>
+      ) : (
+        <div class="space-y-6">
+          <div class="flex items-center justify-between">
+            <p class="text-muted-foreground">
+              {results.totalResults} result
+              {results.totalResults !== 1 ? 's' : ''} for "
+              <span class="font-medium text-foreground">{query}</span>"
+            </p>
+          </div>
+
+          <div class="grid grid-cols-[repeat(auto-fill,minmax(180px,1fr))] gap-4">
+            {results.results.map((result) => (
+              <MediaCard
+                id={result.id}
+                mediaType={result.mediaType}
+                title={result.title}
+                posterUrl={result.posterUrl}
+                releaseDate={result.releaseDate}
+                overview={result.overview}
+              />
+            ))}
+          </div>
+
+          {showPagination && (
+            <Pagination class="pt-8">
+              <PaginationContent>
+                {page > 1 && (
+                  <PaginationItem>
+                    <PaginationPrevious href={buildPageUrl(page - 1)} />
+                  </PaginationItem>
+                )}
+
+                {visiblePages.map((p) => (
+                  <PaginationItem>
+                    {p === 'ellipsis' ? (
+                      <PaginationEllipsis />
+                    ) : (
+                      <PaginationLink
+                        href={buildPageUrl(p)}
+                        isActive={p === page}
+                      >
+                        {p}
+                      </PaginationLink>
+                    )}
+                  </PaginationItem>
+                ))}
+
+                {page < results.totalPages && (
+                  <PaginationItem>
+                    <PaginationNext href={buildPageUrl(page + 1)} />
+                  </PaginationItem>
+                )}
+              </PaginationContent>
+            </Pagination>
+          )}
+        </div>
+      )
+    }
+  </main>
+</Layout>

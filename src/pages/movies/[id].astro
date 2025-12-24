@@ -1,0 +1,597 @@
+---
+import Layout from '@layouts/Layout.astro';
+import { Header } from '@components/layout';
+import { PersonCard } from '@components/cards';
+import { WhereToWatch } from '@components/sections';
+import { Badge } from '@components/starwind/badge';
+import { Button } from '@components/starwind/button';
+import { 
+  Accordion, 
+  AccordionItem, 
+  AccordionTrigger, 
+  AccordionContent 
+} from '@components/starwind/accordion';
+import { Separator } from '@components/starwind/separator';
+import { 
+  IconArrowLeft, 
+  IconCalendar, 
+  IconClock, 
+  IconAlertCircle,
+  IconTrendingUp,
+  IconTrendingDown
+} from '@components/icons';
+import { getMovie } from '@lib/api';
+import { formatDate, formatRuntime, formatCurrency, formatProfit, formatYearsAgo, formatAgeDisplay } from '@lib/utils';
+import type { MovieDetails } from '@lib/types';
+
+const { id } = Astro.params;
+
+let movie: MovieDetails | null = null;
+let error: string | null = null;
+
+try {
+  movie = await getMovie(Number(id));
+} catch (e) {
+  console.error('Failed to fetch movie:', e);
+  error = 'Failed to load movie details.';
+}
+
+const profit = movie ? formatProfit(movie.budget, movie.revenue) : null;
+
+const topCast = movie?.credits?.cast?.slice(0, 10) || [];
+const fullCast = movie?.credits?.cast || [];
+
+const director = movie?.credits?.directors?.[0];
+const writer = movie?.credits?.writers?.[0];
+const producer = movie?.credits?.producers?.[0];
+const cinematographer = movie?.credits?.cinematographers?.[0];
+---
+
+<Layout title={movie ? `${movie.title} - MiniMovie` : 'Movie - MiniMovie'}>
+  <Header />
+  
+  <main class="container mx-auto px-4 py-8">
+    {error || !movie ? (
+      <div class="text-center py-16">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
+          <IconAlertCircle class="h-8 w-8" />
+        </div>
+        <h1 class="text-2xl font-semibold mb-2">Movie not found</h1>
+        <p class="text-muted-foreground mb-6">{error || 'The movie you\'re looking for doesn\'t exist.'}</p>
+        <Button href="/" variant="outline">
+          <IconArrowLeft class="h-4 w-4 mr-2" />
+          Back to Home
+        </Button>
+      </div>
+    ) : (
+      <div class="space-y-8">
+        <!-- Back Button -->
+        <a href="javascript:history.back()" class="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors -ml-1">
+          <IconArrowLeft class="h-4 w-4" />
+          Back to Search
+        </a>
+        
+        <!-- Hero Section -->
+        <div class="flex flex-col md:flex-row gap-8">
+          <!-- Poster -->
+          <div class="shrink-0 mx-auto md:mx-0">
+            <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
+              {movie.posterUrl ? (
+                <img
+                  src={movie.posterUrl}
+                  alt={movie.title}
+                  class="h-full w-full object-cover"
+                />
+              ) : (
+                <div class="flex h-full w-full items-center justify-center text-4xl font-semibold text-muted-foreground">
+                  {movie.title.charAt(0)}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <!-- Info -->
+          <div class="flex-1 space-y-4">
+            <div>
+              <h1 class="text-3xl md:text-4xl font-bold">{movie.title}</h1>
+              {movie.tagline && (
+                <p class="text-lg text-muted-foreground italic mt-1">"{movie.tagline}"</p>
+              )}
+            </div>
+            
+            <!-- Genres -->
+            {movie.genres && movie.genres.length > 0 && (
+              <div class="flex flex-wrap gap-2">
+                {movie.genres.map((genre) => (
+                  <Badge variant="outline">{genre}</Badge>
+                ))}
+              </div>
+            )}
+            
+            <!-- Metadata -->
+            <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+              {movie.releaseDate && (
+                <div class="flex items-center gap-1.5">
+                  <IconCalendar class="h-4 w-4" />
+                  <span>{formatDate(movie.releaseDate)}</span>
+                  {formatYearsAgo(movie.releaseDate) && (
+                    <span class="text-muted-foreground/60">({formatYearsAgo(movie.releaseDate)})</span>
+                  )}
+                </div>
+              )}
+              {movie.runtime && (
+                <div class="flex items-center gap-1.5">
+                  <IconClock class="h-4 w-4" />
+                  <span>{formatRuntime(movie.runtime)}</span>
+                </div>
+              )}
+              {movie.status && movie.status !== 'Released' && (
+                <Badge variant="ghost" class="text-xs">{movie.status}</Badge>
+              )}
+            </div>
+            
+            <!-- Overview -->
+            <div class="space-y-2">
+              <p class="text-foreground leading-relaxed">{movie.overview || 'No overview available.'}</p>
+            </div>
+            
+            <!-- Box Office & Key Crew -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              {/* Box Office */}
+              {(movie.budget || movie.revenue) && (
+                <div class="rounded-lg bg-card border border-border p-4">
+                  <h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Box Office</h3>
+                  <div class="grid grid-cols-3 gap-4">
+                    {movie.budget ? (
+                      <div>
+                        <p class="text-xs text-muted-foreground">Budget</p>
+                        <p class="font-semibold font-mono">{formatCurrency(movie.budget)}</p>
+                      </div>
+                    ) : null}
+                    {movie.revenue ? (
+                      <div>
+                        <p class="text-xs text-muted-foreground">Revenue</p>
+                        <p class="font-semibold font-mono">{formatCurrency(movie.revenue)}</p>
+                      </div>
+                    ) : null}
+                    {profit && (
+                      <div>
+                        <p class="text-xs text-muted-foreground">Profit/Loss</p>
+                        <p class={`font-semibold font-mono flex items-center gap-1 ${profit.isProfit ? 'text-emerald-500' : 'text-red-500'}`}>
+                          {profit.isProfit ? (
+                            <IconTrendingUp class="h-4 w-4" />
+                          ) : (
+                            <IconTrendingDown class="h-4 w-4" />
+                          )}
+                          {profit.isProfit ? '+' : '-'}{profit.amount}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Key Crew */}
+              {(director || writer || producer || cinematographer) && (
+                <div class="rounded-lg bg-card border border-border p-4">
+                  <h3 class="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-3">Key Crew</h3>
+                  <div class="grid grid-cols-2 gap-4 text-sm">
+                    {director && (
+                      <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                          {director.photoUrl ? (
+                            <img src={director.photoUrl} alt={director.name} class="h-full w-full object-cover" loading="lazy" />
+                          ) : (
+                            <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                              {director.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p class="text-xs text-muted-foreground">Director</p>
+                          <p class="font-medium text-sm">{director.name}</p>
+                          {formatAgeDisplay(director) && (
+                            <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(director)}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {producer && (
+                      <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                          {producer.photoUrl ? (
+                            <img src={producer.photoUrl} alt={producer.name} class="h-full w-full object-cover" loading="lazy" />
+                          ) : (
+                            <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                              {producer.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p class="text-xs text-muted-foreground">Producer</p>
+                          <p class="font-medium text-sm">{producer.name}</p>
+                          {formatAgeDisplay(producer) && (
+                            <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(producer)}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {writer && (
+                      <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                          {writer.photoUrl ? (
+                            <img src={writer.photoUrl} alt={writer.name} class="h-full w-full object-cover" loading="lazy" />
+                          ) : (
+                            <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                              {writer.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p class="text-xs text-muted-foreground">Writer</p>
+                          <p class="font-medium text-sm">{writer.name}</p>
+                          {formatAgeDisplay(writer) && (
+                            <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(writer)}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                    {cinematographer && (
+                      <div class="flex items-center gap-3">
+                        <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                          {cinematographer.photoUrl ? (
+                            <img src={cinematographer.photoUrl} alt={cinematographer.name} class="h-full w-full object-cover" loading="lazy" />
+                          ) : (
+                            <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                              {cinematographer.name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <p class="text-xs text-muted-foreground">Cinematographer</p>
+                          <p class="font-medium text-sm">{cinematographer.name}</p>
+                          {formatAgeDisplay(cinematographer) && (
+                            <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(cinematographer)}</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        <!-- Top Cast -->
+        {topCast.length > 0 && (
+          <section class="space-y-4">
+            <h2 class="text-xl font-semibold">Top Cast</h2>
+            <div class="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
+              {topCast.map((person) => (
+                <PersonCard
+                  id={person.id}
+                  name={person.name}
+                  photoUrl={person.photoUrl}
+                  role={person.role}
+                  deathday={person.deathday}
+                  ageAtRelease={person.ageAtRelease}
+                  currentAge={person.currentAge}
+                />
+              ))}
+            </div>
+          </section>
+        )}
+        
+        <Separator />
+        
+        <!-- Accordion Sections -->
+        <Accordion type="multiple" class="space-y-2">
+          <!-- Where to Watch -->
+          {movie.whereToWatch && (
+            <AccordionItem value="where-to-watch" class="rounded-lg border border-border bg-card px-4">
+              <AccordionTrigger>
+                <span class="text-lg font-medium">Where to Watch</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <WhereToWatch whereToWatch={movie.whereToWatch} />
+              </AccordionContent>
+            </AccordionItem>
+          )}
+          
+          <!-- Full Cast & Crew -->
+          {fullCast.length > 0 && (
+            <AccordionItem value="full-cast" class="rounded-lg border border-border bg-card px-4">
+              <AccordionTrigger>
+                <span class="text-lg font-medium">Full Cast & Crew</span>
+              </AccordionTrigger>
+              <AccordionContent>
+                <div class="space-y-6">
+                  {/* Full Cast */}
+                  <div>
+                    <h3 class="text-sm font-medium text-muted-foreground mb-3">Cast ({fullCast.length})</h3>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {fullCast.map((person) => (
+                        <a 
+                          href={`/people/${person.id}`}
+                          class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                        >
+                          <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+                            {person.photoUrl ? (
+                              <img
+                                src={person.photoUrl}
+                                alt={person.name}
+                                class="h-full w-full object-cover"
+                                loading="lazy"
+                              />
+                            ) : (
+                              <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                                {person.name.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                          <div class="min-w-0 flex-1">
+                            <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">{person.name}</p>
+                            {person.role && (
+                              <p class="text-xs text-muted-foreground truncate">{person.role}</p>
+                            )}
+                            {formatAgeDisplay(person) && (
+                              <p class="text-xs text-muted-foreground/70">{formatAgeDisplay(person)}</p>
+                            )}
+                          </div>
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* Crew Sections */}
+                  {movie.credits?.directors && movie.credits.directors.length > 0 && (
+                    <div>
+                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Directors</h3>
+                      <div class="flex flex-wrap gap-3">
+                        {movie.credits.directors.map((person) => (
+                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+                              {person.photoUrl ? (
+                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
+                              ) : (
+                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
+                              )}
+                            </div>
+                            <div>
+                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
+                              {person.ageAtRelease && (
+                                <p class="text-xs text-muted-foreground/70">
+                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
+                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
+                                    : person.ageAtRelease}
+                                </p>
+                              )}
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {movie.credits?.writers && movie.credits.writers.length > 0 && (
+                    <div>
+                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Writers</h3>
+                      <div class="flex flex-wrap gap-3">
+                        {movie.credits.writers.map((person) => (
+                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+                              {person.photoUrl ? (
+                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
+                              ) : (
+                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
+                              )}
+                            </div>
+                            <div>
+                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
+                              {person.ageAtRelease && (
+                                <p class="text-xs text-muted-foreground/70">
+                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
+                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
+                                    : person.ageAtRelease}
+                                </p>
+                              )}
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {movie.credits?.producers && movie.credits.producers.length > 0 && (
+                    <div>
+                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Producers</h3>
+                      <div class="flex flex-wrap gap-3">
+                        {movie.credits.producers.map((person) => (
+                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+                              {person.photoUrl ? (
+                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
+                              ) : (
+                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
+                              )}
+                            </div>
+                            <div>
+                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
+                              {person.ageAtRelease && (
+                                <p class="text-xs text-muted-foreground/70">
+                                  {formatAgeDisplay(person)}
+                                </p>
+                              )}
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {movie.credits?.composers && movie.credits.composers.length > 0 && (
+                    <div>
+                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Composers</h3>
+                      <div class="flex flex-wrap gap-3">
+                        {movie.credits.composers.map((person) => (
+                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+                              {person.photoUrl ? (
+                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
+                              ) : (
+                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
+                              )}
+                            </div>
+                            <div>
+                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
+                              {person.ageAtRelease && (
+                                <p class="text-xs text-muted-foreground/70">
+                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
+                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
+                                    : person.ageAtRelease}
+                                </p>
+                              )}
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {movie.credits?.editors && movie.credits.editors.length > 0 && (
+                    <div>
+                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Editors</h3>
+                      <div class="flex flex-wrap gap-3">
+                        {movie.credits.editors.map((person) => (
+                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+                              {person.photoUrl ? (
+                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
+                              ) : (
+                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
+                              )}
+                            </div>
+                            <div>
+                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
+                              {person.ageAtRelease && (
+                                <p class="text-xs text-muted-foreground/70">
+                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
+                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
+                                    : person.ageAtRelease}
+                                </p>
+                              )}
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {movie.credits?.cinematographers && movie.credits.cinematographers.length > 0 && (
+                    <div>
+                      <h3 class="text-sm font-medium text-muted-foreground mb-3">Cinematographers</h3>
+                      <div class="flex flex-wrap gap-3">
+                        {movie.credits.cinematographers.map((person) => (
+                          <a href={`/people/${person.id}`} class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+                              {person.photoUrl ? (
+                                <img src={person.photoUrl} alt={person.name} class="h-full w-full object-cover" loading="lazy" />
+                              ) : (
+                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">{person.name.charAt(0)}</div>
+                              )}
+                            </div>
+                            <div>
+                              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">{person.name}</span>
+                              {person.ageAtRelease && (
+                                <p class="text-xs text-muted-foreground/70">
+                                  {person.currentAge && person.currentAge !== person.ageAtRelease 
+                                    ? `${person.ageAtRelease} (now ${person.currentAge})`
+                                    : person.ageAtRelease}
+                                </p>
+                              )}
+                            </div>
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          )}
+          
+          <!-- More Info -->
+          <AccordionItem value="more-info" class="rounded-lg border border-border bg-card px-4">
+            <AccordionTrigger>
+              <span class="text-lg font-medium">More Info</span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                {movie.originalTitle && movie.originalTitle !== movie.title && (
+                  <div>
+                    <p class="text-muted-foreground">Original Title</p>
+                    <p class="font-medium">{movie.originalTitle}</p>
+                  </div>
+                )}
+                {movie.originalLanguage && (
+                  <div>
+                    <p class="text-muted-foreground">Original Language</p>
+                    <p class="font-medium uppercase">{movie.originalLanguage}</p>
+                  </div>
+                )}
+                {movie.spokenLanguages && movie.spokenLanguages.length > 0 && (
+                  <div>
+                    <p class="text-muted-foreground">Spoken Languages</p>
+                    <p class="font-medium">{movie.spokenLanguages.join(', ')}</p>
+                  </div>
+                )}
+                {movie.productionCountries && movie.productionCountries.length > 0 && (
+                  <div>
+                    <p class="text-muted-foreground">Production Countries</p>
+                    <p class="font-medium">{movie.productionCountries.join(', ')}</p>
+                  </div>
+                )}
+                {movie.productionCompanies && movie.productionCompanies.length > 0 && (
+                  <div class="md:col-span-2">
+                    <p class="text-muted-foreground">Production Companies</p>
+                    <p class="font-medium">{movie.productionCompanies.join(', ')}</p>
+                  </div>
+                )}
+                {movie.imdbID && (
+                  <div>
+                    <p class="text-muted-foreground">IMDB</p>
+                    <a 
+                      href={`https://www.imdb.com/title/${movie.imdbID}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="font-medium text-primary hover:underline"
+                    >
+                      {movie.imdbID}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+      </div>
+    )}
+  </main>
+</Layout>
+
+<style>
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--color-muted);
+    border-radius: 3px;
+  }
+</style>

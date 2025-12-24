@@ -1,0 +1,100 @@
+---
+import { getInitials, formatAgeDisplay } from '@lib/utils';
+
+interface Props {
+  id: number;
+  name: string;
+  photoUrl?: string;
+  role?: string;
+  deathday?: string;
+  ageAtRelease?: number;
+  currentAge?: number;
+  ageRange?: string;
+  linkToPerson?: boolean;
+}
+
+const {
+  id,
+  name,
+  photoUrl,
+  role,
+  deathday,
+  ageAtRelease,
+  currentAge,
+  ageRange,
+  linkToPerson = true,
+} = Astro.props;
+
+const initials = getInitials(name);
+const ageDisplay = formatAgeDisplay({
+  ageAtRelease,
+  currentAge,
+  deathday,
+  ageRange,
+});
+---
+
+{
+  linkToPerson ? (
+    <a
+      href={`/people/${id}`}
+      class="group flex flex-col items-center gap-2 text-center"
+    >
+      <div class="relative h-20 w-20 overflow-hidden rounded-lg bg-muted">
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt={name}
+            class="h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div class="flex h-full w-full items-center justify-center text-lg font-semibold text-muted-foreground">
+            {initials}
+          </div>
+        )}
+      </div>
+      <div class="max-w-[100px]">
+        <p class="font-medium text-sm leading-tight line-clamp-2 group-hover:text-amber-500 transition-colors">
+          {name}
+        </p>
+        {role && (
+          <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+            {role}
+          </p>
+        )}
+        {ageDisplay && (
+          <p class="text-xs text-muted-foreground/70">{ageDisplay}</p>
+        )}
+      </div>
+    </a>
+  ) : (
+    <div class="flex flex-col items-center gap-2 text-center">
+      <div class="relative h-20 w-20 overflow-hidden rounded-lg bg-muted">
+        {photoUrl ? (
+          <img
+            src={photoUrl}
+            alt={name}
+            class="h-full w-full object-cover"
+            loading="lazy"
+          />
+        ) : (
+          <div class="flex h-full w-full items-center justify-center text-lg font-semibold text-muted-foreground">
+            {initials}
+          </div>
+        )}
+      </div>
+      <div class="max-w-[100px]">
+        <p class="font-medium text-sm leading-tight line-clamp-2">{name}</p>
+        {role && (
+          <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">
+            {role}
+          </p>
+        )}
+        {ageDisplay && (
+          <p class="text-xs text-muted-foreground/70">{ageDisplay}</p>
+        )}
+      </div>
+    </div>
+  )
+}

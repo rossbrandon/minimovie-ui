@@ -1,0 +1,82 @@
+---
+import { Badge } from '@components/starwind/badge';
+import type { MediaType } from '@lib/types';
+import { formatYear, getInitials } from '@lib/utils';
+
+interface Props {
+  id: number;
+  mediaType: MediaType;
+  title: string;
+  posterUrl?: string;
+  releaseDate?: string;
+  overview?: string;
+  showOverview?: boolean;
+}
+
+const {
+  id,
+  mediaType,
+  title,
+  posterUrl,
+  releaseDate,
+  overview,
+  showOverview = false,
+} = Astro.props;
+
+const href =
+  mediaType === 'movie'
+    ? `/movies/${id}`
+    : mediaType === 'series'
+      ? `/series/${id}`
+      : `/people/${id}`;
+
+const year = formatYear(releaseDate);
+const initials = getInitials(title);
+
+const mediaTypeLabel =
+  mediaType === 'movie' ? 'Movie' : mediaType === 'series' ? 'TV' : 'Person';
+
+const badgeVariant =
+  mediaType === 'movie' ? 'movie' : mediaType === 'series' ? 'tv' : 'person';
+---
+
+<a
+  href={href}
+  class="group relative flex flex-col overflow-hidden rounded-lg border border-border bg-card transition-colors hover:bg-accent/50"
+>
+  <div class="relative aspect-2/3 overflow-hidden bg-muted">
+    {
+      posterUrl ? (
+        <img
+          src={posterUrl}
+          alt={title}
+          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <div class="flex h-full w-full items-center justify-center text-2xl font-semibold text-muted-foreground">
+          {initials}
+        </div>
+      )
+    }
+    <Badge variant={badgeVariant} class="absolute top-2 left-2 text-xs">
+      {mediaTypeLabel}
+    </Badge>
+  </div>
+
+  <div class="flex flex-col gap-1 p-3">
+    <h3
+      class="font-medium leading-tight line-clamp-2 text-sm group-hover:text-amber-500 transition-colors"
+    >
+      {title}
+    </h3>
+    {year && <p class="text-xs text-muted-foreground">{year}</p>}
+    {
+      showOverview && overview && (
+        <p class="mt-1 text-xs text-muted-foreground line-clamp-3">
+          {overview}
+        </p>
+      )
+    }
+  </div>
+</a>
