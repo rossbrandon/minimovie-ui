@@ -90,6 +90,7 @@ export interface MovieDetails {
   runtime?: number;
   budget?: number;
   revenue?: number;
+  voteAverage?: number;
   originalTitle?: string;
   originalLanguage?: string;
   originCountry?: string;
@@ -132,6 +133,7 @@ export interface SeriesDetails {
   numberOfSeasons?: number;
   numberOfEpisodes?: number;
   episodeRunTime?: number[];
+  voteAverage?: number;
   originalName?: string;
   originalLanguage?: string;
   originCountry?: string;

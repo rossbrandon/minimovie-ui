@@ -5,6 +5,7 @@ import {
   IconAntenna,
   IconCalendar,
   IconClock,
+  IconStar,
   IconVideo,
 } from '@components/icons';
 import { Header } from '@components/layout';
@@ -25,6 +26,7 @@ import type { SeriesDetails } from '@lib/types';
 import {
   formatAgeDisplay,
   formatDate,
+  formatRating,
   formatRuntime,
   formatYearsAgo,
 } from '@lib/utils';
@@ -43,6 +45,7 @@ try {
 
 const cast = series?.credits?.cast || [];
 const seasons = series?.seasons?.filter((s) => s.seasonNumber > 0) || [];
+const rating = formatRating(series?.voteAverage);
 
 const keyCrewEntries = [
   { label: 'Creator', person: series?.createdBy?.[0] },
@@ -136,6 +139,12 @@ const avgRuntime = series?.episodeRunTime?.[0];
                   <div class="flex items-center gap-1.5">
                     <IconClock class="h-4 w-4" />
                     <span>{formatRuntime(avgRuntime)} / episode</span>
+                  </div>
+                )}
+                {rating && (
+                  <div class="flex items-center gap-1.5 text-amber-500">
+                    <IconStar class="h-4 w-4" />
+                    <span>{rating}</span>
                   </div>
                 )}
                 {series.status && (

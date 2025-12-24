@@ -3,6 +3,7 @@ import {
   IconAlertCircle,
   IconCalendar,
   IconClock,
+  IconStar,
   IconTrendingDown,
   IconTrendingUp,
 } from '@components/icons';
@@ -26,6 +27,7 @@ import {
   formatCurrency,
   formatDate,
   formatProfit,
+  formatRating,
   formatRuntime,
   formatYearsAgo,
 } from '@lib/utils';
@@ -43,6 +45,7 @@ try {
 }
 
 const profit = movie ? formatProfit(movie.budget, movie.revenue) : null;
+const rating = formatRating(movie?.voteAverage);
 
 const cast = movie?.credits?.cast || [];
 
@@ -128,6 +131,12 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                   <div class="flex items-center gap-1.5">
                     <IconClock class="h-4 w-4" />
                     <span>{formatRuntime(movie.runtime)}</span>
+                  </div>
+                )}
+                {rating && (
+                  <div class="flex items-center gap-1.5 text-amber-500">
+                    <IconStar class="h-4 w-4" />
+                    <span>{rating}</span>
                   </div>
                 )}
                 {movie.status && movie.status !== 'Released' && (
