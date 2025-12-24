@@ -7,19 +7,45 @@ import type {
   SeasonDetails,
   SeriesDetails,
 } from './types';
+import { logger } from './logger';
 
 async function fetchAPI<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  const url = `${API_BASE_URL}${endpoint}`;
+
+  logger.info('API request', { url });
+
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${API_TOKEN}`,
     },
   });
 
+  const responseHeaders: Record<string, string> = {};
+  response.headers.forEach((value, key) => {
+    responseHeaders[key] = value;
+  });
+
   if (!response.ok) {
+    logger.error('API request failed', {
+      url,
+      status: response.status,
+      statusText: response.statusText,
+      headers: responseHeaders,
+      body: (await response.text()) || '',
+    });
     throw new Error(`API error: ${response.status} ${response.statusText}`);
   }
 
-  return response.json();
+  const data = (await response.json()) as T;
+
+  logger.info('API response', {
+    url,
+    status: response.status,
+    headers: responseHeaders,
+    body: data,
+  });
+
+  return data;
 }
 
 export type SearchType = 'all' | 'movie' | 'series' | 'person';

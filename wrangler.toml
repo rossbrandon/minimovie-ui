@@ -8,6 +8,7 @@ directory = "./dist"
 binding = "ASSETS"
 
 [vars]
+LOG_LEVEL = "INFO"
 API_BASE_URL = "https://api.minimovie.info"
 
 [[routes]]

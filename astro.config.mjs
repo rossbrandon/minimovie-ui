@@ -12,6 +12,11 @@ export default defineConfig({
   },
   env: {
     schema: {
+      LOG_LEVEL: envField.string({
+        context: 'server',
+        access: 'public',
+        default: 'INFO',
+      }),
       API_BASE_URL: envField.string({
         context: 'server',
         access: 'public',
