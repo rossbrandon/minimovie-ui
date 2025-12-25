@@ -409,6 +409,9 @@ components:
           type: integer
         revenue:
           type: integer
+        voteAverage:
+          type: number
+          format: float
         originalTitle:
           type: string
         originalLanguage:
@@ -468,6 +471,9 @@ components:
           items:
             type: integer
           description: Episode run times in minutes
+        voteAverage:
+          type: number
+          format: float
         originalName:
           type: string
         originalLanguage:
@@ -650,6 +656,12 @@ components:
         role:
           type: string
           description: Character name (for cast) or job title (for crew)
+        order:
+          type: integer
+          description: Billing order for cast credits (lower = more prominent). Null for crew credits.
+        popularity:
+          type: number
+          description: Popularity score of the film/show. Useful for sorting "Known For" credits.
         type:
           type: string
           enum:
@@ -671,6 +683,15 @@ components:
         order:
           type: integer
           description: Billing order (for cast)
+        birthday:
+          type: string
+          format: date
+        deathday:
+          type: string
+          format: date
+        currentAge:
+          type: integer
+          description: Current age of the person (if alive)
         ageAtRelease:
           type: integer
           description: Age of the person at the time of release

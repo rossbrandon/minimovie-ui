@@ -154,6 +154,8 @@ export interface FilmCredit {
   releaseDate?: string;
   role?: string;
   type: 'cast' | 'crew';
+  order?: number;
+  popularity?: number;
 }
 
 export interface PersonDetails {

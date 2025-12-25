@@ -44,11 +44,20 @@ const sortByDate = (a: FilmCredit, b: FilmCredit) => {
   return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
 };
 
+const sortByOrder = (a: FilmCredit, b: FilmCredit) => {
+  if (a.order == null && b.order == null) {
+    return (b.popularity ?? 0) - (a.popularity ?? 0);
+  }
+  if (a.order == null) return 1;
+  if (b.order == null) return -1;
+  return a.order - b.order;
+};
+
 const sortedMovieCredits = [...movieCredits].sort(sortByDate);
 const sortedSeriesCredits = [...seriesCredits].sort(sortByDate);
 
-const topCredits = [...movieCredits, ...seriesCredits]
-  .sort(sortByDate)
+const knownFor = [...movieCredits, ...seriesCredits]
+  .sort(sortByOrder)
   .slice(0, 8);
 
 const ageInfo = person
@@ -155,12 +164,12 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
             </div>
           </div>
 
-          {/* Top Credits */}
-          {topCredits.length > 0 && (
+          {/* Known For */}
+          {knownFor.length > 0 && (
             <section class="space-y-4">
               <h2 class="text-xl font-semibold">Known For</h2>
               <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
-                {topCredits.map((credit) => (
+                {knownFor.map((credit) => (
                   <div class="shrink-0 w-36">
                     <CreditCard
                       credit={credit}
