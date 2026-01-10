@@ -29,6 +29,7 @@ export interface SearchResult {
   posterUrl?: string;
   releaseDate?: string;
   knownFor?: string;
+  age?: number;
 }
 
 export interface SearchResponse {

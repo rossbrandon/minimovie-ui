@@ -11,6 +11,8 @@ interface Props {
   releaseDate?: string;
   overview?: string;
   showOverview?: boolean;
+  knownFor?: string;
+  age?: number;
 }
 
 const {
@@ -21,6 +23,8 @@ const {
   releaseDate,
   overview,
   showOverview = false,
+  knownFor,
+  age,
 } = Astro.props;
 
 const href =
@@ -42,6 +46,10 @@ const mediaTypeLabel =
 
 const badgeVariant =
   mediaType === 'movie' ? 'movie' : mediaType === 'series' ? 'tv' : 'person';
+
+const isPerson = mediaType === 'person';
+const ageText =
+  isPerson && age !== undefined ? (age === -1 ? 'Deceased' : String(age)) : null;
 ---
 
 <a
@@ -69,9 +77,13 @@ const badgeVariant =
     <h3
       class="font-medium leading-tight line-clamp-2 text-sm group-hover:text-amber-500 transition-colors"
     >
-      {title}
+      {title}{ageText && <span class="text-muted-foreground font-normal"> ({ageText})</span>}
     </h3>
-    {year && <p class="text-xs text-muted-foreground">{year}</p>}
+    {isPerson ? (
+      knownFor && <p class="text-xs text-muted-foreground">{knownFor}</p>
+    ) : (
+      year && <p class="text-xs text-muted-foreground">{year}</p>
+    )}
     {
       showOverview && overview && (
         <p class="mt-1 text-xs text-muted-foreground line-clamp-3">

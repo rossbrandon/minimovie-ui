@@ -177,8 +177,15 @@ function resizeImageUrl(
   return url.replace(/\/w\d+\/|\/h\d+\/|\/original\//g, `/${size}/`);
 }
 
+const escapeHtml = (text: string): string => {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+};
+
 export {
   calculateAgeAtDate,
+  escapeHtml,
   formatAgeDisplay,
   formatCurrency,
   formatDate,

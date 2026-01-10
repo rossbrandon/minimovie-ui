@@ -1,6 +1,7 @@
 ---
 // import { MediaCard } from '@components/cards';
-import { IconMovie, IconSearch, IconTrendingUp } from '@components/icons';
+import { IconMovie, IconTrendingUp } from '@components/icons';
+import { SearchBox } from '@components/search';
 import { ThemeToggle } from '@components/theme';
 import Layout from '@layouts/Layout.astro';
 // import { search } from '@lib/api';
@@ -37,26 +38,13 @@ import Layout from '@layouts/Layout.astro';
           </p>
         </div>
 
-        <form action="/search" method="GET" class="w-full max-w-xl mx-auto">
-          <div
-            class="relative flex items-center gap-0 bg-white/10 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-xl p-1.5 shadow-lg ring-1 ring-black/5 dark:ring-white/5"
-          >
-            <IconSearch class="ml-3 h-5 w-5 text-muted-foreground shrink-0" />
-            <input
-              type="search"
-              name="q"
-              placeholder="What are you watching?"
-              class="flex-1 bg-transparent border-0 outline-none px-3 py-2 text-base sm:text-lg text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
-              autofocus
-            />
-            <button
-              type="submit"
-              class="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-medium rounded-lg transition-all shrink-0"
-            >
-              Search
-            </button>
-          </div>
-        </form>
+        <div class="w-full max-w-xl mx-auto">
+          <SearchBox
+            variant="hero"
+            placeholder="What are you watching?"
+            autofocus
+          />
+        </div>
       </div>
     </main>
 

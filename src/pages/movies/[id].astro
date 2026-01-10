@@ -78,8 +78,8 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
           {/* Hero Section */}
           <div class="flex flex-col md:flex-row gap-8">
             {/* Poster */}
-            <div class="shrink-0 mx-auto md:mx-0">
-              <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
+            <div class="shrink-0 w-full sm:w-auto sm:mx-0">
+              <div class="w-full sm:w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
                 {movie.posterUrl ? (
                   <img
                     src={movie.posterUrl}

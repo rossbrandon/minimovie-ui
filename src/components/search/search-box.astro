@@ -1,0 +1,443 @@
+---
+import { IconSearch } from '@components/icons';
+import { Kbd } from '@components/starwind/kbd';
+
+interface Props {
+  placeholder?: string;
+  value?: string;
+  variant?: 'hero' | 'header';
+  showKeyboardHint?: boolean;
+  autofocus?: boolean;
+}
+
+const {
+  placeholder = 'Search...',
+  value = '',
+  variant = 'header',
+  showKeyboardHint = false,
+  autofocus = false,
+} = Astro.props;
+
+const isHero = variant === 'hero';
+const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
+---
+
+<search-box class="relative w-full" data-variant={variant}>
+  <form action="/search" method="GET" class="w-full">
+    {
+      isHero ? (
+        <div class="relative">
+          <div class="flex items-center gap-0 bg-white/10 dark:bg-white/5 backdrop-blur-xl border border-white/20 dark:border-white/10 rounded-xl p-1.5 shadow-lg ring-1 ring-black/5 dark:ring-white/5">
+            <IconSearch class="ml-3 h-5 w-5 text-muted-foreground shrink-0" />
+            <input
+              type="search"
+              name="q"
+              placeholder={placeholder}
+              value={value}
+              class="flex-1 bg-transparent border-0 outline-none px-3 py-2 text-base sm:text-lg text-foreground placeholder:text-muted-foreground focus:ring-0 focus:outline-none"
+              data-search-input
+              autocomplete="off"
+              autofocus={autofocus}
+            />
+            <button
+              type="submit"
+              class="px-4 sm:px-6 py-2 sm:py-2.5 bg-amber-500 hover:bg-amber-400 text-black font-medium rounded-lg transition-all shrink-0 text-sm sm:text-base"
+            >
+              Search
+            </button>
+          </div>
+          <div
+            class={`absolute left-0 right-0 z-50 mt-2 rounded-lg border border-border bg-popover shadow-lg opacity-0 invisible transition-all duration-150 text-left ${dropdownMaxHeight}`}
+            data-dropdown
+          >
+            <div class="overflow-y-auto max-h-[inherit] p-1" data-results />
+            <div
+              class="hidden p-4 text-center text-sm text-muted-foreground"
+              data-empty
+            >
+              No results found
+            </div>
+            <div class="hidden p-4" data-loading>
+              <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                  <div class="h-12 w-9 rounded bg-muted animate-pulse shrink-0" />
+                  <div class="flex-1 space-y-1.5">
+                    <div class="h-4 w-3/4 rounded bg-muted animate-pulse" />
+                    <div class="h-3 w-1/4 rounded bg-muted animate-pulse" />
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="h-12 w-9 rounded bg-muted animate-pulse shrink-0" />
+                  <div class="flex-1 space-y-1.5">
+                    <div class="h-4 w-2/3 rounded bg-muted animate-pulse" />
+                    <div class="h-3 w-1/3 rounded bg-muted animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div class="relative w-full max-w-xl">
+          <IconSearch class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+          <input
+            type="search"
+            name="q"
+            placeholder={placeholder}
+            value={value}
+            class:list={[
+              'border-input dark:bg-input/30 text-foreground w-full rounded-md border bg-transparent shadow-xs',
+              'focus-visible:border-outline focus-visible:ring-outline/50 transition-[color,box-shadow] focus-visible:ring-3',
+              'disabled:cursor-not-allowed disabled:opacity-50',
+              'placeholder:text-muted-foreground',
+              'h-9 pl-9 pr-4 sm:pr-16 text-sm',
+            ]}
+            data-search-input
+            autocomplete="off"
+          />
+          {showKeyboardHint && (
+            <div class="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 pointer-events-none">
+              <Kbd data-modifier-key>Ctrl</Kbd>
+              <Kbd>K</Kbd>
+            </div>
+          )}
+          <div
+            class={`absolute left-0 right-0 z-50 mt-2 rounded-lg border border-border bg-popover shadow-lg opacity-0 invisible transition-all duration-150 ${dropdownMaxHeight}`}
+            data-dropdown
+          >
+            <div class="overflow-y-auto max-h-[inherit] p-1" data-results />
+            <div
+              class="hidden p-4 text-center text-sm text-muted-foreground"
+              data-empty
+            >
+              No results found
+            </div>
+            <div class="hidden p-4" data-loading>
+              <div class="space-y-2">
+                <div class="flex items-center gap-3">
+                  <div class="h-12 w-9 rounded bg-muted animate-pulse shrink-0" />
+                  <div class="flex-1 space-y-1.5">
+                    <div class="h-4 w-3/4 rounded bg-muted animate-pulse" />
+                    <div class="h-3 w-1/4 rounded bg-muted animate-pulse" />
+                  </div>
+                </div>
+                <div class="flex items-center gap-3">
+                  <div class="h-12 w-9 rounded bg-muted animate-pulse shrink-0" />
+                  <div class="flex-1 space-y-1.5">
+                    <div class="h-4 w-2/3 rounded bg-muted animate-pulse" />
+                    <div class="h-3 w-1/3 rounded bg-muted animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )
+    }
+  </form>
+</search-box>
+
+<script>
+  import {
+    escapeHtml,
+    formatYear,
+    getInitials,
+    resizeImageUrl,
+  } from '@lib/utils';
+
+  interface SearchResult {
+    id: number;
+    mediaType: 'movie' | 'series' | 'person';
+    title: string;
+    posterUrl?: string;
+    releaseDate?: string;
+    knownFor?: string;
+    age?: number;
+  }
+
+  const DEBOUNCE_MS = 300;
+  const MIN_QUERY_LENGTH = 2;
+
+  const MEDIA_CONFIG: Record<
+    string,
+    { label: string; badge: string; route: string }
+  > = {
+    movie: {
+      label: 'Movie',
+      badge: 'bg-amber-500/10 text-amber-600 dark:text-amber-400',
+      route: '/movies',
+    },
+    series: {
+      label: 'TV',
+      badge: 'bg-blue-500/10 text-blue-600 dark:text-blue-400',
+      route: '/series',
+    },
+    person: {
+      label: 'Person',
+      badge: 'bg-purple-500/10 text-purple-600 dark:text-purple-400',
+      route: '/people',
+    },
+  };
+
+  const renderResultItem = (result: SearchResult): string => {
+    const config = MEDIA_CONFIG[result.mediaType];
+    const posterUrl = resizeImageUrl(result.posterUrl, 'w92');
+    const initials = getInitials(result.title);
+    const year = formatYear(result.releaseDate);
+
+    const posterHtml = posterUrl
+      ? `<img src="${posterUrl}" alt="" class="h-full w-full object-cover" loading="lazy" />`
+      : `<span class="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">${initials}</span>`;
+
+    const isPerson = result.mediaType === 'person';
+    const ageText =
+      isPerson && result.age !== undefined
+        ? result.age === -1
+          ? 'Deceased'
+          : String(result.age)
+        : null;
+
+    const titleHtml =
+      isPerson && ageText
+        ? `${escapeHtml(result.title)} <span class="text-muted-foreground font-normal">(${ageText})</span>`
+        : escapeHtml(result.title);
+
+    const subtitleHtml = isPerson
+      ? result.knownFor
+        ? `<p class="text-xs text-muted-foreground">${escapeHtml(result.knownFor)}</p>`
+        : ''
+      : year
+        ? `<p class="text-xs text-muted-foreground">${year}</p>`
+        : '';
+
+    return `
+      <a
+        href="${config.route}/${result.id}"
+        class="flex items-center gap-3 p-2 rounded-md cursor-pointer transition-colors hover:bg-accent data-active:bg-accent"
+        data-result-item
+      >
+        <div class="relative h-12 w-9 shrink-0 overflow-hidden rounded bg-muted">
+          ${posterHtml}
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-sm truncate">${titleHtml}</p>
+          ${subtitleHtml}
+        </div>
+        <span class="inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide shrink-0 ${config.badge}">
+          ${config.label}
+        </span>
+      </a>
+    `;
+  };
+
+  const initSearchBox = (container: HTMLElement): void => {
+    const input = container.querySelector<HTMLInputElement>(
+      '[data-search-input]'
+    );
+    const dropdown = container.querySelector<HTMLElement>('[data-dropdown]');
+    const resultsContainer =
+      container.querySelector<HTMLElement>('[data-results]');
+    const emptyState = container.querySelector<HTMLElement>('[data-empty]');
+    const loadingState = container.querySelector<HTMLElement>('[data-loading]');
+
+    if (!input || !dropdown) return;
+
+    let results: SearchResult[] = [];
+    let activeIndex = -1;
+    let isOpen = false;
+    let debounceTimer: number | null = null;
+    const isMobile = (): boolean => window.innerWidth < 640;
+
+    const positionDropdown = (): void => {
+      if (isMobile()) {
+        const inputRect = input.getBoundingClientRect();
+        dropdown.style.position = 'fixed';
+        dropdown.style.top = `${inputRect.bottom + 8}px`;
+        dropdown.style.left = '16px';
+        dropdown.style.right = '16px';
+      } else {
+        dropdown.style.position = '';
+        dropdown.style.top = '';
+        dropdown.style.left = '';
+        dropdown.style.right = '';
+      }
+    };
+
+    const openDropdown = (): void => {
+      isOpen = true;
+      positionDropdown();
+      dropdown.classList.remove('opacity-0', 'invisible');
+      dropdown.classList.add('opacity-100', 'visible');
+    };
+
+    const closeDropdown = (): void => {
+      isOpen = false;
+      activeIndex = -1;
+      dropdown.classList.add('opacity-0', 'invisible');
+      dropdown.classList.remove('opacity-100', 'visible');
+    };
+
+    const showLoading = (): void => {
+      loadingState?.classList.remove('hidden');
+      resultsContainer?.classList.add('hidden');
+      emptyState?.classList.add('hidden');
+    };
+
+    const showEmpty = (): void => {
+      openDropdown();
+      emptyState?.classList.remove('hidden');
+      resultsContainer?.classList.add('hidden');
+      loadingState?.classList.add('hidden');
+    };
+
+    const showResults = (): void => {
+      loadingState?.classList.add('hidden');
+      resultsContainer?.classList.remove('hidden');
+      emptyState?.classList.add('hidden');
+    };
+
+    const setActiveIndex = (index: number): void => {
+      activeIndex = index;
+      resultsContainer
+        ?.querySelectorAll('[data-result-item]')
+        .forEach((item, i) => {
+          if (i === index) {
+            item.setAttribute('data-active', 'true');
+            item.scrollIntoView({ block: 'nearest' });
+          } else {
+            item.removeAttribute('data-active');
+          }
+        });
+    };
+
+    const renderResults = (): void => {
+      if (!resultsContainer) return;
+
+      resultsContainer.innerHTML = results.map(renderResultItem).join('');
+      resultsContainer.scrollTop = 0;
+      showResults();
+
+      resultsContainer
+        .querySelectorAll('[data-result-item]')
+        .forEach((item, index) => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const config = MEDIA_CONFIG[results[index].mediaType];
+            window.location.href = `${config.route}/${results[index].id}`;
+          });
+          item.addEventListener('mouseenter', () => setActiveIndex(index));
+        });
+    };
+
+    const fetchResults = async (query: string): Promise<void> => {
+      try {
+        const response = await fetch(
+          `/api/search?q=${encodeURIComponent(query)}`
+        );
+        const data = await response.json();
+
+        results = data.results || [];
+        activeIndex = -1;
+
+        if (results.length > 0) {
+          renderResults();
+          openDropdown();
+        } else {
+          showEmpty();
+        }
+      } catch (error) {
+        console.error('Search failed:', error);
+        closeDropdown();
+      }
+    };
+
+    const handleInput = (): void => {
+      const query = input.value.trim();
+
+      if (debounceTimer) clearTimeout(debounceTimer);
+
+      if (query.length < MIN_QUERY_LENGTH) {
+        closeDropdown();
+        return;
+      }
+
+      debounceTimer = window.setTimeout(() => fetchResults(query), DEBOUNCE_MS);
+    };
+
+    const handleKeydown = (e: KeyboardEvent): void => {
+      if (!isOpen) {
+        if (e.key === 'ArrowDown' && results.length > 0) {
+          e.preventDefault();
+          openDropdown();
+          setActiveIndex(0);
+        }
+        return;
+      }
+
+      const handlers: Record<string, () => void> = {
+        ArrowDown: () => {
+          e.preventDefault();
+          setActiveIndex(
+            activeIndex < results.length - 1 ? activeIndex + 1 : 0
+          );
+        },
+        ArrowUp: () => {
+          e.preventDefault();
+          setActiveIndex(
+            activeIndex > 0 ? activeIndex - 1 : results.length - 1
+          );
+        },
+        Enter: () => {
+          if (activeIndex >= 0 && results[activeIndex]) {
+            e.preventDefault();
+            const config = MEDIA_CONFIG[results[activeIndex].mediaType];
+            window.location.href = `${config.route}/${results[activeIndex].id}`;
+          }
+        },
+        Escape: () => {
+          e.preventDefault();
+          closeDropdown();
+        },
+      };
+
+      handlers[e.key]?.();
+    };
+
+    input.addEventListener('input', handleInput);
+    input.addEventListener('focus', () => results.length > 0 && openDropdown());
+    input.addEventListener('keydown', handleKeydown);
+
+    document.addEventListener('click', (e) => {
+      if (!container.contains(e.target as Node)) closeDropdown();
+    });
+
+    window.addEventListener('resize', () => {
+      if (isOpen) positionDropdown();
+    });
+
+    // Keyboard shortcut setup
+    const modifierKeyEl = container.querySelector('[data-modifier-key]');
+    if (modifierKeyEl && navigator.userAgent.toUpperCase().includes('MAC')) {
+      modifierKeyEl.textContent = '⌘';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        input.focus();
+        input.select();
+      }
+    });
+  };
+
+  const init = (): void => {
+    document.querySelectorAll<HTMLElement>('search-box').forEach((el) => {
+      if (el.hasAttribute('data-initialized')) return;
+      el.setAttribute('data-initialized', 'true');
+      initSearchBox(el);
+    });
+  };
+
+  init();
+  document.addEventListener('astro:after-swap', init);
+</script>

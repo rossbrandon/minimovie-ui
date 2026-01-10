@@ -1,7 +1,6 @@
 ---
-import { IconMovie, IconSearch } from '@components/icons';
-import { Input } from '@components/starwind/input';
-import { Kbd } from '@components/starwind/kbd';
+import { IconMovie } from '@components/icons';
+import { SearchBox } from '@components/search';
 import { ThemeToggle } from '@components/theme';
 
 interface Props {
@@ -20,48 +19,15 @@ const { searchQuery = '' } = Astro.props;
       <span>MiniMovie</span>
     </a>
 
-    <form action="/search" method="GET" class="flex-1 flex justify-center px-4">
-      <div class="relative w-full max-w-xl">
-        <IconSearch
-          class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
-        />
-        <Input
-          id="search-input"
-          type="search"
-          name="q"
-          placeholder="Search..."
-          value={searchQuery}
-          class="pl-9 pr-4 sm:pr-16 w-full"
-          size="sm"
-        />
-        <div
-          class="absolute right-2 top-1/2 -translate-y-1/2 hidden sm:flex items-center gap-0.5 pointer-events-none"
-        >
-          <Kbd id="search-modifier-key">Ctrl</Kbd>
-          <Kbd>K</Kbd>
-        </div>
-      </div>
-    </form>
+    <div class="flex-1 flex justify-center px-4">
+      <SearchBox
+        variant="header"
+        placeholder="Search..."
+        value={searchQuery}
+        showKeyboardHint
+      />
+    </div>
 
     <ThemeToggle />
   </div>
 </header>
-
-<script>
-  const isMac = navigator.userAgent.toUpperCase().includes('MAC');
-  const modifierKey = document.getElementById('search-modifier-key');
-  if (modifierKey && isMac) {
-    modifierKey.textContent = '⌘';
-  }
-
-  document.addEventListener('keydown', (e) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-      e.preventDefault();
-      const searchInput = document.getElementById(
-        'search-input'
-      ) as HTMLInputElement;
-      searchInput?.focus();
-      searchInput?.select();
-    }
-  });
-</script>
