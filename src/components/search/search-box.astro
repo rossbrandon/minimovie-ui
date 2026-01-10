@@ -90,7 +90,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
               'focus-visible:border-outline focus-visible:ring-outline/50 transition-[color,box-shadow] focus-visible:ring-3',
               'disabled:cursor-not-allowed disabled:opacity-50',
               'placeholder:text-muted-foreground',
-              'h-9 pl-9 pr-4 sm:pr-16 text-sm',
+              'h-9 pl-9 pr-4 sm:pr-16 text-base sm:text-sm',
             ]}
             data-search-input
             autocomplete="off"
@@ -251,15 +251,26 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
     const positionDropdown = (): void => {
       if (isMobile()) {
         const inputRect = input.getBoundingClientRect();
+        const viewportHeight =
+          window.visualViewport?.height ?? window.innerHeight;
+        const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
+
+        const dropdownTop = inputRect.bottom + 8;
+        const availableHeight =
+          viewportHeight + viewportOffsetTop - dropdownTop - 16;
+        const maxHeight = Math.max(120, Math.min(availableHeight, 320));
+
         dropdown.style.position = 'fixed';
-        dropdown.style.top = `${inputRect.bottom + 8}px`;
+        dropdown.style.top = `${dropdownTop}px`;
         dropdown.style.left = '16px';
         dropdown.style.right = '16px';
+        dropdown.style.maxHeight = `${maxHeight}px`;
       } else {
         dropdown.style.position = '';
         dropdown.style.top = '';
         dropdown.style.left = '';
         dropdown.style.right = '';
+        dropdown.style.maxHeight = '';
       }
     };
 
@@ -414,6 +425,16 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
     window.addEventListener('resize', () => {
       if (isOpen) positionDropdown();
     });
+
+    // Handle mobile keyboard appearance via visualViewport API
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => {
+        if (isOpen) positionDropdown();
+      });
+      window.visualViewport.addEventListener('scroll', () => {
+        if (isOpen) positionDropdown();
+      });
+    }
 
     // Keyboard shortcut setup
     const modifierKeyEl = container.querySelector('[data-modifier-key]');
