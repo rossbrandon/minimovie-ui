@@ -78,6 +78,23 @@ export interface Credits {
   casting?: Person[];
 }
 
+export interface CollectionPart {
+  id: number;
+  title: string;
+  overview?: string;
+  posterUrl?: string;
+  releaseDate?: string;
+  voteAverage?: number;
+}
+
+export interface CollectionInfo {
+  id: number;
+  name: string;
+  overview?: string;
+  posterUrl?: string;
+  parts?: CollectionPart[];
+}
+
 export interface MovieDetails {
   id: number;
   imdbID?: string;
@@ -100,6 +117,7 @@ export interface MovieDetails {
   productionCountries?: string[];
   whereToWatch?: WhereToWatch;
   credits?: Credits;
+  collectionInfo?: CollectionInfo;
 }
 
 export interface Network {

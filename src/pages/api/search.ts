@@ -1,5 +1,5 @@
-import type { APIRoute } from 'astro';
 import { search } from '@lib/api';
+import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ url }) => {
   const query = url.searchParams.get('q') || '';
@@ -18,4 +18,3 @@ export const GET: APIRoute = async ({ url }) => {
     return Response.json({ results: [] }, { status: 500 });
   }
 };
-

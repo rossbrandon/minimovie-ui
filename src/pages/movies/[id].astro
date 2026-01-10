@@ -8,7 +8,12 @@ import {
   IconTrendingUp,
 } from '@components/icons';
 import { Header } from '@components/layout';
-import { CrewGrid, TopCast, WhereToWatch } from '@components/sections';
+import {
+  CollectionInfo,
+  CrewGrid,
+  TopCast,
+  WhereToWatch,
+} from '@components/sections';
 import {
   Accordion,
   AccordionCloseButton,
@@ -365,6 +370,23 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                 </AccordionTrigger>
                 <AccordionContent>
                   <WhereToWatch whereToWatch={movie.whereToWatch} />
+                </AccordionContent>
+              </AccordionItem>
+            )}
+
+            {/* Collection */}
+            {movie.collectionInfo && (
+              <AccordionItem
+                value="collection"
+                class="rounded-lg border border-border bg-card px-4 last:border-b"
+              >
+                <AccordionTrigger>
+                  <span class="text-lg font-medium">
+                    {movie.collectionInfo.name}
+                  </span>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <CollectionInfo collection={movie.collectionInfo} />
                 </AccordionContent>
               </AccordionItem>
             )}
