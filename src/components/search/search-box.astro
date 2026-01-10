@@ -47,7 +47,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
             </button>
           </div>
           <div
-            class={`absolute left-0 right-0 z-50 mt-2 rounded-lg border border-border bg-popover shadow-lg opacity-0 invisible transition-all duration-150 text-left ${dropdownMaxHeight}`}
+            class={`absolute top-full left-0 right-0 z-50 mt-2 rounded-lg border border-border bg-popover shadow-lg opacity-0 invisible transition-opacity duration-150 text-left ${dropdownMaxHeight}`}
             data-dropdown
           >
             <div class="overflow-y-auto max-h-[inherit] p-1" data-results />
@@ -102,7 +102,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
             </div>
           )}
           <div
-            class={`absolute left-0 right-0 z-50 mt-2 rounded-lg border border-border bg-popover shadow-lg opacity-0 invisible transition-all duration-150 ${dropdownMaxHeight}`}
+            class={`fixed left-4 right-4 top-14 z-50 sm:absolute sm:top-full sm:left-0 sm:right-auto sm:mt-2 sm:w-max sm:min-w-[320px] sm:max-w-[calc(100vw-2rem)] rounded-lg border border-border bg-popover shadow-lg opacity-0 invisible transition-opacity duration-150 ${dropdownMaxHeight}`}
             data-dropdown
           >
             <div class="overflow-y-auto max-h-[inherit] p-1" data-results />
@@ -246,37 +246,9 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
     let activeIndex = -1;
     let isOpen = false;
     let debounceTimer: number | null = null;
-    const isMobile = (): boolean => window.innerWidth < 640;
-
-    const positionDropdown = (): void => {
-      if (isMobile()) {
-        const inputRect = input.getBoundingClientRect();
-        const viewportHeight =
-          window.visualViewport?.height ?? window.innerHeight;
-        const viewportOffsetTop = window.visualViewport?.offsetTop ?? 0;
-
-        const dropdownTop = inputRect.bottom + 8;
-        const availableHeight =
-          viewportHeight + viewportOffsetTop - dropdownTop - 16;
-        const maxHeight = Math.max(120, Math.min(availableHeight, 320));
-
-        dropdown.style.position = 'fixed';
-        dropdown.style.top = `${dropdownTop}px`;
-        dropdown.style.left = '16px';
-        dropdown.style.right = '16px';
-        dropdown.style.maxHeight = `${maxHeight}px`;
-      } else {
-        dropdown.style.position = '';
-        dropdown.style.top = '';
-        dropdown.style.left = '';
-        dropdown.style.right = '';
-        dropdown.style.maxHeight = '';
-      }
-    };
 
     const openDropdown = (): void => {
       isOpen = true;
-      positionDropdown();
       dropdown.classList.remove('opacity-0', 'invisible');
       dropdown.classList.add('opacity-100', 'visible');
     };
@@ -421,20 +393,6 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
     document.addEventListener('click', (e) => {
       if (!container.contains(e.target as Node)) closeDropdown();
     });
-
-    window.addEventListener('resize', () => {
-      if (isOpen) positionDropdown();
-    });
-
-    // Handle mobile keyboard appearance via visualViewport API
-    if (window.visualViewport) {
-      window.visualViewport.addEventListener('resize', () => {
-        if (isOpen) positionDropdown();
-      });
-      window.visualViewport.addEventListener('scroll', () => {
-        if (isOpen) positionDropdown();
-      });
-    }
 
     // Keyboard shortcut setup
     const modifierKeyEl = container.querySelector('[data-modifier-key]');
