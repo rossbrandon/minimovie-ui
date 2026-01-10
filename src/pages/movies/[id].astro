@@ -216,6 +216,7 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                         <a
                           href={`/people/${director.id}`}
                           class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors"
+                          data-astro-prefetch
                         >
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                             {director.photoUrl ? (
@@ -250,6 +251,7 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                         <a
                           href={`/people/${producer.id}`}
                           class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors"
+                          data-astro-prefetch
                         >
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                             {producer.photoUrl ? (
@@ -284,6 +286,7 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                         <a
                           href={`/people/${writer.id}`}
                           class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors"
+                          data-astro-prefetch
                         >
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                             {writer.photoUrl ? (
@@ -316,6 +319,7 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
                         <a
                           href={`/people/${cinematographer.id}`}
                           class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors"
+                          data-astro-prefetch
                         >
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                             {cinematographer.photoUrl ? (

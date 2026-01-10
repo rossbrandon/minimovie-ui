@@ -18,6 +18,7 @@ interface Props {
   airDate?: string;
   voteAverage?: number;
   overview?: string;
+  prefetch?: boolean;
 }
 
 const {
@@ -30,6 +31,7 @@ const {
   airDate,
   voteAverage,
   overview,
+  prefetch = false,
 } = Astro.props;
 
 const href = `/series/${seriesId}/seasons/${seasonNumber}/episodes/${episodeNumber}`;
@@ -41,6 +43,7 @@ const resizedStillUrl = resizeImageUrl(stillUrl, 'w300');
 <a
   href={href}
   class="group flex gap-4 p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
+  data-astro-prefetch={prefetch ? '' : undefined}
 >
   <div class="shrink-0 w-40 aspect-video overflow-hidden rounded-lg bg-muted">
     {

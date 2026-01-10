@@ -10,6 +10,7 @@ interface Props {
   episodeCount?: number;
   airDate?: string;
   overview?: string;
+  prefetch?: boolean;
 }
 
 const {
@@ -20,6 +21,7 @@ const {
   episodeCount,
   airDate,
   overview,
+  prefetch = false,
 } = Astro.props;
 
 const href = `/series/${seriesId}/seasons/${seasonNumber}`;
@@ -30,6 +32,7 @@ const resizedPosterUrl = resizeImageUrl(posterUrl, 'w185');
 <a
   href={href}
   class="group flex gap-4 p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
+  data-astro-prefetch={prefetch ? '' : undefined}
 >
   <div class="shrink-0 w-20 aspect-2/3 overflow-hidden rounded-lg bg-muted">
     {

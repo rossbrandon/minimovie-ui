@@ -138,6 +138,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
 </search-box>
 
 <script>
+  import { prefetch } from 'astro:prefetch';
   import {
     escapeHtml,
     formatYear,
@@ -291,6 +292,11 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
             item.removeAttribute('data-active');
           }
         });
+
+      if (index >= 0 && results[index]) {
+        const config = MEDIA_CONFIG[results[index].mediaType];
+        prefetch(`${config.route}/${results[index].id}`);
+      }
     };
 
     const renderResults = (): void => {

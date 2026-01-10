@@ -34,7 +34,11 @@ const sortedParts = [...(collection.parts || [])].sort((a, b) => {
         const rating = formatRating(part.voteAverage);
 
         return (
-          <a href={`/movies/${part.id}`} class="group shrink-0 w-28 snap-start">
+          <a
+            href={`/movies/${part.id}`}
+            class="group shrink-0 w-28 snap-start"
+            data-astro-prefetch
+          >
             <div class="relative aspect-2/3 overflow-hidden rounded-lg bg-muted">
               {posterUrl ? (
                 <img
