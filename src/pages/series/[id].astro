@@ -43,7 +43,9 @@ try {
   error = 'Failed to load series details.';
 }
 
-const cast = series?.credits?.cast || [];
+// TODO: 250 is a placeholder limit due to Cloudflare free tier limits
+// We should have a "show all" button that will load the full cast.
+const cast = series?.credits?.cast?.slice(0, 250) || [];
 const seasons = series?.seasons?.filter((s) => s.seasonNumber > 0) || [];
 const rating = formatRating(series?.voteAverage);
 
