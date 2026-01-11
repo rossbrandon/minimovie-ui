@@ -21,15 +21,14 @@ function formatYearsAgo(dateString?: string): string | null {
 
   const date = new Date(dateString);
   const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
 
-  if (diffMs < 0) return null;
+  if (date > now) return null;
 
-  const diffYears = Math.floor(diffMs / (1000 * 60 * 60 * 24 * 365.25));
+  const yearDiff = now.getFullYear() - date.getFullYear();
 
-  if (diffYears === 0) return 'this year';
-  if (diffYears === 1) return '1 year ago';
-  return `${diffYears} years ago`;
+  if (yearDiff === 0) return 'this year';
+  if (yearDiff === 1) return 'last year';
+  return `${yearDiff} years ago`;
 }
 
 function formatRuntime(minutes?: number): string {
