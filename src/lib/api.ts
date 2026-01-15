@@ -12,6 +12,7 @@ import type {
 
 async function fetchAPI<T>(endpoint: string): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
+  const startTime = performance.now();
 
   logger.info('API request', { url });
 
@@ -20,6 +21,8 @@ async function fetchAPI<T>(endpoint: string): Promise<T> {
       Authorization: `Bearer ${API_TOKEN}`,
     },
   });
+
+  const durationMs = Math.round(performance.now() - startTime);
 
   const responseHeaders: Record<string, string> = {};
   response.headers.forEach((value, key) => {
@@ -31,6 +34,7 @@ async function fetchAPI<T>(endpoint: string): Promise<T> {
       url,
       status: response.status,
       statusText: response.statusText,
+      durationMs,
       headers: responseHeaders,
       body: (await response.text()) || '',
     });
@@ -42,6 +46,7 @@ async function fetchAPI<T>(endpoint: string): Promise<T> {
   logger.info('API response', {
     url,
     status: response.status,
+    durationMs,
     headers: responseHeaders,
     body: data,
   });
