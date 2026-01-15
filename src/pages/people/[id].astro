@@ -177,6 +177,7 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
                         movieCredits.includes(credit) ? 'movie' : 'series'
                       }
                       personBirthday={person.birthday}
+                      personDeathday={person.deathday}
                       personCurrentAge={person.currentAge}
                       prefetch={true}
                     />
@@ -208,6 +209,7 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
                         credit={credit}
                         mediaType="movie"
                         personBirthday={person.birthday}
+                        personDeathday={person.deathday}
                         personCurrentAge={person.currentAge}
                       />
                     ))}
@@ -234,6 +236,7 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
                         credit={credit}
                         mediaType="series"
                         personBirthday={person.birthday}
+                        personDeathday={person.deathday}
                         personCurrentAge={person.currentAge}
                       />
                     ))}

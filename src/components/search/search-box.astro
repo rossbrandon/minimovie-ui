@@ -141,6 +141,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
   // Disabled prefetching for now due to Cloudflare free tier limits
   // import { prefetch } from 'astro:prefetch';
   import {
+    calculateAgeAtDate,
     escapeHtml,
     formatYear,
     getInitials,
@@ -155,6 +156,8 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
     releaseDate?: string;
     knownFor?: string;
     age?: number;
+    birthday?: string;
+    deathday?: string;
   }
 
   const DEBOUNCE_MS = 300;
@@ -192,10 +195,14 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
       : `<span class="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">${initials}</span>`;
 
     const isPerson = result.mediaType === 'person';
+    const ageAtDeath =
+      isPerson && result.birthday && result.deathday
+        ? calculateAgeAtDate(result.birthday, result.deathday)
+        : null;
     const ageText =
-      isPerson && result.age !== undefined
-        ? result.age === -1
-          ? 'Deceased'
+      isPerson && (result.age !== undefined || ageAtDeath !== null)
+        ? ageAtDeath !== null
+          ? `Died at ${ageAtDeath}`
           : String(result.age)
         : null;
 
@@ -294,10 +301,11 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
           }
         });
 
-      if (index >= 0 && results[index]) {
-        const config = MEDIA_CONFIG[results[index].mediaType];
-        prefetch(`${config.route}/${results[index].id}`);
-      }
+      // Disabled prefetching for now due to Cloudflare free tier limits
+      // if (index >= 0 && results[index]) {
+      //   const config = MEDIA_CONFIG[results[index].mediaType];
+      //   prefetch(`${config.route}/${results[index].id}`);
+      // }
     };
 
     const renderResults = (): void => {

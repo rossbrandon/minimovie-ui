@@ -85,14 +85,15 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 function formatAgeDisplay(options: AgeDisplayOptions): string | null {
-  const { ageAtRelease, currentAge, deathday, ageRange } = options;
+  const { ageAtRelease, currentAge, birthday, deathday, ageRange } = options;
 
   if (ageRange) return ageRange;
 
   if (!ageAtRelease) return null;
 
-  if (deathday) {
-    return `${ageAtRelease} (deceased)`;
+  if (birthday && deathday) {
+    const ageAtDeath = calculateAgeAtDate(birthday, deathday);
+    return `${ageAtRelease} (died at ${ageAtDeath})`;
   }
 
   if (currentAge && currentAge !== ageAtRelease) {
@@ -125,12 +126,7 @@ function formatPersonAge(
   if (!birthday) return null;
 
   if (deathday) {
-    const birthDate = new Date(birthday);
-    const deathDate = new Date(deathday);
-    const ageAtDeath = Math.floor(
-      (deathDate.getTime() - birthDate.getTime()) /
-        (1000 * 60 * 60 * 24 * 365.25)
-    );
+    const ageAtDeath = calculateAgeAtDate(birthday, deathday);
     return `${formatDate(birthday)} – ${formatDate(deathday)} (died at ${ageAtDeath})`;
   }
 

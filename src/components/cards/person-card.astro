@@ -6,6 +6,7 @@ interface Props {
   name: string;
   photoUrl?: string;
   role?: string;
+  birthday?: string;
   deathday?: string;
   ageAtRelease?: number;
   currentAge?: number;
@@ -19,6 +20,7 @@ const {
   name,
   photoUrl,
   role,
+  birthday,
   deathday,
   ageAtRelease,
   currentAge,
@@ -32,6 +34,7 @@ const resizedPhotoUrl = resizeImageUrl(photoUrl, 'w185');
 const ageDisplay = formatAgeDisplay({
   ageAtRelease,
   currentAge,
+  birthday,
   deathday,
   ageRange,
 });

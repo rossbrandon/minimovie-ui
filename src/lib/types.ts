@@ -17,6 +17,7 @@ export enum LogLevel {
 export interface AgeDisplayOptions {
   ageAtRelease?: number;
   currentAge?: number;
+  birthday?: string;
   deathday?: string;
   ageRange?: string;
 }
@@ -30,6 +31,8 @@ export interface SearchResult {
   releaseDate?: string;
   knownFor?: string;
   age?: number;
+  birthday?: string;
+  deathday?: string;
 }
 
 export interface SearchResponse {

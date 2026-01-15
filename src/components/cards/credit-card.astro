@@ -2,6 +2,7 @@
 import type { FilmCredit } from '@lib/types';
 import {
   calculateAgeAtDate,
+  formatAgeDisplay,
   formatYear,
   getInitials,
   resizeImageUrl,
@@ -11,6 +12,7 @@ interface Props {
   credit: FilmCredit;
   mediaType: 'movie' | 'series';
   personBirthday?: string;
+  personDeathday?: string;
   personCurrentAge?: number;
   prefetch?: boolean;
 }
@@ -19,6 +21,7 @@ const {
   credit,
   mediaType,
   personBirthday,
+  personDeathday,
   personCurrentAge,
   prefetch = false,
 } = Astro.props;
@@ -34,12 +37,12 @@ const ageAtRelease =
     ? calculateAgeAtDate(personBirthday, credit.releaseDate)
     : null;
 
-const ageDisplay =
-  ageAtRelease !== null
-    ? personCurrentAge && personCurrentAge !== ageAtRelease
-      ? `${ageAtRelease} (now ${personCurrentAge})`
-      : `${ageAtRelease}`
-    : null;
+const ageDisplay = formatAgeDisplay({
+  ageAtRelease: ageAtRelease ?? undefined,
+  currentAge: personCurrentAge,
+  birthday: personBirthday,
+  deathday: personDeathday,
+});
 ---
 
 <a
