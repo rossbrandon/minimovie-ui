@@ -141,7 +141,6 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
   // Disabled prefetching for now due to Cloudflare free tier limits
   // import { prefetch } from 'astro:prefetch';
   import {
-    calculateAgeAtDate,
     escapeHtml,
     formatYear,
     getInitials,
@@ -156,8 +155,6 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
     releaseDate?: string;
     knownFor?: string;
     age?: number;
-    birthday?: string;
-    deathday?: string;
   }
 
   const DEBOUNCE_MS = 300;
@@ -195,14 +192,10 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
       : `<span class="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">${initials}</span>`;
 
     const isPerson = result.mediaType === 'person';
-    const ageAtDeath =
-      isPerson && result.birthday && result.deathday
-        ? calculateAgeAtDate(result.birthday, result.deathday)
-        : null;
     const ageText =
-      isPerson && (result.age !== undefined || ageAtDeath !== null)
-        ? ageAtDeath !== null
-          ? `Died at ${ageAtDeath}`
+      isPerson && result.age !== undefined
+        ? result.age === -1
+          ? 'Deceased'
           : String(result.age)
         : null;
 

@@ -31,8 +31,6 @@ export interface SearchResult {
   releaseDate?: string;
   knownFor?: string;
   age?: number;
-  birthday?: string;
-  deathday?: string;
 }
 
 export interface SearchResponse {
