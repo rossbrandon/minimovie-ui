@@ -9,7 +9,13 @@ import {
   IconVideo,
 } from '@components/icons';
 import { Header } from '@components/layout';
-import { CrewGrid, KeyCrew, TopCast, WhereToWatch } from '@components/sections';
+import {
+  AccordionSearch,
+  CrewGrid,
+  KeyCrew,
+  TopCast,
+  WhereToWatch,
+} from '@components/sections';
 import {
   Accordion,
   AccordionCloseButton,
@@ -284,6 +290,8 @@ const avgRuntime = series?.episodeRunTime?.[0];
                 </AccordionTrigger>
                 <AccordionContent>
                   <div class="space-y-6">
+                    <AccordionSearch />
+
                     {/* Full Cast */}
                     <div>
                       <h3 class="text-sm font-medium text-muted-foreground mb-3">

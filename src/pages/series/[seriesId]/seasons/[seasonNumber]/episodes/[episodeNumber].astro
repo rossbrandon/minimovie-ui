@@ -6,7 +6,7 @@ import {
   IconStar,
 } from '@components/icons';
 import { Breadcrumbs, Header } from '@components/layout';
-import { CrewGrid, KeyCrew, TopCast } from '@components/sections';
+import { AccordionSearch, CrewGrid, KeyCrew, TopCast } from '@components/sections';
 import {
   Accordion,
   AccordionContent,
@@ -193,8 +193,10 @@ const searchQuery = series?.name;
                   </span>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {guestStars.map((person) => (
+                  <div class="space-y-4">
+                    <AccordionSearch placeholder="Search guest stars..." />
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      {guestStars.map((person) => (
                       <a
                         href={`/people/${person.id}`}
                         class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
@@ -225,6 +227,7 @@ const searchQuery = series?.name;
                         </div>
                       </a>
                     ))}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -241,6 +244,8 @@ const searchQuery = series?.name;
                 </AccordionTrigger>
                 <AccordionContent>
                   <div class="space-y-6">
+                    <AccordionSearch />
+
                     {/* Full Cast */}
                     {cast.length > 0 && (
                       <div>

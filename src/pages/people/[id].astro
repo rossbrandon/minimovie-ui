@@ -9,6 +9,7 @@ import {
   IconUser,
 } from '@components/icons';
 import { Header } from '@components/layout';
+import { AccordionSearch } from '@components/sections';
 import {
   Accordion,
   AccordionContent,
@@ -203,16 +204,19 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
                   </span>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
-                    {sortedMovieCredits.map((credit) => (
-                      <CreditCard
-                        credit={credit}
-                        mediaType="movie"
-                        personBirthday={person.birthday}
-                        personDeathday={person.deathday}
-                        personCurrentAge={person.currentAge}
-                      />
-                    ))}
+                  <div class="space-y-4">
+                    <AccordionSearch placeholder="Search movies..." />
+                    <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                      {sortedMovieCredits.map((credit) => (
+                        <CreditCard
+                          credit={credit}
+                          mediaType="movie"
+                          personBirthday={person.birthday}
+                          personDeathday={person.deathday}
+                          personCurrentAge={person.currentAge}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>
@@ -230,16 +234,19 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
                   </span>
                 </AccordionTrigger>
                 <AccordionContent>
-                  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
-                    {sortedSeriesCredits.map((credit) => (
-                      <CreditCard
-                        credit={credit}
-                        mediaType="series"
-                        personBirthday={person.birthday}
-                        personDeathday={person.deathday}
-                        personCurrentAge={person.currentAge}
-                      />
-                    ))}
+                  <div class="space-y-4">
+                    <AccordionSearch placeholder="Search series..." />
+                    <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                      {sortedSeriesCredits.map((credit) => (
+                        <CreditCard
+                          credit={credit}
+                          mediaType="series"
+                          personBirthday={person.birthday}
+                          personDeathday={person.deathday}
+                          personCurrentAge={person.currentAge}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </AccordionContent>
               </AccordionItem>

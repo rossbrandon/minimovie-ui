@@ -1,3 +1,4 @@
+export { default as AccordionSearch } from './accordion-search.astro';
 export { default as CollectionInfo } from './collection-info.astro';
 export { default as CrewGrid } from './crew-grid.astro';
 export { default as KeyCrew } from './key-crew.astro';
