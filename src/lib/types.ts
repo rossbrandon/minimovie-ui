@@ -66,6 +66,14 @@ export interface Person {
   ageRange?: string;
 }
 
+export interface OverflowItem {
+  id: number;
+  name: string;
+  photoUrl?: string;
+  role?: string;
+  ageDisplay?: string;
+}
+
 export interface Credits {
   cast?: Person[];
   directors?: Person[];

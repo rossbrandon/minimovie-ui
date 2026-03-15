@@ -39,6 +39,8 @@ import {
 
 const { id } = Astro.params;
 
+const MAX_CAST = 250;
+
 let series: SeriesDetails | null = null;
 let error: string | null = null;
 
@@ -49,7 +51,16 @@ try {
   error = 'Failed to load series details.';
 }
 
-const cast = series?.credits?.cast || [];
+const allCast = series?.credits?.cast || [];
+const cast = allCast.slice(0, MAX_CAST);
+const castTruncated = allCast.length > MAX_CAST;
+const castOverflow = allCast.slice(MAX_CAST).map((p) => ({
+  id: p.id,
+  name: p.name,
+  photoUrl: p.photoUrl,
+  role: p.role,
+  ageDisplay: formatAgeDisplay(p) || undefined,
+}));
 const seasons = series?.seasons?.filter((s) => s.seasonNumber > 0) || [];
 const rating = formatRating(series?.voteAverage);
 
@@ -288,14 +299,14 @@ const avgRuntime = series?.episodeRunTime?.[0];
                 </AccordionTrigger>
                 <AccordionContent>
                   <div class="space-y-6">
-                    <AccordionSearch />
+                    <AccordionSearch overflowData={castOverflow} />
 
                     {/* Full Cast */}
                     <div>
                       <h3 class="text-sm font-medium text-muted-foreground mb-3">
-                        Cast ({cast.length})
+                        Cast ({allCast.length})
                       </h3>
-                      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                      <div class="accordion-search-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                         {cast.map((person) => (
                           <a
                             href={`/people/${person.id}`}
@@ -333,6 +344,12 @@ const avgRuntime = series?.episodeRunTime?.[0];
                           </a>
                         ))}
                       </div>
+                      {castTruncated && (
+                        <p class="accordion-search-overflow-note text-sm text-muted-foreground mt-3">
+                          Showing {MAX_CAST} of {allCast.length} cast members.
+                          Use search to find anyone.
+                        </p>
+                      )}
                     </div>
 
                     <CrewGrid

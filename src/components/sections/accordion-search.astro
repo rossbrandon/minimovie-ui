@@ -1,15 +1,24 @@
 ---
+import type { OverflowItem } from '@lib/types';
+
 import IconSearch from '@tabler/icons/outline/search.svg';
 import IconX from '@tabler/icons/outline/x.svg';
 
 interface Props {
   placeholder?: string;
+  overflowData?: OverflowItem[];
 }
 
-const { placeholder = 'Search by name or character...' } = Astro.props;
+const { placeholder = 'Search by name or character...', overflowData } =
+  Astro.props;
 ---
 
-<div class="accordion-search-wrapper relative p-1">
+<div
+  class="accordion-search-wrapper relative p-1"
+  data-overflow={overflowData && overflowData.length > 0
+    ? JSON.stringify(overflowData)
+    : undefined}
+>
   <IconSearch
     class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
   />
@@ -31,6 +40,62 @@ const { placeholder = 'Search by name or character...' } = Astro.props;
 </div>
 
 <script>
+  import type { OverflowItem } from '@lib/types';
+
+  function createPersonLink(item: OverflowItem): HTMLAnchorElement {
+    const a = document.createElement('a');
+    a.href = `/people/${item.id}`;
+    a.className =
+      'group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors';
+    a.dataset.dynamic = 'true';
+
+    const avatarDiv = document.createElement('div');
+    avatarDiv.className =
+      'h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted';
+
+    if (item.photoUrl) {
+      const img = document.createElement('img');
+      img.src = item.photoUrl;
+      img.alt = item.name;
+      img.className = 'h-full w-full object-cover';
+      img.loading = 'lazy';
+      avatarDiv.appendChild(img);
+    } else {
+      const fallback = document.createElement('div');
+      fallback.className =
+        'flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground';
+      fallback.textContent = item.name.charAt(0);
+      avatarDiv.appendChild(fallback);
+    }
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'min-w-0 flex-1';
+
+    const nameP = document.createElement('p');
+    nameP.className =
+      'font-medium text-sm truncate group-hover:text-amber-500 transition-colors';
+    nameP.textContent = item.name;
+    infoDiv.appendChild(nameP);
+
+    if (item.role) {
+      const roleP = document.createElement('p');
+      roleP.className = 'text-xs text-muted-foreground truncate';
+      roleP.textContent = item.role;
+      infoDiv.appendChild(roleP);
+    }
+
+    if (item.ageDisplay) {
+      const ageP = document.createElement('p');
+      ageP.className = 'text-xs text-muted-foreground/70';
+      ageP.textContent = item.ageDisplay;
+      infoDiv.appendChild(ageP);
+    }
+
+    a.appendChild(avatarDiv);
+    a.appendChild(infoDiv);
+    return a;
+  }
+
   const init = () => {
     document
       .querySelectorAll<HTMLInputElement>('.accordion-search-input')
@@ -49,6 +114,25 @@ const { placeholder = 'Search by name or character...' } = Astro.props;
           '.accordion-search-count'
         );
 
+        const overflowJson =
+          wrapper instanceof HTMLElement ? wrapper.dataset.overflow : undefined;
+        const overflowItems: (OverflowItem & { searchText: string })[] | null =
+          overflowJson
+            ? (JSON.parse(overflowJson) as OverflowItem[]).map((item) => ({
+                ...item,
+                searchText:
+                  `${item.name} ${item.role || ''} ${item.ageDisplay || ''}`.toLowerCase(),
+              }))
+            : null;
+        const targetGrid = overflowItems
+          ? container.querySelector<HTMLElement>('.accordion-search-grid')
+          : null;
+        const overflowNote = overflowItems
+          ? container.querySelector<HTMLElement>(
+              '.accordion-search-overflow-note'
+            )
+          : null;
+
         const filterContent = () => {
           const query = input.value.toLowerCase().trim();
           let totalVisible = 0;
@@ -57,6 +141,10 @@ const { placeholder = 'Search by name or character...' } = Astro.props;
             clearBtn.classList.toggle('hidden', !query);
             clearBtn.classList.toggle('flex', !!query);
           }
+
+          container
+            .querySelectorAll<HTMLElement>('[data-dynamic]')
+            .forEach((el) => el.remove());
 
           Array.from(container.children).forEach((child) => {
             if (!(child instanceof HTMLElement)) return;
@@ -67,7 +155,9 @@ const { placeholder = 'Search by name or character...' } = Astro.props;
             )
               return;
 
-            const links = child.querySelectorAll<HTMLAnchorElement>('a');
+            const links = child.querySelectorAll<HTMLAnchorElement>(
+              'a:not([data-dynamic])'
+            );
             if (links.length === 0) return;
 
             let sectionVisible = 0;
@@ -81,6 +171,25 @@ const { placeholder = 'Search by name or character...' } = Astro.props;
             child.style.display = sectionVisible > 0 ? '' : 'none';
             totalVisible += sectionVisible;
           });
+
+          if (overflowItems && query && targetGrid) {
+            const matches = overflowItems.filter((item) =>
+              item.searchText.includes(query)
+            );
+
+            for (const item of matches) {
+              targetGrid.appendChild(createPersonLink(item));
+            }
+            totalVisible += matches.length;
+
+            if (matches.length > 0 && targetGrid.parentElement) {
+              targetGrid.parentElement.style.display = '';
+            }
+          }
+
+          if (overflowNote) {
+            overflowNote.style.display = query ? 'none' : '';
+          }
 
           if (matchCount) {
             matchCount.classList.toggle('hidden', !query);
