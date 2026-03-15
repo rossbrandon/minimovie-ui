@@ -1,7 +1,7 @@
 import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 // @ts-check
-import { defineConfig, envField } from 'astro/config';
+import { defineConfig, envField, fontProviders } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
@@ -10,6 +10,25 @@ export default defineConfig({
   adapter: cloudflare(),
   vite: {
     plugins: [tailwindcss()],
+  },
+  fonts: [
+    {
+      provider: fontProviders.fontsource(),
+      name: 'Inter',
+      cssVariable: '--font-sans',
+      weights: [400, 500, 600, 700],
+      styles: ['normal'],
+      subsets: ['latin'],
+      fallbacks: ['sans-serif'],
+    },
+  ],
+  security: {
+    csp: {
+      directives: [
+        "default-src 'self'",
+        "img-src 'self' https://image.tmdb.org",
+      ],
+    },
   },
   env: {
     schema: {

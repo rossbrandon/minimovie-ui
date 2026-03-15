@@ -9,24 +9,25 @@ interface Props {
 const { placeholder = 'Search by name or character...' } = Astro.props;
 ---
 
-<div class="accordion-search-wrapper relative">
+<div class="accordion-search-wrapper relative p-1">
   <IconSearch
-    class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
+    class="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none"
   />
   <input
     type="text"
     placeholder={placeholder}
-    class="accordion-search-input w-full rounded-md border border-input bg-transparent pl-9 pr-9 py-2 text-sm placeholder:text-muted-foreground focus-visible:border-outline focus-visible:ring-outline/50 focus-visible:ring-3 transition-[color,box-shadow]"
+    class="accordion-search-input w-full rounded-md border border-input dark:bg-input/30 bg-transparent shadow-xs text-foreground pl-9 pr-9 py-2 text-base sm:text-sm placeholder:text-muted-foreground focus-visible:border-outline focus-visible:ring-outline/50 focus-visible:ring-3 transition-[color,box-shadow]"
   />
   <button
     type="button"
-    class="accordion-search-clear absolute right-2 top-1/2 -translate-y-1/2 h-5 w-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground transition-colors hidden"
+    class="accordion-search-clear absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground transition-colors hidden"
   >
     <IconX class="h-4 w-4" />
   </button>
 </div>
-<div class="accordion-search-no-results hidden text-center py-6 text-sm text-muted-foreground">
-  No results found
+<div
+  class="accordion-search-count hidden text-sm text-muted-foreground px-1 py-1.5"
+>
 </div>
 
 <script>
@@ -41,10 +42,11 @@ const { placeholder = 'Search by name or character...' } = Astro.props;
         const container = wrapper?.parentElement;
         if (!container) return;
 
-        const clearBtn =
-          wrapper?.querySelector<HTMLButtonElement>('.accordion-search-clear');
-        const noResults = container.querySelector(
-          '.accordion-search-no-results'
+        const clearBtn = wrapper?.querySelector<HTMLButtonElement>(
+          '.accordion-search-clear'
+        );
+        const matchCount = container.querySelector<HTMLElement>(
+          '.accordion-search-count'
         );
 
         const filterContent = () => {
@@ -60,7 +62,7 @@ const { placeholder = 'Search by name or character...' } = Astro.props;
             if (!(child instanceof HTMLElement)) return;
             if (
               child.classList.contains('accordion-search-wrapper') ||
-              child.classList.contains('accordion-search-no-results') ||
+              child.classList.contains('accordion-search-count') ||
               child.classList.contains('starwind-accordion-close-wrapper')
             )
               return;
@@ -80,8 +82,11 @@ const { placeholder = 'Search by name or character...' } = Astro.props;
             totalVisible += sectionVisible;
           });
 
-          if (noResults) {
-            noResults.classList.toggle('hidden', !query || totalVisible > 0);
+          if (matchCount) {
+            matchCount.classList.toggle('hidden', !query);
+            if (query) {
+              matchCount.textContent = `${totalVisible} match${totalVisible === 1 ? '' : 'es'} found.`;
+            }
           }
         };
 
