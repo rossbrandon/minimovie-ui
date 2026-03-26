@@ -43,7 +43,7 @@ async function fetchAPI<T>(endpoint: string): Promise<T> {
 
   const data = (await response.json()) as T;
 
-  logger.info('API response', {
+  logger.debug('API response', {
     url,
     status: response.status,
     durationMs,
