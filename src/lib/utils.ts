@@ -87,7 +87,7 @@ function truncateText(text: string, maxLength: number): string {
 function formatAgeDisplay(options: AgeDisplayOptions): string | null {
   const { ageAtRelease, currentAge, birthday, deathday, ageRange } = options;
 
-  if (ageRange) return ageRange;
+  if (ageRange) return `Ages ${ageRange}`;
 
   if (!ageAtRelease) return null;
 
@@ -100,7 +100,7 @@ function formatAgeDisplay(options: AgeDisplayOptions): string | null {
     return `${ageAtRelease} (now ${currentAge})`;
   }
 
-  return `${ageAtRelease}`;
+  return `Age ${ageAtRelease}`;
 }
 
 function formatEpisodeCode(

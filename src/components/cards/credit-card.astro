@@ -91,9 +91,12 @@ const ageDisplay = formatAgeDisplay({
       }
     </div>
     {
-      credit.role && (
-        <p class="text-xs text-muted-foreground line-clamp-1 italic">
-          {credit.type === 'cast' ? `as ${credit.role}` : credit.role}
+      (credit.role || credit.episodeCount) && (
+        <p class="text-xs text-muted-foreground italic">
+          {credit.role ? (credit.type === 'cast' ? `as ${credit.role}` : credit.role) : ''}
+        </p>
+        <p class="text-xs text-muted-foreground italic">
+          {credit.episodeCount ? `${credit.episodeCount} ep${credit.episodeCount !== 1 ? 's' : ''}` : ''}
         </p>
       )
     }

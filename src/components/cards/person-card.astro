@@ -31,8 +31,9 @@ const {
   prefetch = false,
 } = Astro.props;
 
-const eps = episodeCount ? `${episodeCount} ep${episodeCount !== 1 ? 's' : ''}` : '';
-const roleDisplay = [role, eps].filter(Boolean).join(' · ');
+const eps = episodeCount
+  ? `${episodeCount} ep${episodeCount !== 1 ? 's' : ''}`
+  : '';
 
 const initials = getInitials(name);
 const resizedPhotoUrl = resizeImageUrl(photoUrl, 'w185');
@@ -70,10 +71,13 @@ const ageDisplay = formatAgeDisplay({
         <p class="font-medium text-sm leading-tight line-clamp-2 group-hover:text-amber-500 transition-colors">
           {name}
         </p>
-        {roleDisplay && (
-          <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-            {roleDisplay}
+        {role && (
+          <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+            {role}
           </p>
+        )}
+        {eps && (
+          <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{eps}</p>
         )}
         {ageDisplay && (
           <p class="text-xs text-muted-foreground/70">{ageDisplay}</p>
@@ -98,10 +102,13 @@ const ageDisplay = formatAgeDisplay({
       </div>
       <div class="max-w-[100px]">
         <p class="font-medium text-sm leading-tight line-clamp-2">{name}</p>
-        {roleDisplay && (
-          <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-            {roleDisplay}
+        {role && (
+          <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">
+            {role}
           </p>
+        )}
+        {eps && (
+          <p class="text-xs text-muted-foreground line-clamp-2 mt-0.5">{eps}</p>
         )}
         {ageDisplay && (
           <p class="text-xs text-muted-foreground/70">{ageDisplay}</p>

@@ -186,6 +186,7 @@ export interface FilmCredit {
   order?: number;
   popularity?: number;
   voteAverage?: number;
+  episodeCount?: number;
 }
 
 export interface PersonDetails {
