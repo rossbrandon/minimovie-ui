@@ -1,22 +1,13 @@
----
-interface Props {
-  label?: string;
-}
-
-const { label = 'Return to Top' } = Astro.props;
----
-
-<div class="return-to-top-wrapper" data-label={label}></div>
-
 <script>
   import ChevronUpSvg from '@tabler/icons/outline/chevron-up.svg?raw';
 
-  const instances = new WeakSet<HTMLElement>();
+  let button: HTMLButtonElement | null = null;
+  let observer: IntersectionObserver | null = null;
 
-  const createButton = (label: string): HTMLButtonElement => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = [
+  const createButton = (): HTMLButtonElement => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = [
       'fixed bottom-4 left-1/2 -translate-x-1/2 z-50',
       'flex items-center justify-center gap-2',
       'px-4 py-2 rounded-full',
@@ -27,10 +18,15 @@ const { label = 'Return to Top' } = Astro.props;
       'transition-all duration-200',
       'opacity-0 pointer-events-none translate-y-4',
     ].join(' ');
-    button.innerHTML = `${ChevronUpSvg}<span>${label}</span>`;
-    const svg = button.querySelector('svg');
+    btn.innerHTML = `${ChevronUpSvg}<span>Return to Top</span>`;
+    const svg = btn.querySelector('svg');
     if (svg) svg.classList.add('size-4');
-    return button;
+    btn.addEventListener('click', () => {
+      hide(btn);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    document.body.appendChild(btn);
+    return btn;
   };
 
   const show = (btn: HTMLButtonElement) => {
@@ -44,38 +40,43 @@ const { label = 'Return to Top' } = Astro.props;
   };
 
   const setup = () => {
-    document
-      .querySelectorAll<HTMLElement>('.return-to-top-wrapper')
-      .forEach((wrapper) => {
-        if (instances.has(wrapper)) return;
-        instances.add(wrapper);
+    if (observer) observer.disconnect();
+    if (button) {
+      button.remove();
+      button = null;
+    }
 
-        const tabsEl = wrapper.closest<HTMLElement>('.starwind-tabs');
-        const tabsList = tabsEl?.querySelector<HTMLElement>('[data-tabs-list]');
-        if (!tabsList) return;
+    const tabsLists: HTMLElement[] = [];
+    document.querySelectorAll<HTMLElement>('.starwind-tabs').forEach((tabs) => {
+      if (tabs.closest('[data-tabs-content]')) return;
+      const list = tabs.querySelector<HTMLElement>('[data-tabs-list]');
+      if (list) tabsLists.push(list);
+    });
 
-        const label = wrapper.dataset.label || 'Return to Top';
-        const btn = createButton(label);
-        document.body.appendChild(btn);
+    if (tabsLists.length === 0) return;
 
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
-              const offScreen =
-                !entry.isIntersecting && entry.boundingClientRect.top < 0;
-              if (offScreen) show(btn);
-              else hide(btn);
-            });
-          },
-          { threshold: 0 }
-        );
+    const btn = createButton();
+    button = btn;
 
-        observer.observe(tabsList);
+    const offScreen = new Set<HTMLElement>();
 
-        btn.addEventListener('click', () => {
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+    observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const target = entry.target as HTMLElement;
+          if (!entry.isIntersecting && entry.boundingClientRect.top < 0) {
+            offScreen.add(target);
+          } else {
+            offScreen.delete(target);
+          }
         });
-      });
+        if (offScreen.size > 0) show(btn);
+        else hide(btn);
+      },
+      { threshold: 0 }
+    );
+
+    tabsLists.forEach((list) => observer!.observe(list));
   };
 
   setup();

@@ -93,7 +93,7 @@ function formatAgeDisplay(options: AgeDisplayOptions): string | null {
 
   if (birthday && deathday) {
     const ageAtDeath = calculateAgeAtDate(birthday, deathday);
-    return `${ageAtRelease} (died at ${ageAtDeath})`;
+    return `Age ${ageAtRelease} (died at ${ageAtDeath})`;
   }
 
   if (currentAge && currentAge !== ageAtRelease) {

@@ -1,6 +1,7 @@
 ---
 import { Font } from 'astro:assets';
 import { Footer } from '@components/layout';
+import { ReturnToTop } from '@components/sections';
 
 import '@styles/starwind.css';
 
@@ -37,6 +38,7 @@ const { title = 'MiniMovie', description = 'A minimalistic movie database' } =
   >
     <slot />
     <Footer />
+    <ReturnToTop />
   </body>
 </html>
 
