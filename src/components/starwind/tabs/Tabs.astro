@@ -53,7 +53,7 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
       this.tabs = tabs;
       this.parentHandler = parentHandler;
       this.triggers = Array.from(
-        tabs.querySelectorAll(':scope > [data-tabs-list] > [data-tabs-trigger]')
+        tabs.querySelectorAll(':scope > .starwind-tabs-list-anchor > [data-tabs-list] > [data-tabs-trigger]')
       );
       this.contents = Array.from(
         tabs.querySelectorAll(':scope > [data-tabs-content]')
@@ -234,6 +234,216 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
       }
     };
 
+    private swipeStartX = 0;
+    private swipeStartY = 0;
+    private swiping = false;
+    private directionLocked = false;
+    private peekPanel: HTMLElement | null = null;
+    private peekIndex = -1;
+
+    private getAdjacentIndex(direction: number): number {
+      for (let i = 1; i < this.triggers.length; i++) {
+        const idx =
+          (this.currentTabIndex + direction * i + this.triggers.length) %
+          this.triggers.length;
+        if (!this.triggers[idx].disabled) return idx;
+      }
+      return -1;
+    }
+
+    private handleTouchStart = (e: TouchEvent): void => {
+      this.swipeStartX = e.touches[0].clientX;
+      this.swipeStartY = e.touches[0].clientY;
+      this.swiping = false;
+      this.directionLocked = false;
+      this.peekPanel = null;
+      this.peekIndex = -1;
+    };
+
+    private handleTouchMove = (e: TouchEvent): void => {
+      const dx = e.touches[0].clientX - this.swipeStartX;
+      const dy = e.touches[0].clientY - this.swipeStartY;
+
+      if (!this.directionLocked) {
+        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        this.directionLocked = true;
+        if (Math.abs(dy) > Math.abs(dx)) return;
+        this.swiping = true;
+      }
+
+      if (!this.swiping) return;
+
+      const direction = dx < 0 ? 1 : -1;
+      const adjacentIdx = this.getAdjacentIndex(direction);
+
+      if (adjacentIdx === -1) {
+        this.cleanupPeek();
+        return;
+      }
+
+      const currentPanel = this.contents[this.currentTabIndex];
+      if (!currentPanel) return;
+
+      if (this.peekIndex !== adjacentIdx) {
+        this.cleanupPeek();
+        this.peekPanel = this.contents[adjacentIdx];
+        this.peekIndex = adjacentIdx;
+
+        if (this.peekPanel) {
+          const parent = currentPanel.parentElement!;
+          parent.style.position = 'relative';
+          parent.style.overflow = 'hidden';
+
+          const panelRect = currentPanel.getBoundingClientRect();
+          const parentRect = parent.getBoundingClientRect();
+          const exactTop = panelRect.top - parentRect.top;
+
+          this.peekPanel.style.position = 'absolute';
+          this.peekPanel.style.top = `${exactTop}px`;
+          this.peekPanel.style.marginTop = '0';
+          this.peekPanel.style.left = '0';
+          this.peekPanel.style.right = '0';
+          this.peekPanel.hidden = false;
+          this.peekPanel.style.willChange = 'transform';
+        }
+      }
+
+      const gap = 16;
+
+      currentPanel.style.willChange = 'transform';
+      currentPanel.style.transform = `translateX(${dx}px)`;
+
+      if (this.peekPanel) {
+        const w = currentPanel.offsetWidth;
+        const offset = direction < 0 ? -(w + gap) + dx : w + gap + dx;
+        this.peekPanel.style.transform = `translateX(${offset}px)`;
+      }
+    };
+
+    private handleTouchEnd = (e: TouchEvent): void => {
+      if (!this.swiping) {
+        this.cleanupPeek();
+        return;
+      }
+
+      const dx = e.changedTouches[0].clientX - this.swipeStartX;
+      const currentPanel = this.contents[this.currentTabIndex];
+      const threshold = (currentPanel?.offsetWidth ?? 300) * 0.25;
+      const commit = Math.abs(dx) > threshold && this.peekPanel;
+
+      if (commit && this.peekPanel && currentPanel) {
+        const w = currentPanel.offsetWidth;
+        const gap = 16;
+        const direction = dx < 0 ? 1 : -1;
+        const dur = '200ms';
+
+        currentPanel.style.transition = `transform ${dur} ease-out`;
+        currentPanel.style.transform = `translateX(${-direction * (w + gap)}px)`;
+
+        this.peekPanel.style.transition = `transform ${dur} ease-out`;
+        this.peekPanel.style.transform = 'translateX(0)';
+
+        const peekPanel = this.peekPanel;
+        const peekIdx = this.peekIndex;
+
+        const onEnd = () => {
+          currentPanel.removeEventListener('transitionend', onEnd);
+          this.resetStyles(currentPanel);
+          this.resetStyles(peekPanel);
+          if (currentPanel.parentElement) {
+            currentPanel.parentElement.style.position = '';
+            currentPanel.parentElement.style.overflow = '';
+          }
+
+          const value = this.triggers[peekIdx]?.getAttribute('data-value');
+          if (value) {
+            this.showTab(value);
+            this.currentTabIndex = peekIdx;
+            this.setTabIndex();
+            this.dispatchSyncEvent(value);
+          }
+
+          this.peekPanel = null;
+          this.peekIndex = -1;
+        };
+
+        currentPanel.addEventListener('transitionend', onEnd, { once: true });
+        setTimeout(onEnd, 250);
+      } else {
+        this.snapBack(currentPanel);
+      }
+
+      this.swiping = false;
+      this.directionLocked = false;
+    };
+
+    private snapBack(currentPanel: HTMLElement | undefined): void {
+      if (currentPanel) {
+        currentPanel.style.transition = 'transform 200ms ease-out';
+        currentPanel.style.transform = '';
+
+        currentPanel.addEventListener(
+          'transitionend',
+          () => this.resetStyles(currentPanel),
+          { once: true }
+        );
+      }
+
+      if (this.peekPanel) {
+        const w = currentPanel?.offsetWidth ?? 300;
+        const gap = 16;
+        const direction = this.peekIndex > this.currentTabIndex ? 1 : -1;
+        this.peekPanel.style.transition = 'transform 200ms ease-out';
+        this.peekPanel.style.transform = `translateX(${direction * (w + gap)}px)`;
+
+        const peek = this.peekPanel;
+        peek.addEventListener(
+          'transitionend',
+          () => {
+            this.resetStyles(peek);
+            peek.hidden = true;
+            if (currentPanel?.parentElement) {
+              currentPanel.parentElement.style.position = '';
+              currentPanel.parentElement.style.overflow = '';
+            }
+          },
+          { once: true }
+        );
+      }
+
+      this.peekPanel = null;
+      this.peekIndex = -1;
+    }
+
+    private resetStyles(el: HTMLElement): void {
+      el.style.transform = '';
+      el.style.transition = '';
+      el.style.willChange = '';
+      el.style.position = '';
+      el.style.top = '';
+      el.style.marginTop = '';
+      el.style.left = '';
+      el.style.right = '';
+    }
+
+    private cleanupPeek(): void {
+      if (this.peekPanel) {
+        this.resetStyles(this.peekPanel);
+        this.peekPanel.hidden = true;
+        this.peekPanel = null;
+        this.peekIndex = -1;
+      }
+
+      const currentPanel = this.contents[this.currentTabIndex];
+      if (currentPanel) {
+        this.resetStyles(currentPanel);
+        if (currentPanel.parentElement) {
+          currentPanel.parentElement.style.position = '';
+          currentPanel.parentElement.style.overflow = '';
+        }
+      }
+    }
+
     private addEventListeners(): void {
       this.triggers.forEach((trigger, index) => {
         trigger.addEventListener('click', () =>
@@ -241,6 +451,14 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
         );
         trigger.addEventListener('keydown', (e) => this.handleKeyNavigation(e));
       });
+
+      this.tabs.addEventListener('touchstart', this.handleTouchStart, {
+        passive: true,
+      });
+      this.tabs.addEventListener('touchmove', this.handleTouchMove, {
+        passive: true,
+      });
+      this.tabs.addEventListener('touchend', this.handleTouchEnd);
     }
 
     private showTab(value: TabValue, isInit = false): void {

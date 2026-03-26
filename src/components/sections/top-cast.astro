@@ -14,7 +14,7 @@ const topCast = cast.slice(0, limit);
 
 {
   topCast.length > 0 && (
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4 pt-1">
       {topCast.map((person) => (
         <PersonCard
           id={person.id}
