@@ -485,9 +485,8 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
         c.hidden = !isActive;
       });
 
-      trigger.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-
       if (!isInit) {
+        trigger.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
         const url = new URL(window.location.href);
         url.searchParams.set('tab', value);
         history.replaceState(null, '', url.toString());

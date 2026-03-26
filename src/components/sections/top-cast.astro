@@ -7,7 +7,7 @@ interface Props {
   limit?: number;
 }
 
-const { cast, limit = 10 } = Astro.props;
+const { cast, limit = 12 } = Astro.props;
 
 const topCast = cast.slice(0, limit);
 ---
