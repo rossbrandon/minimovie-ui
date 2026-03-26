@@ -20,7 +20,7 @@ const { title, people } = Astro.props;
             href={`/people/${person.id}`}
             class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors"
           >
-            <div class="h-8 w-8 shrink-0 overflow-hidden rounded-lg bg-muted">
+            <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
               {person.photoUrl ? (
                 <img
                   src={person.photoUrl}

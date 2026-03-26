@@ -14,40 +14,21 @@ const topCast = cast.slice(0, limit);
 
 {
   topCast.length > 0 && (
-    <section class="space-y-4">
-      <h2 class="text-xl font-semibold">Top Cast</h2>
-      <div class="flex gap-6 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
-        {topCast.map((person) => (
-          <PersonCard
-            id={person.id}
-            name={person.name}
-            photoUrl={person.photoUrl}
-            role={person.role}
-            birthday={person.birthday}
-            deathday={person.deathday}
-            ageAtRelease={person.ageAtRelease}
-            currentAge={person.currentAge}
-            ageRange={person.ageRange}
-            prefetch={true}
-          />
-        ))}
-      </div>
-    </section>
+    <div class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4">
+      {topCast.map((person) => (
+        <PersonCard
+          id={person.id}
+          name={person.name}
+          photoUrl={person.photoUrl}
+          role={person.role}
+          birthday={person.birthday}
+          deathday={person.deathday}
+          ageAtRelease={person.ageAtRelease}
+          currentAge={person.currentAge}
+          ageRange={person.ageRange}
+          prefetch={true}
+        />
+      ))}
+    </div>
   )
 }
-
-<style>
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
-  .scrollbar-thin::-webkit-scrollbar {
-    height: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: var(--color-muted);
-    border-radius: 3px;
-  }
-</style>

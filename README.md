@@ -4,15 +4,15 @@ Server-rendered frontend for _MiniMovie_ built with Astro and deployed to Cloudf
 
 ## Tech Stack
 
-| Category | Technology |
-| --- | --- |
-| Framework | [Astro](https://astro.build/) 5.x (SSR) |
-| Language | TypeScript |
-| Styling | [Tailwind CSS](https://tailwindcss.com/) v4 |
-| Components | [Starwind UI](https://starwind.dev/) |
-| Icons | [Tabler Icons](https://tabler.io/icons) |
-| Font | [Inter](https://rsms.me/inter/) |
-| Deployment | [Cloudflare](https://www.cloudflare.com/) |
+| Category   | Technology                                  |
+| ---------- | ------------------------------------------- |
+| Framework  | [Astro](https://astro.build/) 5.x (SSR)     |
+| Language   | TypeScript                                  |
+| Styling    | [Tailwind CSS](https://tailwindcss.com/) v4 |
+| Components | [Starwind UI](https://starwind.dev/)        |
+| Icons      | [Tabler Icons](https://tabler.io/icons)     |
+| Font       | [Inter](https://rsms.me/inter/)             |
+| Deployment | [Cloudflare](https://www.cloudflare.com/)   |
 
 ## Installation
 
@@ -32,11 +32,11 @@ API_BASE_URL=http://localhost:8080
 API_TOKEN=your_api_token_here
 ```
 
-| Variable | Default | Required | Description |
-| --- | --- | --- | --- |
-| `LOG_LEVEL` | `INFO` | No | Server-side log level |
-| `API_BASE_URL` | `https://api.minimovie.info` | No | MiniMovie API base URL |
-| `API_TOKEN` | — | Yes | Bearer token for API authentication |
+| Variable       | Default                      | Required | Description                         |
+| -------------- | ---------------------------- | -------- | ----------------------------------- |
+| `LOG_LEVEL`    | `INFO`                       | No       | Server-side log level               |
+| `API_BASE_URL` | `https://api.minimovie.info` | No       | MiniMovie API base URL              |
+| `API_TOKEN`    | —                            | Yes      | Bearer token for API authentication |
 
 ### Run the Application
 
@@ -126,14 +126,14 @@ minimovie-ui/
 
 ## Pages
 
-| Route | Page | Description |
-| --- | --- | --- |
-| `/` | Home | Hero search box |
-| `/search?q=` | Search Results | Multi-search with pagination |
-| `/movies/:id` | Movie Details | Cast, crew, watch providers, collection info |
-| `/series/:id` | Series Details | Cast, crew, seasons list, watch providers |
-| `/series/:id/seasons/:num/:ep` | Episode Details | Episode cast and crew |
-| `/people/:id` | Person Details | Combined movie and series credits |
+| Route                          | Page            | Description                                  |
+| ------------------------------ | --------------- | -------------------------------------------- |
+| `/`                            | Home            | Hero search box                              |
+| `/search?q=`                   | Search Results  | Multi-search with pagination                 |
+| `/movies/:id`                  | Movie Details   | Cast, crew, watch providers, collection info |
+| `/series/:id`                  | Series Details  | Cast, crew, seasons list, watch providers    |
+| `/series/:id/seasons/:num/:ep` | Episode Details | Episode cast and crew                        |
+| `/people/:id`                  | Person Details  | Combined movie and series credits            |
 
 ## API Integration
 

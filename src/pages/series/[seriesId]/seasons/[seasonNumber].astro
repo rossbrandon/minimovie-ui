@@ -4,33 +4,30 @@ import {
   IconAlertCircle,
   IconCalendar,
   IconStar,
+  IconUsers,
   IconVideo,
 } from '@components/icons';
 import { Breadcrumbs, Header } from '@components/layout';
 import {
-  AccordionSearch,
-  CrewGrid,
+  FullCastCrew,
   KeyCrew,
   TopCast,
   WhereToWatch,
 } from '@components/sections';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@components/starwind/accordion';
 import { Button } from '@components/starwind/button';
-import { Separator } from '@components/starwind/separator';
+
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getSeason, getSeries } from '@lib/api';
 import type { SeasonDetails, SeriesDetails } from '@lib/types';
-import {
-  formatAgeDisplay,
-  formatDate,
-  formatRating,
-  formatYearsAgo,
-} from '@lib/utils';
+import { formatDate, formatRating, formatYearsAgo } from '@lib/utils';
+
+import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
 
 const { seriesId, seasonNumber } = Astro.params;
 
@@ -68,6 +65,19 @@ const breadcrumbItems =
     : [];
 
 const searchQuery = series?.name;
+
+const tabValues = [
+  cast.length > 0 && 'top-cast',
+  episodes.length > 0 && 'episodes',
+  cast.length > 0 && 'full-cast',
+  season?.whereToWatch && 'where-to-watch',
+].filter(Boolean) as string[];
+
+const requestedTab = Astro.url.searchParams.get('tab');
+const defaultTab =
+  requestedTab && tabValues.includes(requestedTab)
+    ? requestedTab
+    : tabValues[0];
 ---
 
 <Layout
@@ -164,141 +174,71 @@ const searchQuery = series?.name;
             </div>
           </div>
 
-          <TopCast cast={cast} />
-
-          <Separator />
-
-          {/* Accordion Sections */}
-          <Accordion type="multiple" defaultValue="episodes" class="space-y-2">
-            {/* Episodes */}
-            {episodes.length > 0 && (
-              <AccordionItem
-                value="episodes"
-                class="rounded-lg border border-border bg-card px-4 last:border-b"
-              >
-                <AccordionTrigger>
-                  <span class="text-lg font-medium">
-                    Episodes ({episodes.length})
+          <Tabs defaultValue={defaultTab}>
+            <TabsList>
+              {cast.length > 0 && (
+                <TabsTrigger value="top-cast">
+                  <IconUsers class="size-4" /> Top Cast
+                </TabsTrigger>
+              )}
+              {episodes.length > 0 && (
+                <TabsTrigger value="episodes">
+                  <IconVideo class="size-4" /> Episodes
+                  <span class="text-xs text-muted-foreground">
+                    {episodes.length}
                   </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div class="grid grid-cols-1 gap-3">
-                    {episodes.map((episode) => (
-                      <EpisodeCard
-                        seriesId={Number(seriesId)}
-                        seasonNumber={episode.seasonNumber}
-                        episodeNumber={episode.episodeNumber}
-                        name={episode.name}
-                        stillUrl={episode.stillUrl}
-                        runtime={episode.runtime}
-                        airDate={episode.airDate}
-                        voteAverage={episode.voteAverage}
-                        overview={episode.overview}
-                      />
-                    ))}
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
+                </TabsTrigger>
+              )}
+              {cast.length > 0 && (
+                <TabsTrigger value="full-cast">
+                  <IconUsers class="size-4" /> Cast & Crew
+                </TabsTrigger>
+              )}
+              {season.whereToWatch && (
+                <TabsTrigger value="where-to-watch">
+                  <IconPlayerPlay class="size-4" /> Where to Watch
+                </TabsTrigger>
+              )}
+            </TabsList>
 
-            {/* Where to Watch */}
-            {season.whereToWatch && (
-              <AccordionItem
-                value="where-to-watch"
-                class="rounded-lg border border-border bg-card px-4 last:border-b"
-              >
-                <AccordionTrigger>
-                  <span class="text-lg font-medium">Where to Watch</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <WhereToWatch whereToWatch={season.whereToWatch} />
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            {/* Full Cast & Crew */}
             {cast.length > 0 && (
-              <AccordionItem
-                value="full-cast"
-                class="rounded-lg border border-border bg-card px-4 last:border-b"
-              >
-                <AccordionTrigger>
-                  <span class="text-lg font-medium">Full Cast & Crew</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div class="space-y-6">
-                    <AccordionSearch />
-
-                    {/* Full Cast */}
-                    <div>
-                      <h3 class="text-sm font-medium text-muted-foreground mb-3">
-                        Cast ({cast.length})
-                      </h3>
-                      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {cast.map((person) => (
-                          <a
-                            href={`/people/${person.id}`}
-                            class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                          >
-                            <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              {person.photoUrl ? (
-                                <img
-                                  src={person.photoUrl}
-                                  alt={person.name}
-                                  class="h-full w-full object-cover"
-                                  loading="lazy"
-                                />
-                              ) : (
-                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
-                                  {person.name.charAt(0)}
-                                </div>
-                              )}
-                            </div>
-                            <div class="min-w-0 flex-1">
-                              <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">
-                                {person.name}
-                              </p>
-                              {person.role && (
-                                <p class="text-xs text-muted-foreground truncate">
-                                  {person.role}
-                                </p>
-                              )}
-                              {formatAgeDisplay(person) && (
-                                <p class="text-xs text-muted-foreground/70">
-                                  {formatAgeDisplay(person)}
-                                </p>
-                              )}
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-
-                    <CrewGrid
-                      title="Directors"
-                      people={season.credits?.directors || []}
-                    />
-                    <CrewGrid
-                      title="Writers"
-                      people={season.credits?.writers || []}
-                    />
-                    <CrewGrid
-                      title="Producers"
-                      people={season.credits?.producers || []}
-                    />
-                    <CrewGrid
-                      title="Cinematographers"
-                      people={season.credits?.cinematographers || []}
-                    />
-                    <CrewGrid
-                      title="Editors"
-                      people={season.credits?.editors || []}
-                    />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+              <TabsContent value="top-cast">
+                <TopCast cast={cast} />
+              </TabsContent>
             )}
-          </Accordion>
+
+            {episodes.length > 0 && (
+              <TabsContent value="episodes">
+                <div class="grid grid-cols-1 gap-3">
+                  {episodes.map((episode) => (
+                    <EpisodeCard
+                      seriesId={Number(seriesId)}
+                      seasonNumber={episode.seasonNumber}
+                      episodeNumber={episode.episodeNumber}
+                      name={episode.name}
+                      stillUrl={episode.stillUrl}
+                      runtime={episode.runtime}
+                      airDate={episode.airDate}
+                      voteAverage={episode.voteAverage}
+                      overview={episode.overview}
+                    />
+                  ))}
+                </div>
+              </TabsContent>
+            )}
+
+            {cast.length > 0 && (
+              <TabsContent value="full-cast">
+                <FullCastCrew cast={cast} credits={season.credits} />
+              </TabsContent>
+            )}
+
+            {season.whereToWatch && (
+              <TabsContent value="where-to-watch">
+                <WhereToWatch whereToWatch={season.whereToWatch} />
+              </TabsContent>
+            )}
+          </Tabs>
         </div>
       )
     }

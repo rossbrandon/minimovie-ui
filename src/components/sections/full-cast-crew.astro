@@ -1,0 +1,96 @@
+---
+import type { Credits, OverflowItem, Person } from '@lib/types';
+import { formatAgeDisplay } from '@lib/utils';
+
+import CrewGrid from './crew-grid.astro';
+import ReturnToTop from './return-to-top.astro';
+import SectionSearch from './section-search.astro';
+
+interface Props {
+  cast: Person[];
+  credits?: Credits;
+  overflowData?: OverflowItem[];
+  totalCastCount?: number;
+}
+
+const { cast, credits, overflowData, totalCastCount } = Astro.props;
+
+const showOverflowNote =
+  totalCastCount !== undefined && totalCastCount > cast.length;
+
+const crewSections = [
+  { title: 'Directors', people: credits?.directors },
+  { title: 'Writers', people: credits?.writers },
+  { title: 'Producers', people: credits?.producers },
+  { title: 'Composers', people: credits?.composers },
+  { title: 'Cinematographers', people: credits?.cinematographers },
+  { title: 'Editors', people: credits?.editors },
+];
+---
+
+<div class="space-y-6">
+  <SectionSearch overflowData={overflowData} />
+
+  {
+    cast.length > 0 && (
+      <div>
+        <h3 class="text-sm font-medium text-muted-foreground mb-3">
+          Cast ({totalCastCount ?? cast.length})
+        </h3>
+        <div class="section-search-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {cast.map((person) => (
+            <a
+              href={`/people/${person.id}`}
+              class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+            >
+              <div class="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
+                {person.photoUrl ? (
+                  <img
+                    src={person.photoUrl}
+                    alt={person.name}
+                    class="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                    {person.name.charAt(0)}
+                  </div>
+                )}
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">
+                  {person.name}
+                </p>
+                {person.role && (
+                  <p class="text-xs text-muted-foreground truncate">
+                    {person.role}
+                  </p>
+                )}
+                {formatAgeDisplay(person) && (
+                  <p class="text-xs text-muted-foreground/70">
+                    {formatAgeDisplay(person)}
+                  </p>
+                )}
+              </div>
+            </a>
+          ))}
+        </div>
+        {showOverflowNote && (
+          <p class="section-search-overflow-note text-sm text-muted-foreground mt-3">
+            Showing {cast.length} of {totalCastCount} cast members. Use search
+            to find anyone.
+          </p>
+        )}
+      </div>
+    )
+  }
+
+  {
+    crewSections.map(
+      ({ title, people }) =>
+        people && <CrewGrid title={title} people={people} />
+    )
+  }
+
+  <ReturnToTop />
+</div>

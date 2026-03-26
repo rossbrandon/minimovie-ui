@@ -14,7 +14,7 @@ const { placeholder = 'Search by name or character...', overflowData } =
 ---
 
 <div
-  class="accordion-search-wrapper relative p-1"
+  class="section-search-wrapper relative p-1"
   data-overflow={overflowData && overflowData.length > 0
     ? JSON.stringify(overflowData)
     : undefined}
@@ -25,17 +25,17 @@ const { placeholder = 'Search by name or character...', overflowData } =
   <input
     type="text"
     placeholder={placeholder}
-    class="accordion-search-input w-full rounded-md border border-input dark:bg-input/30 bg-transparent shadow-xs text-foreground pl-9 pr-9 py-2 text-base sm:text-sm placeholder:text-muted-foreground focus-visible:border-outline focus-visible:ring-outline/50 focus-visible:ring-3 transition-[color,box-shadow]"
+    class="section-search-input w-full rounded-md border border-input dark:bg-input/30 bg-transparent shadow-xs text-foreground pl-9 pr-9 py-2 text-base sm:text-sm placeholder:text-muted-foreground focus-visible:border-outline focus-visible:ring-outline/50 focus-visible:ring-3 transition-[color,box-shadow]"
   />
   <button
     type="button"
-    class="accordion-search-clear absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground transition-colors hidden"
+    class="section-search-clear absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 items-center justify-center rounded-sm text-muted-foreground hover:text-foreground transition-colors hidden"
   >
     <IconX class="h-4 w-4" />
   </button>
 </div>
 <div
-  class="accordion-search-count hidden text-sm text-muted-foreground px-1 py-1.5"
+  class="section-search-count hidden text-sm text-muted-foreground px-1 py-1.5"
 >
 </div>
 
@@ -98,20 +98,20 @@ const { placeholder = 'Search by name or character...', overflowData } =
 
   const init = () => {
     document
-      .querySelectorAll<HTMLInputElement>('.accordion-search-input')
+      .querySelectorAll<HTMLInputElement>('.section-search-input')
       .forEach((input) => {
         if (input.dataset.initialized) return;
         input.dataset.initialized = 'true';
 
-        const wrapper = input.closest('.accordion-search-wrapper');
+        const wrapper = input.closest('.section-search-wrapper');
         const container = wrapper?.parentElement;
         if (!container) return;
 
         const clearBtn = wrapper?.querySelector<HTMLButtonElement>(
-          '.accordion-search-clear'
+          '.section-search-clear'
         );
         const matchCount = container.querySelector<HTMLElement>(
-          '.accordion-search-count'
+          '.section-search-count'
         );
 
         const overflowJson =
@@ -125,11 +125,11 @@ const { placeholder = 'Search by name or character...', overflowData } =
               }))
             : null;
         const targetGrid = overflowItems
-          ? container.querySelector<HTMLElement>('.accordion-search-grid')
+          ? container.querySelector<HTMLElement>('.section-search-grid')
           : null;
         const overflowNote = overflowItems
           ? container.querySelector<HTMLElement>(
-              '.accordion-search-overflow-note'
+              '.section-search-overflow-note'
             )
           : null;
 
@@ -149,9 +149,9 @@ const { placeholder = 'Search by name or character...', overflowData } =
           Array.from(container.children).forEach((child) => {
             if (!(child instanceof HTMLElement)) return;
             if (
-              child.classList.contains('accordion-search-wrapper') ||
-              child.classList.contains('accordion-search-count') ||
-              child.classList.contains('starwind-accordion-close-wrapper')
+              child.classList.contains('section-search-wrapper') ||
+              child.classList.contains('section-search-count') ||
+              child.classList.contains('return-to-top-wrapper')
             )
               return;
 

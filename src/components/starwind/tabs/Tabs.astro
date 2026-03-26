@@ -88,13 +88,17 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
     }
 
     private initializeTab(): void {
-      const value = this.syncKey
-        ? (localStorage.getItem(this.storageKey) ??
-          this.tabs.dataset.defaultValue)
-        : this.tabs.dataset.defaultValue;
+      const urlTab = new URLSearchParams(window.location.search).get('tab');
+      const value =
+        urlTab && this.valueToTriggerMap.has(urlTab)
+          ? urlTab
+          : this.syncKey
+            ? (localStorage.getItem(this.storageKey) ??
+              this.tabs.dataset.defaultValue)
+            : this.tabs.dataset.defaultValue;
 
       if (value) {
-        this.showTab(value);
+        this.showTab(value, true);
         this.currentTabIndex = this.triggers.findIndex(
           (trigger) => trigger.getAttribute('data-value') === value
         );
@@ -239,13 +243,12 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
       });
     }
 
-    private showTab(value: TabValue): void {
+    private showTab(value: TabValue, isInit = false): void {
       const trigger = this.valueToTriggerMap.get(value);
       const content = this.valueToContentMap.get(value);
 
       if (!trigger || !content) return;
 
-      // Update all triggers and contents
       this.triggers.forEach((t) => {
         const isActive = t === trigger;
         t.setAttribute('data-state', isActive ? 'active' : 'inactive');
@@ -258,7 +261,12 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
         c.hidden = !isActive;
       });
 
-      // Initialize any nested tabs in the active content
+      if (!isInit) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', value);
+        history.replaceState(null, '', url.toString());
+      }
+
       if (
         content.hasAttribute('data-state') &&
         content.getAttribute('data-state') === 'active'
@@ -267,7 +275,6 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
           content.querySelectorAll<HTMLElement>('.starwind-tabs');
 
         nestedTabs.forEach((nestedTab, nestedIdx) => {
-          // Skip tabs that already have instances
           if (!tabInstances.has(nestedTab)) {
             const uniqueIdx = 1000 + nestedIdx;
             const handler = new TabsHandler(nestedTab, uniqueIdx, this);

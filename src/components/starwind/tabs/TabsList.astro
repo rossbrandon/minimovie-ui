@@ -5,7 +5,7 @@ import { tv } from 'tailwind-variants';
 type Props = Omit<HTMLAttributes<'div'>, 'role'>;
 
 export const tabsList = tv({
-  base: 'bg-muted text-muted-foreground inline-flex w-fit items-center justify-center rounded-md p-1',
+  base: 'starwind-tabs-list text-muted-foreground relative inline-flex w-full items-center gap-1 border-b border-border overflow-x-auto',
 });
 
 const { class: className, ...rest } = Astro.props;
@@ -20,3 +20,49 @@ const { class: className, ...rest } = Astro.props;
 >
   <slot />
 </div>
+
+<script>
+  const setupScrollIndicators = () => {
+    document
+      .querySelectorAll<HTMLElement>('.starwind-tabs-list')
+      .forEach((list) => {
+        if (list.dataset.scrollInit) return;
+        list.dataset.scrollInit = 'true';
+
+        list.style.scrollbarWidth = 'none';
+
+        const update = () => {
+          const canScroll = list.scrollWidth > list.clientWidth;
+          const atEnd =
+            list.scrollLeft + list.clientWidth >= list.scrollWidth - 1;
+          list.classList.toggle('has-overflow', canScroll && !atEnd);
+        };
+
+        list.addEventListener('scroll', update, { passive: true });
+        new ResizeObserver(update).observe(list);
+        update();
+      });
+  };
+
+  setupScrollIndicators();
+  document.addEventListener('astro:after-swap', setupScrollIndicators);
+</script>
+
+<style>
+  .starwind-tabs-list.has-overflow::after {
+    content: '';
+    position: sticky;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    min-width: 2rem;
+    min-height: 100%;
+    pointer-events: none;
+    background: linear-gradient(
+      to right,
+      transparent,
+      var(--color-background)
+    );
+    margin-left: -2rem;
+  }
+</style>

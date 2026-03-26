@@ -4,20 +4,21 @@ import {
   IconAlertCircle,
   IconCake,
   IconDeviceTv,
+  IconInfoCircle,
   IconMapPin,
   IconMovie,
+  IconStar,
   IconUser,
 } from '@components/icons';
 import { Header } from '@components/layout';
-import { AccordionSearch } from '@components/sections';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@components/starwind/accordion';
+import { SectionSearch } from '@components/sections';
 import { Button } from '@components/starwind/button';
-import { Separator } from '@components/starwind/separator';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getPerson } from '@lib/api';
 import type { FilmCredit, PersonDetails } from '@lib/types';
@@ -59,13 +60,26 @@ const sortedSeriesCredits = [...seriesCredits].sort(sortByDate);
 
 const knownFor = [...movieCredits, ...seriesCredits]
   .sort(sortByOrder)
-  .slice(0, 8);
+  .slice(0, 16);
 
 const ageInfo = person
   ? formatPersonAge(person.birthday, person.deathday, person.currentAge)
   : null;
 
 const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
+
+const tabValues = [
+  knownFor.length > 0 && 'known-for',
+  sortedMovieCredits.length > 0 && 'movies',
+  sortedSeriesCredits.length > 0 && 'series',
+  'more-info',
+].filter(Boolean) as string[];
+
+const requestedTab = Astro.url.searchParams.get('tab');
+const defaultTab =
+  requestedTab && tabValues.includes(requestedTab)
+    ? requestedTab
+    : tabValues[0];
 ---
 
 <Layout title={person ? `${person.name} - MiniMovie` : 'Person - MiniMovie'}>
@@ -165,13 +179,38 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
             </div>
           </div>
 
-          {/* Known For */}
-          {knownFor.length > 0 && (
-            <section class="space-y-4">
-              <h2 class="text-xl font-semibold">Known For</h2>
-              <div class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin">
-                {knownFor.map((credit) => (
-                  <div class="shrink-0 w-36">
+          <Tabs defaultValue={defaultTab}>
+            <TabsList>
+              {knownFor.length > 0 && (
+                <TabsTrigger value="known-for">
+                  <IconStar class="size-4" /> Known For
+                </TabsTrigger>
+              )}
+              {sortedMovieCredits.length > 0 && (
+                <TabsTrigger value="movies">
+                  <IconMovie class="size-4" /> Movies
+                  <span class="text-xs text-muted-foreground">
+                    {sortedMovieCredits.length}
+                  </span>
+                </TabsTrigger>
+              )}
+              {sortedSeriesCredits.length > 0 && (
+                <TabsTrigger value="series">
+                  <IconDeviceTv class="size-4" /> TV Series
+                  <span class="text-xs text-muted-foreground">
+                    {sortedSeriesCredits.length}
+                  </span>
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="more-info">
+                <IconInfoCircle class="size-4" /> More Info
+              </TabsTrigger>
+            </TabsList>
+
+            {knownFor.length > 0 && (
+              <TabsContent value="known-for">
+                <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                  {knownFor.map((credit) => (
                     <CreditCard
                       credit={credit}
                       mediaType={
@@ -182,127 +221,75 @@ const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
                       personCurrentAge={person.currentAge}
                       prefetch={true}
                     />
-                  </div>
-                ))}
-              </div>
-            </section>
-          )}
-
-          <Separator />
-
-          {/* Accordion Sections */}
-          <Accordion type="multiple" class="space-y-2">
-            {/* Full Filmography - Movies */}
-            {sortedMovieCredits.length > 0 && (
-              <AccordionItem
-                value="movies"
-                class="rounded-lg border border-border bg-card px-4 last:border-b"
-              >
-                <AccordionTrigger>
-                  <span class="text-lg font-medium">
-                    Movies ({sortedMovieCredits.length})
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div class="space-y-4">
-                    <AccordionSearch placeholder="Search movies..." />
-                    <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
-                      {sortedMovieCredits.map((credit) => (
-                        <CreditCard
-                          credit={credit}
-                          mediaType="movie"
-                          personBirthday={person.birthday}
-                          personDeathday={person.deathday}
-                          personCurrentAge={person.currentAge}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            {/* Full Filmography - TV Series */}
-            {sortedSeriesCredits.length > 0 && (
-              <AccordionItem
-                value="series"
-                class="rounded-lg border border-border bg-card px-4 last:border-b"
-              >
-                <AccordionTrigger>
-                  <span class="text-lg font-medium">
-                    TV Series ({sortedSeriesCredits.length})
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div class="space-y-4">
-                    <AccordionSearch placeholder="Search series..." />
-                    <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
-                      {sortedSeriesCredits.map((credit) => (
-                        <CreditCard
-                          credit={credit}
-                          mediaType="series"
-                          personBirthday={person.birthday}
-                          personDeathday={person.deathday}
-                          personCurrentAge={person.currentAge}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            {/* More Info */}
-            <AccordionItem
-              value="more-info"
-              class="rounded-lg border border-border bg-card px-4 last:border-b"
-            >
-              <AccordionTrigger>
-                <span class="text-lg font-medium">More Info</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  {person.alsoKnownAs && person.alsoKnownAs.length > 0 && (
-                    <div class="md:col-span-2">
-                      <p class="text-muted-foreground">Also Known As</p>
-                      <p class="font-medium">{person.alsoKnownAs.join(', ')}</p>
-                    </div>
-                  )}
-                  {person.imdbId && (
-                    <div>
-                      <p class="text-muted-foreground">IMDB</p>
-                      <a
-                        href={`https://www.imdb.com/name/${person.imdbId}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="font-medium text-primary hover:underline"
-                      >
-                        {person.imdbId}
-                      </a>
-                    </div>
-                  )}
+                  ))}
                 </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+              </TabsContent>
+            )}
+
+            {sortedMovieCredits.length > 0 && (
+              <TabsContent value="movies">
+                <div class="space-y-4">
+                  <SectionSearch placeholder="Search movies..." />
+                  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                    {sortedMovieCredits.map((credit) => (
+                      <CreditCard
+                        credit={credit}
+                        mediaType="movie"
+                        personBirthday={person.birthday}
+                        personDeathday={person.deathday}
+                        personCurrentAge={person.currentAge}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+            )}
+
+            {sortedSeriesCredits.length > 0 && (
+              <TabsContent value="series">
+                <div class="space-y-4">
+                  <SectionSearch placeholder="Search series..." />
+                  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                    {sortedSeriesCredits.map((credit) => (
+                      <CreditCard
+                        credit={credit}
+                        mediaType="series"
+                        personBirthday={person.birthday}
+                        personDeathday={person.deathday}
+                        personCurrentAge={person.currentAge}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+            )}
+
+            <TabsContent value="more-info">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                {person.alsoKnownAs && person.alsoKnownAs.length > 0 && (
+                  <div class="md:col-span-2">
+                    <p class="text-muted-foreground">Also Known As</p>
+                    <p class="font-medium">{person.alsoKnownAs.join(', ')}</p>
+                  </div>
+                )}
+                {person.imdbId && (
+                  <div>
+                    <p class="text-muted-foreground">IMDB</p>
+                    <a
+                      href={`https://www.imdb.com/name/${person.imdbId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="font-medium text-primary hover:underline"
+                    >
+                      {person.imdbId}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )
     }
   </main>
 </Layout>
-
-<style>
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
-  .scrollbar-thin::-webkit-scrollbar {
-    height: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: var(--color-muted);
-    border-radius: 3px;
-  }
-</style>

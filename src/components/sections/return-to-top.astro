@@ -1,0 +1,83 @@
+---
+interface Props {
+  label?: string;
+}
+
+const { label = 'Return to Top' } = Astro.props;
+---
+
+<div class="return-to-top-wrapper" data-label={label}></div>
+
+<script>
+  import ChevronUpSvg from '@tabler/icons/outline/chevron-up.svg?raw';
+
+  const instances = new WeakSet<HTMLElement>();
+
+  const createButton = (label: string): HTMLButtonElement => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = [
+      'fixed bottom-4 left-1/2 -translate-x-1/2 z-50',
+      'flex items-center justify-center gap-2',
+      'px-4 py-2 rounded-full',
+      'text-sm font-medium',
+      'bg-card/95 backdrop-blur-sm',
+      'border border-border shadow-lg',
+      'text-muted-foreground hover:text-foreground',
+      'transition-all duration-200',
+      'opacity-0 pointer-events-none translate-y-4',
+    ].join(' ');
+    button.innerHTML = `${ChevronUpSvg}<span>${label}</span>`;
+    const svg = button.querySelector('svg');
+    if (svg) svg.classList.add('size-4');
+    return button;
+  };
+
+  const show = (btn: HTMLButtonElement) => {
+    btn.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-4');
+    btn.classList.add('opacity-100', 'pointer-events-auto', 'translate-y-0');
+  };
+
+  const hide = (btn: HTMLButtonElement) => {
+    btn.classList.remove('opacity-100', 'pointer-events-auto', 'translate-y-0');
+    btn.classList.add('opacity-0', 'pointer-events-none', 'translate-y-4');
+  };
+
+  const setup = () => {
+    document
+      .querySelectorAll<HTMLElement>('.return-to-top-wrapper')
+      .forEach((wrapper) => {
+        if (instances.has(wrapper)) return;
+        instances.add(wrapper);
+
+        const tabsEl = wrapper.closest<HTMLElement>('.starwind-tabs');
+        const tabsList = tabsEl?.querySelector<HTMLElement>('[data-tabs-list]');
+        if (!tabsList) return;
+
+        const label = wrapper.dataset.label || 'Return to Top';
+        const btn = createButton(label);
+        document.body.appendChild(btn);
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              const offScreen =
+                !entry.isIntersecting && entry.boundingClientRect.top < 0;
+              if (offScreen) show(btn);
+              else hide(btn);
+            });
+          },
+          { threshold: 0 }
+        );
+
+        observer.observe(tabsList);
+
+        btn.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      });
+  };
+
+  setup();
+  document.addEventListener('astro:after-swap', setup);
+</script>

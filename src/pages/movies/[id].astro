@@ -3,28 +3,28 @@ import {
   IconAlertCircle,
   IconCalendar,
   IconClock,
+  IconInfoCircle,
+  IconLibrary,
   IconStar,
   IconTrendingDown,
   IconTrendingUp,
+  IconUsers,
 } from '@components/icons';
 import { Header } from '@components/layout';
 import {
-  AccordionSearch,
   CollectionInfo,
-  CrewGrid,
+  FullCastCrew,
   TopCast,
   WhereToWatch,
 } from '@components/sections';
-import {
-  Accordion,
-  AccordionCloseButton,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@components/starwind/accordion';
 import { Badge } from '@components/starwind/badge';
 import { Button } from '@components/starwind/button';
-import { Separator } from '@components/starwind/separator';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getMovie } from '@lib/api';
 import type { MovieDetails } from '@lib/types';
@@ -37,6 +37,8 @@ import {
   formatRuntime,
   formatYearsAgo,
 } from '@lib/utils';
+
+import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
 
 const { id } = Astro.params;
 
@@ -59,6 +61,20 @@ const director = movie?.credits?.directors?.[0];
 const writer = movie?.credits?.writers?.[0];
 const producer = movie?.credits?.producers?.[0];
 const cinematographer = movie?.credits?.cinematographers?.[0];
+
+const tabValues = [
+  cast.length > 0 && 'top-cast',
+  movie?.collectionInfo && 'collection',
+  cast.length > 0 && 'full-cast',
+  movie?.whereToWatch && 'where-to-watch',
+  'more-info',
+].filter(Boolean) as string[];
+
+const requestedTab = Astro.url.searchParams.get('tab');
+const defaultTab =
+  requestedTab && tabValues.includes(requestedTab)
+    ? requestedTab
+    : tabValues[0];
 ---
 
 <Layout title={movie ? `${movie.title} - MiniMovie` : 'Movie - MiniMovie'}>
@@ -358,206 +374,115 @@ const cinematographer = movie?.credits?.cinematographers?.[0];
             </div>
           </div>
 
-          <TopCast cast={cast} />
+          <Tabs defaultValue={defaultTab}>
+            <TabsList>
+              {cast.length > 0 && (
+                <TabsTrigger value="top-cast">
+                  <IconUsers class="size-4" /> Top Cast
+                </TabsTrigger>
+              )}
+              {movie.collectionInfo && (
+                <TabsTrigger value="collection">
+                  <IconLibrary class="size-4" /> Collection
+                </TabsTrigger>
+              )}
+              {cast.length > 0 && (
+                <TabsTrigger value="full-cast">
+                  <IconUsers class="size-4" /> Cast & Crew
+                </TabsTrigger>
+              )}
+              {movie.whereToWatch && (
+                <TabsTrigger value="where-to-watch">
+                  <IconPlayerPlay class="size-4" /> Where to Watch
+                </TabsTrigger>
+              )}
+              <TabsTrigger value="more-info">
+                <IconInfoCircle class="size-4" /> More Info
+              </TabsTrigger>
+            </TabsList>
 
-          <Separator />
-
-          {/* Accordion Sections */}
-          <Accordion type="multiple" class="space-y-2">
-            {/* Where to Watch */}
-            {movie.whereToWatch && (
-              <AccordionItem
-                value="where-to-watch"
-                class="rounded-lg border border-border bg-card px-4 last:border-b"
-              >
-                <AccordionTrigger>
-                  <span class="text-lg font-medium">Where to Watch</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <WhereToWatch whereToWatch={movie.whereToWatch} />
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            {/* Collection */}
-            {movie.collectionInfo && (
-              <AccordionItem
-                value="collection"
-                class="rounded-lg border border-border bg-card px-4 last:border-b"
-              >
-                <AccordionTrigger>
-                  <span class="text-lg font-medium">
-                    {movie.collectionInfo.name}
-                  </span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <CollectionInfo collection={movie.collectionInfo} />
-                </AccordionContent>
-              </AccordionItem>
-            )}
-
-            {/* Full Cast & Crew */}
             {cast.length > 0 && (
-              <AccordionItem
-                value="full-cast"
-                class="rounded-lg border border-border bg-card px-4 last:border-b"
-              >
-                <AccordionTrigger>
-                  <span class="text-lg font-medium">Full Cast & Crew</span>
-                </AccordionTrigger>
-                <AccordionContent>
-                  <div class="space-y-6">
-                    <AccordionSearch />
-
-                    {/* Full Cast */}
-                    <div>
-                      <h3 class="text-sm font-medium text-muted-foreground mb-3">
-                        Cast ({cast.length})
-                      </h3>
-                      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                        {cast.map((person) => (
-                          <a
-                            href={`/people/${person.id}`}
-                            class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                          >
-                            <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                              {person.photoUrl ? (
-                                <img
-                                  src={person.photoUrl}
-                                  alt={person.name}
-                                  class="h-full w-full object-cover"
-                                  loading="lazy"
-                                />
-                              ) : (
-                                <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
-                                  {person.name.charAt(0)}
-                                </div>
-                              )}
-                            </div>
-                            <div class="min-w-0 flex-1">
-                              <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">
-                                {person.name}
-                              </p>
-                              {person.role && (
-                                <p class="text-xs text-muted-foreground truncate">
-                                  {person.role}
-                                </p>
-                              )}
-                              {formatAgeDisplay(person) && (
-                                <p class="text-xs text-muted-foreground/70">
-                                  {formatAgeDisplay(person)}
-                                </p>
-                              )}
-                            </div>
-                          </a>
-                        ))}
-                      </div>
-                    </div>
-
-                    <CrewGrid
-                      title="Directors"
-                      people={movie.credits?.directors || []}
-                    />
-                    <CrewGrid
-                      title="Writers"
-                      people={movie.credits?.writers || []}
-                    />
-                    <CrewGrid
-                      title="Producers"
-                      people={movie.credits?.producers || []}
-                    />
-                    <CrewGrid
-                      title="Composers"
-                      people={movie.credits?.composers || []}
-                    />
-                    <CrewGrid
-                      title="Editors"
-                      people={movie.credits?.editors || []}
-                    />
-                    <CrewGrid
-                      title="Cinematographers"
-                      people={movie.credits?.cinematographers || []}
-                    />
-
-                    <AccordionCloseButton label="Close Cast & Crew" />
-                  </div>
-                </AccordionContent>
-              </AccordionItem>
+              <TabsContent value="top-cast">
+                <TopCast cast={cast} />
+              </TabsContent>
             )}
 
-            {/* More Info */}
-            <AccordionItem
-              value="more-info"
-              class="rounded-lg border border-border bg-card px-4 last:border-b"
-            >
-              <AccordionTrigger>
-                <span class="text-lg font-medium">More Info</span>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  {movie.originalTitle &&
-                    movie.originalTitle !== movie.title && (
-                      <div>
-                        <p class="text-muted-foreground">Original Title</p>
-                        <p class="font-medium">{movie.originalTitle}</p>
-                      </div>
-                    )}
-                  {movie.originalLanguage && (
+            {movie.collectionInfo && (
+              <TabsContent value="collection">
+                <CollectionInfo collection={movie.collectionInfo} />
+              </TabsContent>
+            )}
+
+            {cast.length > 0 && (
+              <TabsContent value="full-cast">
+                <FullCastCrew cast={cast} credits={movie.credits} />
+              </TabsContent>
+            )}
+
+            {movie.whereToWatch && (
+              <TabsContent value="where-to-watch">
+                <WhereToWatch whereToWatch={movie.whereToWatch} />
+              </TabsContent>
+            )}
+
+            <TabsContent value="more-info">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                {movie.originalTitle && movie.originalTitle !== movie.title && (
+                  <div>
+                    <p class="text-muted-foreground">Original Title</p>
+                    <p class="font-medium">{movie.originalTitle}</p>
+                  </div>
+                )}
+                {movie.originalLanguage && (
+                  <div>
+                    <p class="text-muted-foreground">Original Language</p>
+                    <p class="font-medium uppercase">
+                      {movie.originalLanguage}
+                    </p>
+                  </div>
+                )}
+                {movie.spokenLanguages && movie.spokenLanguages.length > 0 && (
+                  <div>
+                    <p class="text-muted-foreground">Spoken Languages</p>
+                    <p class="font-medium">
+                      {movie.spokenLanguages.join(', ')}
+                    </p>
+                  </div>
+                )}
+                {movie.productionCountries &&
+                  movie.productionCountries.length > 0 && (
                     <div>
-                      <p class="text-muted-foreground">Original Language</p>
-                      <p class="font-medium uppercase">
-                        {movie.originalLanguage}
+                      <p class="text-muted-foreground">Production Countries</p>
+                      <p class="font-medium">
+                        {movie.productionCountries.join(', ')}
                       </p>
                     </div>
                   )}
-                  {movie.spokenLanguages &&
-                    movie.spokenLanguages.length > 0 && (
-                      <div>
-                        <p class="text-muted-foreground">Spoken Languages</p>
-                        <p class="font-medium">
-                          {movie.spokenLanguages.join(', ')}
-                        </p>
-                      </div>
-                    )}
-                  {movie.productionCountries &&
-                    movie.productionCountries.length > 0 && (
-                      <div>
-                        <p class="text-muted-foreground">
-                          Production Countries
-                        </p>
-                        <p class="font-medium">
-                          {movie.productionCountries.join(', ')}
-                        </p>
-                      </div>
-                    )}
-                  {movie.productionCompanies &&
-                    movie.productionCompanies.length > 0 && (
-                      <div class="md:col-span-2">
-                        <p class="text-muted-foreground">
-                          Production Companies
-                        </p>
-                        <p class="font-medium">
-                          {movie.productionCompanies.join(', ')}
-                        </p>
-                      </div>
-                    )}
-                  {movie.imdbID && (
-                    <div>
-                      <p class="text-muted-foreground">IMDB</p>
-                      <a
-                        href={`https://www.imdb.com/title/${movie.imdbID}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="font-medium text-primary hover:underline"
-                      >
-                        {movie.imdbID}
-                      </a>
+                {movie.productionCompanies &&
+                  movie.productionCompanies.length > 0 && (
+                    <div class="md:col-span-2">
+                      <p class="text-muted-foreground">Production Companies</p>
+                      <p class="font-medium">
+                        {movie.productionCompanies.join(', ')}
+                      </p>
                     </div>
                   )}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
+                {movie.imdbID && (
+                  <div>
+                    <p class="text-muted-foreground">IMDB</p>
+                    <a
+                      href={`https://www.imdb.com/title/${movie.imdbID}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      class="font-medium text-primary hover:underline"
+                    >
+                      {movie.imdbID}
+                    </a>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
         </div>
       )
     }
