@@ -2,6 +2,14 @@ import { LOG_LEVEL } from 'astro:env/server';
 
 import { type Logger, LogLevel } from './types';
 
+/**
+ * Parse the log level from the environment variable.
+ * Available levels: DEBUG, INFO, WARN, ERROR
+ * Defaults to INFO.
+ *
+ * @param level - The log level to parse.
+ * @returns The parsed log level.
+ */
 function parseLogLevel(level: string): LogLevel {
   const levels: Record<string, LogLevel> = {
     DEBUG: LogLevel.DEBUG,
