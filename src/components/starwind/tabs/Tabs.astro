@@ -238,20 +238,22 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
     private swipeStartY = 0;
     private swiping = false;
     private directionLocked = false;
+    private swipeIgnored = false;
     private peekPanel: HTMLElement | null = null;
     private peekIndex = -1;
 
     private getAdjacentIndex(direction: number): number {
       for (let i = 1; i < this.triggers.length; i++) {
-        const idx =
-          (this.currentTabIndex + direction * i + this.triggers.length) %
-          this.triggers.length;
+        const idx = this.currentTabIndex + direction * i;
+        if (idx < 0 || idx >= this.triggers.length) return -1;
         if (!this.triggers[idx].disabled) return idx;
       }
       return -1;
     }
 
     private handleTouchStart = (e: TouchEvent): void => {
+      const target = e.target as HTMLElement;
+      this.swipeIgnored = !!target.closest('[data-tabs-list]');
       this.swipeStartX = e.touches[0].clientX;
       this.swipeStartY = e.touches[0].clientY;
       this.swiping = false;
@@ -261,6 +263,8 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
     };
 
     private handleTouchMove = (e: TouchEvent): void => {
+      if (this.swipeIgnored) return;
+
       const dx = e.touches[0].clientX - this.swipeStartX;
       const dy = e.touches[0].clientY - this.swipeStartY;
 
@@ -272,6 +276,8 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
       }
 
       if (!this.swiping) return;
+
+      e.preventDefault();
 
       const direction = dx < 0 ? 1 : -1;
       const adjacentIdx = this.getAdjacentIndex(direction);
@@ -456,7 +462,7 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
         passive: true,
       });
       this.tabs.addEventListener('touchmove', this.handleTouchMove, {
-        passive: true,
+        passive: false,
       });
       this.tabs.addEventListener('touchend', this.handleTouchEnd);
     }
@@ -478,6 +484,8 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
         c.setAttribute('data-state', isActive ? 'active' : 'inactive');
         c.hidden = !isActive;
       });
+
+      trigger.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
 
       if (!isInit) {
         const url = new URL(window.location.href);

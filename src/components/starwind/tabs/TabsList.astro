@@ -5,7 +5,7 @@ import { tv } from 'tailwind-variants';
 type Props = Omit<HTMLAttributes<'div'>, 'role'>;
 
 export const tabsList = tv({
-  base: 'starwind-tabs-list text-muted-foreground flex w-full items-center gap-1 border-b border-border overflow-x-auto overflow-y-hidden',
+  base: 'starwind-tabs-list text-muted-foreground flex w-full items-center gap-1 border-b border-border overflow-x-auto overflow-y-hidden scroll-px-8',
 });
 
 const { class: className, ...rest } = Astro.props;
@@ -36,16 +36,24 @@ const { class: className, ...rest } = Astro.props;
         const anchor = list.closest('.starwind-tabs-list-anchor');
         if (!anchor) return;
 
-        const hint = document.createElement('div');
-        hint.className = 'starwind-tabs-scroll-hint';
-        hint.setAttribute('aria-hidden', 'true');
-        anchor.appendChild(hint);
+        const hintRight = document.createElement('div');
+        hintRight.className = 'starwind-tabs-scroll-hint starwind-tabs-scroll-hint--end';
+        hintRight.setAttribute('aria-hidden', 'true');
+        anchor.appendChild(hintRight);
+
+        const hintLeft = document.createElement('div');
+        hintLeft.className = 'starwind-tabs-scroll-hint starwind-tabs-scroll-hint--start';
+        hintLeft.setAttribute('aria-hidden', 'true');
+        anchor.appendChild(hintLeft);
 
         const update = () => {
           const canScroll = list.scrollWidth > list.clientWidth;
           const atEnd =
             list.scrollLeft + list.clientWidth >= list.scrollWidth - 1;
-          hint.classList.toggle('visible', canScroll && !atEnd);
+          const atStart = list.scrollLeft <= 1;
+
+          hintRight.classList.toggle('visible', canScroll && !atEnd);
+          hintLeft.classList.toggle('visible', canScroll && !atStart);
         };
 
         list.addEventListener('scroll', update, { passive: true });
@@ -65,19 +73,31 @@ const { class: className, ...rest } = Astro.props;
 
   .starwind-tabs-scroll-hint {
     position: absolute;
-    right: 0;
     top: 0;
     bottom: 0;
-    width: 3rem;
+    width: 2rem;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 1;
+  }
+
+  .starwind-tabs-scroll-hint--end {
+    right: 0;
     background: linear-gradient(
       to right,
       transparent,
       var(--color-background) 80%
     );
-    opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 1;
+  }
+
+  .starwind-tabs-scroll-hint--start {
+    left: 0;
+    background: linear-gradient(
+      to left,
+      transparent,
+      var(--color-background) 80%
+    );
   }
 
   .starwind-tabs-scroll-hint.visible {
