@@ -97,7 +97,7 @@ function formatAgeDisplay(options: AgeDisplayOptions): string | null {
   }
 
   if (currentAge && currentAge !== ageAtRelease) {
-    return `${ageAtRelease} (now ${currentAge})`;
+    return `Age ${ageAtRelease} (now ${currentAge})`;
   }
 
   return `Age ${ageAtRelease}`;
