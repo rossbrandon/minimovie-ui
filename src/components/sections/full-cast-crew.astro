@@ -61,9 +61,9 @@ const crewSections = [
                 <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">
                   {person.name}
                 </p>
-                {person.role && (
+                {(person.role || person.episodeCount) && (
                   <p class="text-xs text-muted-foreground truncate">
-                    {person.role}
+                    {[person.role, person.episodeCount ? `${person.episodeCount} ep${person.episodeCount !== 1 ? 's' : ''}` : ''].filter(Boolean).join(' · ')}
                   </p>
                 )}
                 {formatAgeDisplay(person) && (

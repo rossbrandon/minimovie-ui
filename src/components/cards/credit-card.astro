@@ -1,8 +1,10 @@
 ---
+import { IconStar } from '@components/icons';
 import type { FilmCredit } from '@lib/types';
 import {
   calculateAgeAtDate,
   formatAgeDisplay,
+  formatRating,
   formatYear,
   getInitials,
   resizeImageUrl,
@@ -11,6 +13,7 @@ import {
 interface Props {
   credit: FilmCredit;
   mediaType: 'movie' | 'series';
+  voteAverage?: number;
   personBirthday?: string;
   personDeathday?: string;
   personCurrentAge?: number;
@@ -20,11 +23,14 @@ interface Props {
 const {
   credit,
   mediaType,
+  voteAverage,
   personBirthday,
   personDeathday,
   personCurrentAge,
   prefetch = false,
 } = Astro.props;
+
+const rating = formatRating(voteAverage);
 
 const href =
   mediaType === 'movie' ? `/movies/${credit.id}` : `/series/${credit.id}`;
@@ -75,6 +81,14 @@ const ageDisplay = formatAgeDisplay({
     </h3>
     <div class="flex items-center gap-2 text-xs text-muted-foreground">
       {year && <span>{year}</span>}
+      {
+        rating && (
+          <span class="flex items-center gap-0.5 text-amber-500/80">
+            <IconStar class="h-3 w-3" />
+            {voteAverage?.toFixed(1)}
+          </span>
+        )
+      }
     </div>
     {
       credit.role && (

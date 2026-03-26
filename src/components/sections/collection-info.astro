@@ -1,7 +1,6 @@
 ---
-import { IconStar } from '@components/icons';
+import { CreditCard } from '@components/cards';
 import type { CollectionInfo } from '@lib/types';
-import { formatRating, formatYear, resizeImageUrl } from '@lib/utils';
 
 interface Props {
   collection: CollectionInfo;
@@ -25,69 +24,21 @@ const sortedParts = [...(collection.parts || [])].sort((a, b) => {
     )
   }
 
-  <div
-    class="flex gap-4 overflow-x-auto pb-4 -mx-4 px-4 scrollbar-thin snap-x snap-mandatory"
-  >
+  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
     {
-      sortedParts.map((part) => {
-        const posterUrl = resizeImageUrl(part.posterUrl, 'w185');
-        const rating = formatRating(part.voteAverage);
-
-        return (
-          <a
-            href={`/movies/${part.id}`}
-            class="group shrink-0 w-28 snap-start"
-            data-astro-prefetch
-          >
-            <div class="relative aspect-2/3 overflow-hidden rounded-lg bg-muted">
-              {posterUrl ? (
-                <img
-                  src={posterUrl}
-                  alt={part.title}
-                  class="h-full w-full object-cover"
-                  loading="lazy"
-                />
-              ) : (
-                <div class="flex h-full w-full items-center justify-center text-lg font-semibold text-muted-foreground">
-                  {part.title.charAt(0)}
-                </div>
-              )}
-            </div>
-            <div class="mt-2 space-y-0.5">
-              <p class="text-xs font-medium line-clamp-2 leading-tight transition-colors group-hover:text-amber-500">
-                {part.title}
-              </p>
-              <div class="flex items-center gap-2 text-xs text-muted-foreground">
-                {part.releaseDate && (
-                  <span>{formatYear(part.releaseDate)}</span>
-                )}
-                {rating && (
-                  <span class="flex items-center gap-0.5 text-amber-500/80">
-                    <IconStar class="h-3 w-3" />
-                    {part.voteAverage?.toFixed(1)}
-                  </span>
-                )}
-              </div>
-            </div>
-          </a>
-        );
-      })
+      sortedParts.map((part) => (
+        <CreditCard
+          credit={{
+            id: part.id,
+            title: part.title,
+            posterUrl: part.posterUrl,
+            releaseDate: part.releaseDate,
+            type: 'cast',
+          }}
+          mediaType="movie"
+          voteAverage={part.voteAverage}
+        />
+      ))
     }
   </div>
 </div>
-
-<style>
-  .scrollbar-thin {
-    scrollbar-width: thin;
-  }
-  .scrollbar-thin::-webkit-scrollbar {
-    height: 6px;
-  }
-  .scrollbar-thin::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .scrollbar-thin::-webkit-scrollbar-thumb {
-    background: var(--color-muted);
-    border-radius: 3px;
-  }
-</style>

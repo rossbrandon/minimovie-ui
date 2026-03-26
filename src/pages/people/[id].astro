@@ -216,6 +216,7 @@ const defaultTab =
                       mediaType={
                         movieCredits.includes(credit) ? 'movie' : 'series'
                       }
+                      voteAverage={credit.voteAverage}
                       personBirthday={person.birthday}
                       personDeathday={person.deathday}
                       personCurrentAge={person.currentAge}
@@ -235,6 +236,7 @@ const defaultTab =
                       <CreditCard
                         credit={credit}
                         mediaType="movie"
+                        voteAverage={credit.voteAverage}
                         personBirthday={person.birthday}
                         personDeathday={person.deathday}
                         personCurrentAge={person.currentAge}
@@ -254,6 +256,7 @@ const defaultTab =
                       <CreditCard
                         credit={credit}
                         mediaType="series"
+                        voteAverage={credit.voteAverage}
                         personBirthday={person.birthday}
                         personDeathday={person.deathday}
                         personCurrentAge={person.currentAge}

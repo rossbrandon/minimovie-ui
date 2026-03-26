@@ -59,6 +59,7 @@ export interface Person {
   photoUrl?: string;
   role?: string;
   order?: number;
+  episodeCount?: number;
   birthday?: string;
   deathday?: string;
   currentAge?: number;
@@ -184,6 +185,7 @@ export interface FilmCredit {
   type: 'cast' | 'crew';
   order?: number;
   popularity?: number;
+  voteAverage?: number;
 }
 
 export interface PersonDetails {

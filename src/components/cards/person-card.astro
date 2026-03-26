@@ -6,6 +6,7 @@ interface Props {
   name: string;
   photoUrl?: string;
   role?: string;
+  episodeCount?: number;
   birthday?: string;
   deathday?: string;
   ageAtRelease?: number;
@@ -20,6 +21,7 @@ const {
   name,
   photoUrl,
   role,
+  episodeCount,
   birthday,
   deathday,
   ageAtRelease,
@@ -28,6 +30,9 @@ const {
   linkToPerson = true,
   prefetch = false,
 } = Astro.props;
+
+const eps = episodeCount ? `${episodeCount} ep${episodeCount !== 1 ? 's' : ''}` : '';
+const roleDisplay = [role, eps].filter(Boolean).join(' · ');
 
 const initials = getInitials(name);
 const resizedPhotoUrl = resizeImageUrl(photoUrl, 'w185');
@@ -65,9 +70,9 @@ const ageDisplay = formatAgeDisplay({
         <p class="font-medium text-sm leading-tight line-clamp-2 group-hover:text-amber-500 transition-colors">
           {name}
         </p>
-        {role && (
+        {roleDisplay && (
           <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-            {role}
+            {roleDisplay}
           </p>
         )}
         {ageDisplay && (
@@ -93,9 +98,9 @@ const ageDisplay = formatAgeDisplay({
       </div>
       <div class="max-w-[100px]">
         <p class="font-medium text-sm leading-tight line-clamp-2">{name}</p>
-        {role && (
+        {roleDisplay && (
           <p class="text-xs text-muted-foreground line-clamp-1 mt-0.5">
-            {role}
+            {roleDisplay}
           </p>
         )}
         {ageDisplay && (
