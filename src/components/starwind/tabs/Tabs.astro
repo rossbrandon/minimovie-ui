@@ -488,7 +488,11 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
       if (!isInit) {
         trigger.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
         const url = new URL(window.location.href);
-        url.searchParams.set('tab', value);
+        if (value === this.tabs.dataset.defaultValue) {
+          url.searchParams.delete('tab');
+        } else {
+          url.searchParams.set('tab', value);
+        }
         history.replaceState(null, '', url.toString());
       }
 
