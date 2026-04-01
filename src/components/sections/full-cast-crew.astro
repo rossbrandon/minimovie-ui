@@ -1,6 +1,7 @@
 ---
+import { IconStack2 } from '@components/icons';
 import type { Credits, OverflowItem, Person } from '@lib/types';
-import { formatAgeDisplay } from '@lib/utils';
+import { formatAgeDisplay, tmdbImageUrl } from '@lib/utils';
 
 import CrewGrid from './crew-grid.astro';
 import SectionSearch from './section-search.astro';
@@ -10,9 +11,10 @@ interface Props {
   credits?: Credits;
   overflowData?: OverflowItem[];
   totalCastCount?: number;
+  seriesId?: number;
 }
 
-const { cast, credits, overflowData, totalCastCount } = Astro.props;
+const { cast, credits, overflowData, totalCastCount, seriesId } = Astro.props;
 
 const showOverflowNote =
   totalCastCount !== undefined && totalCastCount > cast.length;
@@ -36,46 +38,65 @@ const crewSections = [
         <h2 class="text-sm font-medium text-muted-foreground mb-3">
           Cast ({totalCastCount ?? cast.length})
         </h2>
-        <div class="section-search-grid grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {cast.map((person) => (
-            <a
-              href={`/people/${person.id}`}
-              class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
-            >
-              <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
-                {person.photoUrl ? (
-                  <img
-                    src={person.photoUrl}
-                    alt={person.name}
-                    class="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
-                    {person.name.charAt(0)}
+        <div class="section-search-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {cast.map((person) => {
+            const epsText = person.episodeCount
+              ? `${person.episodeCount} ep${person.episodeCount !== 1 ? 's' : ''}`
+              : '';
+            const epsHref =
+              seriesId && person.episodeCount
+                ? `/series/${seriesId}/person/${person.id}`
+                : undefined;
+
+            return (
+              <div class="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <a
+                  href={`/people/${person.id}`}
+                  class="group flex items-center gap-3 min-w-0 flex-1"
+                >
+                  <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
+                    {person.photoPath ? (
+                      <img
+                        src={tmdbImageUrl(person.photoPath, 'w185')}
+                        alt={person.name}
+                        class="h-full w-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                        {person.name.charAt(0)}
+                      </div>
+                    )}
                   </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">
+                      {person.name}
+                    </p>
+                    {person.role && (
+                      <p class="text-xs text-muted-foreground">{person.role}</p>
+                    )}
+                    {epsText && !epsHref && (
+                      <p class="text-xs text-muted-foreground">{epsText}</p>
+                    )}
+                    {formatAgeDisplay(person) && (
+                      <p class="text-xs text-muted-foreground/70">
+                        {formatAgeDisplay(person)}
+                      </p>
+                    )}
+                  </div>
+                </a>
+                {epsText && epsHref && (
+                  <a
+                    href={epsHref}
+                    class="flex shrink-0 items-center gap-1 text-xs text-muted-foreground bg-muted rounded-md px-2 py-1 hover:text-amber-500 transition-colors"
+                  >
+                    <IconStack2 class="size-3" />
+                    {epsText}
+                  </a>
                 )}
               </div>
-              <div class="min-w-0 flex-1">
-                <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">
-                  {person.name}
-                </p>
-                {person.role && (
-                  <p class="text-xs text-muted-foreground">{person.role}</p>
-                )}
-                {person.episodeCount && (
-                  <p class="text-xs text-muted-foreground">
-                    {`${person.episodeCount} ep${person.episodeCount !== 1 ? 's' : ''}`}
-                  </p>
-                )}
-                {formatAgeDisplay(person) && (
-                  <p class="text-xs text-muted-foreground/70">
-                    {formatAgeDisplay(person)}
-                  </p>
-                )}
-              </div>
-            </a>
-          ))}
+            );
+          })}
         </div>
         {showOverflowNote && (
           <p class="section-search-overflow-note text-sm text-muted-foreground mt-3">

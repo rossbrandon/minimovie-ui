@@ -53,9 +53,9 @@ const { placeholder = 'Search by name or character...', overflowData } =
     avatarDiv.className =
       'h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted';
 
-    if (item.photoUrl) {
+    if (item.photoPath) {
       const img = document.createElement('img');
-      img.src = item.photoUrl;
+      img.src = `https://image.tmdb.org/t/p/w185${item.photoPath}`;
       img.alt = item.name;
       img.className = 'h-full w-full object-cover';
       img.loading = 'lazy';

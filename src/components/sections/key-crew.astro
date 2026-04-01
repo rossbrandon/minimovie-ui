@@ -1,6 +1,6 @@
 ---
 import type { Person } from '@lib/types';
-import { formatAgeDisplay } from '@lib/utils';
+import { formatAgeDisplay, tmdbImageUrl } from '@lib/utils';
 
 interface CrewEntry {
   label: string;
@@ -32,9 +32,9 @@ const validEntries = entries.filter((e) => e.person);
                 data-astro-prefetch
               >
                 <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                  {person.photoUrl ? (
+                  {person.photoPath ? (
                     <img
-                      src={person.photoUrl}
+                      src={tmdbImageUrl(person.photoPath, 'w185')}
                       alt={person.name}
                       class="h-full w-full object-cover"
                       loading="lazy"

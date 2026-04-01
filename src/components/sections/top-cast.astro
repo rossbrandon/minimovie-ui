@@ -4,24 +4,30 @@ import type { Person } from '@lib/types';
 
 interface Props {
   cast: Person[];
+  seriesId?: number;
   limit?: number;
 }
 
-const { cast, limit = 12 } = Astro.props;
+const { cast, seriesId, limit = 12 } = Astro.props;
 
 const topCast = cast.slice(0, limit);
 ---
 
 {
   topCast.length > 0 && (
-    <div class="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-4 pt-1">
+    <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-3 sm:gap-4 pt-1">
       {topCast.map((person) => (
         <PersonCard
           id={person.id}
           name={person.name}
-          photoUrl={person.photoUrl}
+          photoPath={person.photoPath}
           role={person.role}
           episodeCount={person.episodeCount}
+          episodeCountHref={
+            seriesId && person.episodeCount
+              ? `/series/${seriesId}/person/${person.id}`
+              : undefined
+          }
           birthday={person.birthday}
           deathday={person.deathday}
           ageAtRelease={person.ageAtRelease}

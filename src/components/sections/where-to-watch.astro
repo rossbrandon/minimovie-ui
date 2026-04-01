@@ -25,7 +25,7 @@ const hasContent = hasStream || hasRent || hasBuy || hasFree || hasAds;
 
 interface Section {
   title: string;
-  providers: { name: string; logoUrl?: string }[];
+  providers: { name: string; logoPath?: string }[];
   icon: 'play' | 'coin' | 'cart' | 'tv';
   colorClass: string;
 }
@@ -98,9 +98,9 @@ if (hasFree || hasAds) {
           <div class="flex flex-wrap gap-2">
             {section.providers.map((provider) => (
               <div class="flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5">
-                {provider.logoUrl ? (
+                {provider.logoPath ? (
                   <img
-                    src={provider.logoUrl}
+                    src={`https://image.tmdb.org/t/p/w45${provider.logoPath}`}
                     alt={provider.name}
                     class="h-5 w-5 rounded"
                     loading="lazy"

@@ -164,12 +164,14 @@ const IMAGE_SIZES: Record<ImageType, string[]> = {
   still: ['w92', 'w185', 'w300', 'original'],
 };
 
-function resizeImageUrl(
-  url: string | undefined,
+const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
+
+function tmdbImageUrl(
+  path: string | undefined,
   size: string
 ): string | undefined {
-  if (!url) return undefined;
-  return url.replace(/\/w\d+\/|\/h\d+\/|\/original\//g, `/${size}/`);
+  if (!path) return undefined;
+  return `${TMDB_IMAGE_BASE}/${size}${path}`;
 }
 
 const escapeHtml = (text: string): string => {
@@ -192,6 +194,6 @@ export {
   formatYear,
   formatYearsAgo,
   getInitials,
-  resizeImageUrl,
+  tmdbImageUrl,
   truncateText,
 };

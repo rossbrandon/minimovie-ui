@@ -5,6 +5,7 @@ import type {
   EpisodeDetails,
   MovieDetails,
   PersonDetails,
+  PersonSeriesCredits,
   SearchResponse,
   SeasonDetails,
   SeriesDetails,
@@ -98,4 +99,13 @@ export async function getEpisode(
 
 export async function getPerson(id: number): Promise<PersonDetails> {
   return fetchAPI<PersonDetails>(`/people/${id}`);
+}
+
+export async function getPersonSeriesCredits(
+  seriesId: number,
+  personId: number
+): Promise<PersonSeriesCredits> {
+  return fetchAPI<PersonSeriesCredits>(
+    `/series/${seriesId}/person/${personId}/credits`
+  );
 }

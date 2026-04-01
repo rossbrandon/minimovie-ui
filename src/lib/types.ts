@@ -27,7 +27,7 @@ export interface SearchResult {
   mediaType: MediaType;
   title: string;
   overview?: string;
-  posterUrl?: string;
+  posterPath?: string;
   releaseDate?: string;
   knownFor?: string;
   age?: number;
@@ -42,7 +42,7 @@ export interface SearchResponse {
 
 export interface WatchProvider {
   name: string;
-  logoUrl?: string;
+  logoPath?: string;
 }
 
 export interface WhereToWatch {
@@ -56,7 +56,7 @@ export interface WhereToWatch {
 export interface Person {
   id: number;
   name: string;
-  photoUrl?: string;
+  photoPath?: string;
   role?: string;
   order?: number;
   episodeCount?: number;
@@ -70,7 +70,7 @@ export interface Person {
 export interface OverflowItem {
   id: number;
   name: string;
-  photoUrl?: string;
+  photoPath?: string;
   role?: string;
   ageDisplay?: string;
 }
@@ -92,7 +92,7 @@ export interface CollectionPart {
   id: number;
   title: string;
   overview?: string;
-  posterUrl?: string;
+  posterPath?: string;
   releaseDate?: string;
   voteAverage?: number;
 }
@@ -101,7 +101,7 @@ export interface CollectionInfo {
   id: number;
   name: string;
   overview?: string;
-  posterUrl?: string;
+  posterPath?: string;
   parts?: CollectionPart[];
 }
 
@@ -112,7 +112,7 @@ export interface MovieDetails {
   tagline?: string;
   overview?: string;
   genres?: string[];
-  posterUrl?: string;
+  posterPath?: string;
   status?: string;
   releaseDate?: string;
   runtime?: number;
@@ -133,7 +133,7 @@ export interface MovieDetails {
 export interface Network {
   id: number;
   name: string;
-  logoUrl?: string;
+  logoPath?: string;
   originCountry?: string;
 }
 
@@ -144,7 +144,7 @@ export interface Season {
   seasonNumber: number;
   episodeCount?: number;
   airDate?: string;
-  posterUrl?: string;
+  posterPath?: string;
   voteAverage?: number;
 }
 
@@ -154,7 +154,7 @@ export interface SeriesDetails {
   tagline?: string;
   overview?: string;
   genres?: string[];
-  posterUrl?: string;
+  posterPath?: string;
   status?: string;
   inProduction?: boolean;
   firstAirDate?: string;
@@ -179,13 +179,14 @@ export interface SeriesDetails {
 export interface FilmCredit {
   id: number;
   title: string;
-  posterUrl?: string;
+  posterPath?: string;
   releaseDate?: string;
   role?: string;
   type: 'cast' | 'crew';
   order?: number;
   popularity?: number;
   voteAverage?: number;
+  voteCount?: number;
   episodeCount?: number;
 }
 
@@ -199,7 +200,7 @@ export interface PersonDetails {
   currentAge?: number;
   gender?: 'Female' | 'Male' | 'Non-binary' | 'Not specified';
   placeOfBirth?: string;
-  photoUrl?: string;
+  photoPath?: string;
   knownFor?: string;
   alsoKnownAs?: string[];
   movieCredits?: FilmCredit[];
@@ -214,7 +215,7 @@ export interface EpisodeSummary {
   seasonNumber: number;
   airDate?: string;
   runtime?: number;
-  stillUrl?: string;
+  stillPath?: string;
   voteAverage?: number;
 }
 
@@ -222,13 +223,44 @@ export interface SeasonDetails {
   id: number;
   name: string;
   overview?: string;
-  posterUrl?: string;
+  posterPath?: string;
   seasonNumber: number;
   airDate?: string;
   voteAverage?: number;
   episodes?: EpisodeSummary[];
   whereToWatch?: WhereToWatch;
   credits?: Credits;
+}
+
+export interface PersonSeriesEpisode {
+  episodeNumber: number;
+  name: string;
+  airDate?: string;
+  stillPath?: string;
+}
+
+export interface PersonSeriesSeason {
+  seasonNumber: number;
+  name: string;
+  airDate?: string;
+  totalEpisodes: number;
+  episodes: PersonSeriesEpisode[];
+}
+
+export interface PersonSeriesCredits {
+  person: {
+    id: number;
+    name: string;
+    photoPath?: string;
+  };
+  series: {
+    id: number;
+    name: string;
+    posterPath?: string;
+  };
+  totalEpisodeCount: number;
+  roles: { character: string }[];
+  seasons: PersonSeriesSeason[];
 }
 
 export interface EpisodeDetails {
@@ -239,9 +271,8 @@ export interface EpisodeDetails {
   seasonNumber: number;
   airDate?: string;
   runtime?: number;
-  stillUrl?: string;
+  stillPath?: string;
   voteAverage?: number;
   voteCount?: number;
-  guestStars?: Person[];
   credits?: Credits;
 }

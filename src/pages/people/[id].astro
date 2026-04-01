@@ -25,7 +25,7 @@ import type { FilmCredit, PersonDetails } from '@lib/types';
 import {
   formatPersonAge,
   getInitials,
-  resizeImageUrl,
+  tmdbImageUrl,
   truncateText,
 } from '@lib/utils';
 
@@ -55,27 +55,41 @@ const sortByDate = (a: FilmCredit, b: FilmCredit) => {
   return new Date(b.releaseDate).getTime() - new Date(a.releaseDate).getTime();
 };
 
-const sortByOrder = (a: FilmCredit, b: FilmCredit) => {
-  if (a.order == null && b.order == null) {
-    return (b.popularity ?? 0) - (a.popularity ?? 0);
+const knownForScore = (credit: FilmCredit, isTV: boolean): number => {
+  if (credit.role?.match(/^Self/i)) return -Infinity;
+
+  const audienceReach = Math.log10(Math.max(credit.voteCount ?? 1, 1));
+
+  let roleSignificance: number;
+  if (isTV) {
+    roleSignificance = Math.log2(1 + (credit.episodeCount ?? 0)) / 6;
+  } else {
+    roleSignificance =
+      credit.order != null ? 1 / (1 + credit.order * 0.1) : 0.1;
   }
-  if (a.order == null) return 1;
-  if (b.order == null) return -1;
-  return a.order - b.order;
+
+  const quality = 0.5 + (credit.voteAverage ?? 5) / 20;
+
+  return audienceReach * Math.min(roleSignificance, 1) * quality;
 };
 
 const sortedMovieCredits = [...movieCredits].sort(sortByDate);
 const sortedSeriesCredits = [...seriesCredits].sort(sortByDate);
 
 const knownFor = [...movieCredits, ...seriesCredits]
-  .sort(sortByOrder)
-  .slice(0, 16);
+  .map((c) => ({
+    credit: c,
+    score: knownForScore(c, seriesCredits.includes(c)),
+  }))
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 16)
+  .map((x) => x.credit);
 
 const ageInfo = person
   ? formatPersonAge(person.birthday, person.deathday, person.currentAge)
   : null;
 
-const photoUrl = resizeImageUrl(person?.photoUrl, 'h632');
+const photoUrl = tmdbImageUrl(person?.photoPath, 'h632');
 
 const tabValues = [
   knownFor.length > 0 && 'known-for',
@@ -228,7 +242,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                 value="known-for"
                 default={defaultTab === 'known-for'}
               >
-                <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
                   {knownFor.map((credit) => (
                     <CreditCard
                       credit={credit}
@@ -239,6 +253,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                       personBirthday={person.birthday}
                       personDeathday={person.deathday}
                       personCurrentAge={person.currentAge}
+                      personId={person.id}
                       prefetch={true}
                     />
                   ))}
@@ -250,7 +265,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
               <TabsContent value="movies" default={defaultTab === 'movies'}>
                 <div class="space-y-4">
                   <SectionSearch placeholder="Search movies..." />
-                  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
                     {sortedMovieCredits.map((credit) => (
                       <CreditCard
                         credit={credit}
@@ -270,7 +285,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
               <TabsContent value="series" default={defaultTab === 'series'}>
                 <div class="space-y-4">
                   <SectionSearch placeholder="Search series..." />
-                  <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
+                  <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
                     {sortedSeriesCredits.map((credit) => (
                       <CreditCard
                         credit={credit}
@@ -279,6 +294,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                         personBirthday={person.birthday}
                         personDeathday={person.deathday}
                         personCurrentAge={person.currentAge}
+                        personId={person.id}
                       />
                     ))}
                   </div>

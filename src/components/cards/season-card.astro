@@ -1,12 +1,12 @@
 ---
 import { IconCalendar, IconVideo } from '@components/icons';
-import { formatDate, getInitials, resizeImageUrl } from '@lib/utils';
+import { formatDate, getInitials, tmdbImageUrl } from '@lib/utils';
 
 interface Props {
   seriesId: number;
   seasonNumber: number;
   name: string;
-  posterUrl?: string;
+  posterPath?: string;
   episodeCount?: number;
   airDate?: string;
   overview?: string;
@@ -17,7 +17,7 @@ const {
   seriesId,
   seasonNumber,
   name,
-  posterUrl,
+  posterPath,
   episodeCount,
   airDate,
   overview,
@@ -26,7 +26,7 @@ const {
 
 const href = `/series/${seriesId}/seasons/${seasonNumber}`;
 const initials = getInitials(name);
-const resizedPosterUrl = resizeImageUrl(posterUrl, 'w185');
+const posterUrl = tmdbImageUrl(posterPath, 'w185');
 ---
 
 <a
@@ -36,9 +36,9 @@ const resizedPosterUrl = resizeImageUrl(posterUrl, 'w185');
 >
   <div class="shrink-0 w-20 aspect-2/3 overflow-hidden rounded-lg bg-muted">
     {
-      resizedPosterUrl ? (
+      posterUrl ? (
         <img
-          src={resizedPosterUrl}
+          src={posterUrl}
           alt={name}
           class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"

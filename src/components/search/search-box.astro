@@ -144,14 +144,14 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
     escapeHtml,
     formatYear,
     getInitials,
-    resizeImageUrl,
+    tmdbImageUrl,
   } from '@lib/utils';
 
   interface SearchResult {
     id: number;
     mediaType: 'movie' | 'series' | 'person';
     title: string;
-    posterUrl?: string;
+    posterPath?: string;
     releaseDate?: string;
     knownFor?: string;
     age?: number;
@@ -183,7 +183,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
 
   const renderResultItem = (result: SearchResult): string => {
     const config = MEDIA_CONFIG[result.mediaType];
-    const posterUrl = resizeImageUrl(result.posterUrl, 'w92');
+    const posterUrl = tmdbImageUrl(result.posterPath, 'w92');
     const initials = getInitials(result.title);
     const year = formatYear(result.releaseDate);
 

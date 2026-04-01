@@ -35,6 +35,7 @@ import {
   formatRating,
   formatRuntime,
   formatYearsAgo,
+  tmdbImageUrl,
 } from '@lib/utils';
 
 import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
@@ -62,7 +63,7 @@ const cast = allCast.slice(0, MAX_CAST);
 const castOverflow = allCast.slice(MAX_CAST).map((p) => ({
   id: p.id,
   name: p.name,
-  photoUrl: p.photoUrl,
+  photoPath: p.photoPath,
   role: p.role,
   ageDisplay: formatAgeDisplay(p) || undefined,
 }));
@@ -98,7 +99,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
 <Layout
   title={series ? `${series.name} - MiniMovie` : 'Series - MiniMovie'}
   description={series?.overview}
-  image={series?.posterUrl}
+  image={tmdbImageUrl(series?.posterPath, 'w780')}
   jsonLd={jsonLd}
 >
   <Header />
@@ -117,9 +118,9 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
             {/* Poster */}
             <div class="shrink-0 mx-auto md:mx-0">
               <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
-                {series.posterUrl ? (
+                {series.posterPath ? (
                   <img
-                    src={series.posterUrl}
+                    src={tmdbImageUrl(series.posterPath, 'w780')}
                     alt={series.name}
                     class="h-full w-full object-cover"
                     width="256"
@@ -228,9 +229,9 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
                 <div class="flex flex-wrap items-center gap-3">
                   {series.networks.map((network) => (
                     <div class="flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5">
-                      {network.logoUrl ? (
+                      {network.logoPath ? (
                         <img
-                          src={network.logoUrl}
+                          src={tmdbImageUrl(network.logoPath, 'w92')}
                           alt={network.name}
                           class="h-5 w-auto max-w-[60px] object-contain"
                           loading="lazy"
@@ -301,7 +302,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
 
             {cast.length > 0 && (
               <TabsContent value="top-cast" default={defaultTab === 'top-cast'}>
-                <TopCast cast={cast} />
+                <TopCast cast={cast} seriesId={series.id} />
               </TabsContent>
             )}
 
@@ -313,7 +314,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
                       seriesId={series.id}
                       seasonNumber={season.seasonNumber}
                       name={season.name}
-                      posterUrl={season.posterUrl}
+                      posterPath={season.posterPath}
                       episodeCount={season.episodeCount}
                       airDate={season.airDate}
                       overview={season.overview}
@@ -332,6 +333,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
                 <FullCastCrew
                   cast={cast}
                   credits={series.credits}
+                  seriesId={series.id}
                   overflowData={castOverflow}
                   totalCastCount={allCast.length}
                 />

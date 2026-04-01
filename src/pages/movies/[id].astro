@@ -36,6 +36,7 @@ import {
   formatRating,
   formatRuntime,
   formatYearsAgo,
+  tmdbImageUrl,
 } from '@lib/utils';
 
 import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
@@ -86,7 +87,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
 <Layout
   title={movie ? `${movie.title} - MiniMovie` : 'Movie - MiniMovie'}
   description={movie?.overview}
-  image={movie?.posterUrl}
+  image={tmdbImageUrl(movie?.posterPath, 'w780')}
   jsonLd={jsonLd}
 >
   <Header />
@@ -105,9 +106,9 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
             {/* Poster */}
             <div class="shrink-0 mx-auto md:mx-0">
               <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
-                {movie.posterUrl ? (
+                {movie.posterPath ? (
                   <img
-                    src={movie.posterUrl}
+                    src={tmdbImageUrl(movie.posterPath, 'w780')}
                     alt={movie.title}
                     class="h-full w-full object-cover"
                     width="256"
@@ -241,9 +242,9 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                           data-astro-prefetch
                         >
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                            {director.photoUrl ? (
+                            {director.photoPath ? (
                               <img
-                                src={director.photoUrl}
+                                src={tmdbImageUrl(director.photoPath, 'w185')}
                                 alt={director.name}
                                 class="h-full w-full object-cover"
                                 loading="lazy"
@@ -276,9 +277,9 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                           data-astro-prefetch
                         >
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                            {producer.photoUrl ? (
+                            {producer.photoPath ? (
                               <img
-                                src={producer.photoUrl}
+                                src={tmdbImageUrl(producer.photoPath, 'w185')}
                                 alt={producer.name}
                                 class="h-full w-full object-cover"
                                 loading="lazy"
@@ -311,9 +312,9 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                           data-astro-prefetch
                         >
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                            {writer.photoUrl ? (
+                            {writer.photoPath ? (
                               <img
-                                src={writer.photoUrl}
+                                src={tmdbImageUrl(writer.photoPath, 'w185')}
                                 alt={writer.name}
                                 class="h-full w-full object-cover"
                                 loading="lazy"
@@ -344,9 +345,12 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                           data-astro-prefetch
                         >
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
-                            {cinematographer.photoUrl ? (
+                            {cinematographer.photoPath ? (
                               <img
-                                src={cinematographer.photoUrl}
+                                src={tmdbImageUrl(
+                                  cinematographer.photoPath,
+                                  'w185'
+                                )}
                                 alt={cinematographer.name}
                                 class="h-full w-full object-cover"
                                 loading="lazy"

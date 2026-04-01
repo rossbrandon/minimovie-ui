@@ -1,0 +1,143 @@
+---
+import { EpisodeAppearanceCard } from '@components/cards';
+import { IconVideo } from '@components/icons';
+import { Breadcrumbs, Header } from '@components/layout';
+import NotFound from '@components/not-found.astro';
+import { Badge } from '@components/starwind/badge';
+import Layout from '@layouts/Layout.astro';
+import { getPersonSeriesCredits } from '@lib/api';
+import type { PersonSeriesCredits } from '@lib/types';
+import { tmdbImageUrl } from '@lib/utils';
+
+const { seriesId, personId } = Astro.params;
+
+let data: PersonSeriesCredits | null = null;
+let error: string | null = null;
+
+try {
+  data = await getPersonSeriesCredits(Number(seriesId), Number(personId));
+} catch (e) {
+  console.error('Failed to fetch person series credits:', e);
+  error = 'Failed to load credits.';
+}
+
+if (error || !data) {
+  Astro.response.status = 404;
+}
+
+const personName = data?.person.name || 'Unknown';
+const seriesName = data?.series.name || 'Unknown';
+const personPhoto = tmdbImageUrl(data?.person.photoPath, 'w185');
+const seriesPoster = tmdbImageUrl(data?.series.posterPath, 'w185');
+const roles = data?.roles?.map((r) => r.character).join(', ') || '';
+
+const breadcrumbItems = data
+  ? [
+      { label: data.series.name, href: `/series/${seriesId}` },
+      { label: data.person.name },
+    ]
+  : [];
+---
+
+<Layout
+  title={data
+    ? `${personName} in ${seriesName} - MiniMovie`
+    : 'Credits - MiniMovie'}
+  description={data
+    ? `${personName} appeared in ${data.totalEpisodeCount} episodes of ${seriesName}`
+    : undefined}
+  image={personPhoto || seriesPoster}
+>
+  <Header />
+
+  <main class="container mx-auto px-4 py-8 flex-1">
+    {
+      error || !data ? (
+        <NotFound
+          title="Credits not found"
+          message={error || "The credits you're looking for don't exist."}
+        />
+      ) : (
+        <div class="space-y-8">
+          <Breadcrumbs items={breadcrumbItems} />
+
+          {/* Hero */}
+          <div class="flex flex-col sm:flex-row gap-6 items-start">
+            <a href={`/people/${data.person.id}`} class="shrink-0 group">
+              <div class="h-28 w-28 overflow-hidden rounded-lg bg-muted shadow-lg">
+                {personPhoto ? (
+                  <img
+                    src={personPhoto}
+                    alt={personName}
+                    class="h-full w-full object-cover group-hover:scale-105 transition-transform"
+                    width="112"
+                    height="112"
+                  />
+                ) : (
+                  <div class="flex h-full w-full items-center justify-center text-2xl font-semibold text-muted-foreground">
+                    {personName.charAt(0)}
+                  </div>
+                )}
+              </div>
+            </a>
+
+            <div class="flex-1 space-y-2">
+              <h1 class="text-3xl md:text-4xl font-bold">
+                <a
+                  href={`/people/${data.person.id}`}
+                  class="hover:text-amber-500 transition-colors"
+                >
+                  {personName}
+                </a>
+              </h1>
+              <p class="text-lg text-muted-foreground">
+                in{' '}
+                <a
+                  href={`/series/${seriesId}`}
+                  class="hover:text-foreground transition-colors"
+                >
+                  {seriesName}
+                </a>
+              </p>
+              {roles && <p class="text-muted-foreground">as {roles}</p>}
+              <div class="flex items-center gap-2 pt-1">
+                <Badge variant="default">
+                  <IconVideo class="size-3.5" />
+                  {data.totalEpisodeCount}{' '}
+                  {data.totalEpisodeCount === 1 ? 'Episode' : 'Episodes'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+
+          {/* Season-by-season breakdown */}
+          <div class="space-y-6">
+            {data.seasons.map((season) => (
+              <div class="space-y-3">
+                <div class="flex items-center gap-3">
+                  <h2 class="text-xl font-semibold">{season.name}</h2>
+                  <span class="text-sm text-muted-foreground">
+                    {season.episodes.length} of {season.totalEpisodes} episodes
+                  </span>
+                </div>
+
+                <div class="grid gap-2">
+                  {season.episodes.map((ep) => (
+                    <EpisodeAppearanceCard
+                      seriesId={Number(seriesId)}
+                      seasonNumber={season.seasonNumber}
+                      episodeNumber={ep.episodeNumber}
+                      name={ep.name}
+                      stillPath={ep.stillPath}
+                      airDate={ep.airDate}
+                    />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </main>
+</Layout>

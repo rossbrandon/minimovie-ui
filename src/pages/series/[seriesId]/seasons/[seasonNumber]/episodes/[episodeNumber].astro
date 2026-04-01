@@ -7,7 +7,7 @@ import {
 } from '@components/icons';
 import { Breadcrumbs, Header } from '@components/layout';
 import NotFound from '@components/not-found.astro';
-import { FullCastCrew, KeyCrew, SectionSearch } from '@components/sections';
+import { FullCastCrew, KeyCrew } from '@components/sections';
 import { Badge } from '@components/starwind/badge';
 import {
   Tabs,
@@ -25,7 +25,7 @@ import {
   formatRating,
   formatRuntime,
   formatYearsAgo,
-  resizeImageUrl,
+  tmdbImageUrl,
 } from '@lib/utils';
 
 const { seriesId, seasonNumber, episodeNumber } = Astro.params;
@@ -48,7 +48,6 @@ if (error || !episode) {
   Astro.response.status = 404;
 }
 
-const guestStars = episode?.guestStars || [];
 const cast = episode?.credits?.cast || [];
 const rating = formatRating(episode?.voteAverage);
 const episodeCode = episode
@@ -59,7 +58,7 @@ const seasonName =
   series?.seasons?.find((s) => s.seasonNumber === Number(seasonNumber))?.name ||
   `Season ${seasonNumber}`;
 
-const stillUrl = resizeImageUrl(episode?.stillUrl, 'original');
+const stillUrl = tmdbImageUrl(episode?.stillPath, 'original');
 
 const keyCrewEntries = [
   { label: 'Director', person: episode?.credits?.directors?.[0] },
@@ -80,10 +79,9 @@ const breadcrumbItems =
 
 const searchQuery = series?.name;
 
-const tabValues = [
-  (cast.length > 0 || episode?.credits) && 'cast-crew',
-  guestStars.length > 0 && 'guest-stars',
-].filter(Boolean) as string[];
+const tabValues = [(cast.length > 0 || episode?.credits) && 'cast-crew'].filter(
+  Boolean
+) as string[];
 
 const requestedTab = Astro.url.searchParams.get('tab');
 const defaultTab =
@@ -211,14 +209,6 @@ const jsonLd =
                   <IconUsers class="size-4" /> Cast & Crew
                 </TabsTrigger>
               )}
-              {guestStars.length > 0 && (
-                <TabsTrigger
-                  value="guest-stars"
-                  default={defaultTab === 'guest-stars'}
-                >
-                  <IconStar class="size-4" /> Guest Stars
-                </TabsTrigger>
-              )}
             </TabsList>
 
             {(cast.length > 0 || episode.credits) && (
@@ -227,50 +217,6 @@ const jsonLd =
                 default={defaultTab === 'cast-crew'}
               >
                 <FullCastCrew cast={cast} credits={episode.credits} />
-              </TabsContent>
-            )}
-
-            {guestStars.length > 0 && (
-              <TabsContent
-                value="guest-stars"
-                default={defaultTab === 'guest-stars'}
-              >
-                <div class="space-y-4">
-                  <SectionSearch placeholder="Search guest stars..." />
-                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                    {guestStars.map((person) => (
-                      <a
-                        href={`/people/${person.id}`}
-                        class="group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                      >
-                        <div class="h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-muted">
-                          {person.photoUrl ? (
-                            <img
-                              src={person.photoUrl}
-                              alt={person.name}
-                              class="h-full w-full object-cover"
-                              loading="lazy"
-                            />
-                          ) : (
-                            <div class="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
-                              {person.name.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                        <div class="min-w-0 flex-1">
-                          <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">
-                            {person.name}
-                          </p>
-                          {person.role && (
-                            <p class="text-xs text-muted-foreground truncate">
-                              {person.role}
-                            </p>
-                          )}
-                        </div>
-                      </a>
-                    ))}
-                  </div>
-                </div>
               </TabsContent>
             )}
           </Tabs>
