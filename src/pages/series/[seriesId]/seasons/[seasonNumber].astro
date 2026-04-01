@@ -1,21 +1,19 @@
 ---
 import { EpisodeCard } from '@components/cards';
 import {
-  IconAlertCircle,
   IconCalendar,
   IconStar,
   IconUsers,
   IconVideo,
 } from '@components/icons';
 import { Breadcrumbs, Header } from '@components/layout';
+import NotFound from '@components/not-found.astro';
 import {
   FullCastCrew,
   KeyCrew,
   TopCast,
   WhereToWatch,
 } from '@components/sections';
-import { Button } from '@components/starwind/button';
-
 import {
   Tabs,
   TabsContent,
@@ -24,6 +22,7 @@ import {
 } from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getSeason, getSeries } from '@lib/api';
+import { buildBreadcrumbSchema, buildSeasonSchema } from '@lib/schema';
 import type { SeasonDetails, SeriesDetails } from '@lib/types';
 import { formatDate, formatRating, formatYearsAgo } from '@lib/utils';
 
@@ -43,6 +42,10 @@ try {
 } catch (e) {
   console.error('Failed to fetch season:', e);
   error = 'Failed to load season details.';
+}
+
+if (error || !season) {
+  Astro.response.status = 404;
 }
 
 const episodes = season?.episodes || [];
@@ -78,30 +81,36 @@ const defaultTab =
   requestedTab && tabValues.includes(requestedTab)
     ? requestedTab
     : tabValues[0];
+
+const jsonLd =
+  season && series
+    ? [
+        buildSeasonSchema(season, series),
+        buildBreadcrumbSchema([
+          { name: series.name, url: `/series/${seriesId}` },
+          { name: season.name },
+        ]),
+      ]
+    : undefined;
 ---
 
 <Layout
   title={season && series
     ? `${season.name} - ${series.name} - MiniMovie`
     : 'Season - MiniMovie'}
+  description={season?.overview}
+  image={season?.posterUrl}
+  jsonLd={jsonLd}
 >
   <Header />
 
   <main class="container mx-auto px-4 py-8 flex-1">
     {
       error || !season ? (
-        <div class="text-center py-16">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
-            <IconAlertCircle class="h-8 w-8" />
-          </div>
-          <h1 class="text-2xl font-semibold mb-2">Season not found</h1>
-          <p class="text-muted-foreground mb-6">
-            {error || "The season you're looking for doesn't exist."}
-          </p>
-          <Button href="/" variant="outline">
-            Back to Home
-          </Button>
-        </div>
+        <NotFound
+          title="Season not found"
+          message={error || "The season you're looking for doesn't exist."}
+        />
       ) : (
         <div class="space-y-8">
           <Breadcrumbs items={breadcrumbItems} searchQuery={searchQuery} />
@@ -116,6 +125,8 @@ const defaultTab =
                     src={season.posterUrl}
                     alt={season.name}
                     class="h-full w-full object-cover"
+                    width="256"
+                    height="384"
                   />
                 ) : (
                   <div class="flex h-full w-full items-center justify-center text-4xl font-semibold text-muted-foreground">
@@ -177,12 +188,18 @@ const defaultTab =
           <Tabs defaultValue={defaultTab}>
             <TabsList>
               {cast.length > 0 && (
-                <TabsTrigger value="top-cast">
+                <TabsTrigger
+                  value="top-cast"
+                  default={defaultTab === 'top-cast'}
+                >
                   <IconUsers class="size-4" /> Top Cast
                 </TabsTrigger>
               )}
               {episodes.length > 0 && (
-                <TabsTrigger value="episodes">
+                <TabsTrigger
+                  value="episodes"
+                  default={defaultTab === 'episodes'}
+                >
                   <IconVideo class="size-4" /> Episodes
                   <span class="text-xs text-muted-foreground">
                     {episodes.length}
@@ -190,25 +207,31 @@ const defaultTab =
                 </TabsTrigger>
               )}
               {cast.length > 0 && (
-                <TabsTrigger value="full-cast">
+                <TabsTrigger
+                  value="full-cast"
+                  default={defaultTab === 'full-cast'}
+                >
                   <IconUsers class="size-4" /> Cast & Crew
                 </TabsTrigger>
               )}
               {season.whereToWatch && (
-                <TabsTrigger value="where-to-watch">
+                <TabsTrigger
+                  value="where-to-watch"
+                  default={defaultTab === 'where-to-watch'}
+                >
                   <IconPlayerPlay class="size-4" /> Where to Watch
                 </TabsTrigger>
               )}
             </TabsList>
 
             {cast.length > 0 && (
-              <TabsContent value="top-cast">
+              <TabsContent value="top-cast" default={defaultTab === 'top-cast'}>
                 <TopCast cast={cast} />
               </TabsContent>
             )}
 
             {episodes.length > 0 && (
-              <TabsContent value="episodes">
+              <TabsContent value="episodes" default={defaultTab === 'episodes'}>
                 <div class="grid grid-cols-1 gap-3">
                   {episodes.map((episode) => (
                     <EpisodeCard
@@ -228,13 +251,19 @@ const defaultTab =
             )}
 
             {cast.length > 0 && (
-              <TabsContent value="full-cast">
+              <TabsContent
+                value="full-cast"
+                default={defaultTab === 'full-cast'}
+              >
                 <FullCastCrew cast={cast} credits={season.credits} />
               </TabsContent>
             )}
 
             {season.whereToWatch && (
-              <TabsContent value="where-to-watch">
+              <TabsContent
+                value="where-to-watch"
+                default={defaultTab === 'where-to-watch'}
+              >
                 <WhereToWatch whereToWatch={season.whereToWatch} />
               </TabsContent>
             )}

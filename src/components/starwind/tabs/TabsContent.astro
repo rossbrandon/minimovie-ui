@@ -7,13 +7,14 @@ interface Props extends Omit<
   'id' | 'role' | 'tabindex' | 'hidden'
 > {
   value: string;
+  default?: boolean;
 }
 
 export const tabsContent = tv({
   base: 'mt-6 focus-visible:outline-2 focus-visible:outline-offset-2',
 });
 
-const { value, class: className, ...rest } = Astro.props;
+const { value, default: isDefault, class: className, ...rest } = Astro.props;
 ---
 
 <div
@@ -21,10 +22,10 @@ const { value, class: className, ...rest } = Astro.props;
   data-slot="tabs-content"
   data-tabs-content
   data-value={value}
-  data-state="inactive"
+  data-state={isDefault ? 'active' : 'inactive'}
   role="tabpanel"
   tabindex="0"
-  hidden
+  {...!isDefault && { hidden: true }}
   {...rest}
 >
   <slot />

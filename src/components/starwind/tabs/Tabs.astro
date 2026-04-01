@@ -53,7 +53,9 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
       this.tabs = tabs;
       this.parentHandler = parentHandler;
       this.triggers = Array.from(
-        tabs.querySelectorAll(':scope > .starwind-tabs-list-anchor > [data-tabs-list] > [data-tabs-trigger]')
+        tabs.querySelectorAll(
+          ':scope > .starwind-tabs-list-anchor > [data-tabs-list] > [data-tabs-trigger]'
+        )
       );
       this.contents = Array.from(
         tabs.querySelectorAll(':scope > [data-tabs-content]')
@@ -486,7 +488,11 @@ const { defaultValue, syncKey, class: className, ...rest } = Astro.props;
       });
 
       if (!isInit) {
-        trigger.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+        trigger.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+          inline: 'nearest',
+        });
         const url = new URL(window.location.href);
         if (value === this.tabs.dataset.defaultValue) {
           url.searchParams.delete('tab');

@@ -37,12 +37,14 @@ const { class: className, ...rest } = Astro.props;
         if (!anchor) return;
 
         const hintRight = document.createElement('div');
-        hintRight.className = 'starwind-tabs-scroll-hint starwind-tabs-scroll-hint--end';
+        hintRight.className =
+          'starwind-tabs-scroll-hint starwind-tabs-scroll-hint--end';
         hintRight.setAttribute('aria-hidden', 'true');
         anchor.appendChild(hintRight);
 
         const hintLeft = document.createElement('div');
-        hintLeft.className = 'starwind-tabs-scroll-hint starwind-tabs-scroll-hint--start';
+        hintLeft.className =
+          'starwind-tabs-scroll-hint starwind-tabs-scroll-hint--start';
         hintLeft.setAttribute('aria-hidden', 'true');
         anchor.appendChild(hintLeft);
 

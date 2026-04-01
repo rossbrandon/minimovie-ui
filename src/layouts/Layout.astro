@@ -2,16 +2,27 @@
 import { Font } from 'astro:assets';
 import { Footer } from '@components/layout';
 import { ReturnToTop } from '@components/sections';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@lib/constants';
 
 import '@styles/starwind.css';
 
 interface Props {
   title?: string;
   description?: string;
+  image?: string;
+  noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
-const { title = 'MiniMovie', description = 'A minimalistic movie database' } =
-  Astro.props;
+const {
+  title = SITE_NAME,
+  description = SITE_DESCRIPTION,
+  image,
+  noindex,
+  jsonLd,
+} = Astro.props;
+
+const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
 ---
 
 <!doctype html>
@@ -20,17 +31,40 @@ const { title = 'MiniMovie', description = 'A minimalistic movie database' } =
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="preconnect" href="https://image.tmdb.org" crossorigin />
     <meta name="description" content={description} />
     <meta name="generator" content={Astro.generator} />
+    {noindex && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    {image && <meta property="og:image" content={image} />}
+
+    <meta
+      name="twitter:card"
+      content={image ? 'summary_large_image' : 'summary'}
+    />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {image && <meta name="twitter:image" content={image} />}
+
+    {
+      jsonLd && (
+        <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+      )
+    }
+
     <Font cssVariable="--font-sans" preload />
     <title>{title}</title>
     <script is:inline>
-      // Only set data-theme if user has explicitly chosen a theme
       const localStorageTheme = localStorage?.getItem('theme') ?? '';
       if (['dark', 'light'].includes(localStorageTheme)) {
         document.documentElement.setAttribute('data-theme', localStorageTheme);
       }
-      // Otherwise, let CSS media queries handle it based on system preference
     </script>
   </head>
   <body

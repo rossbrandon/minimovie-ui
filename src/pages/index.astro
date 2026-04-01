@@ -4,19 +4,10 @@ import { IconMovie, IconTrendingUp } from '@components/icons';
 import { SearchBox } from '@components/search';
 import { ThemeToggle } from '@components/theme';
 import Layout from '@layouts/Layout.astro';
-// import { search } from '@lib/api';
-
-// let trendingResults: Awaited<ReturnType<typeof search>>['results'] = [];
-
-// try {
-//   const response = await search('santa clause', 1, 'movie');
-//   trendingResults = response.results.slice(0, 4);
-// } catch (error) {
-//   console.error('Failed to fetch trending movies:', error);
-// }
+import { buildWebSiteSchema } from '@lib/schema';
 ---
 
-<Layout title="MiniMovie">
+<Layout title="MiniMovie" jsonLd={buildWebSiteSchema()}>
   <div class="min-h-screen flex flex-col">
     <header class="absolute top-4 right-4 z-10">
       <ThemeToggle />

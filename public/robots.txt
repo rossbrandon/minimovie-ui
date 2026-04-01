@@ -1,0 +1,22 @@
+User-agent: *
+Crawl-delay: 2
+Disallow: /search
+Disallow: /series/*/seasons/*/episodes/
+
+User-agent: Googlebot
+Disallow: /series/*/seasons/*/episodes/
+
+User-agent: Bingbot
+Disallow: /series/*/seasons/*/episodes/
+
+User-agent: AhrefsBot
+Disallow: /
+
+User-agent: SemrushBot
+Disallow: /
+
+User-agent: MJ12bot
+Disallow: /
+
+User-agent: DotBot
+Disallow: /

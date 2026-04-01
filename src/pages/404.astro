@@ -1,0 +1,13 @@
+---
+import { Header } from '@components/layout';
+import NotFound from '@components/not-found.astro';
+import Layout from '@layouts/Layout.astro';
+---
+
+<Layout title="Page Not Found - MiniMovie" noindex={true}>
+  <Header />
+
+  <main class="container mx-auto px-4 py-8 flex-1">
+    <NotFound />
+  </main>
+</Layout>

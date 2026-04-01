@@ -1,15 +1,14 @@
 ---
 import {
-  IconAlertCircle,
   IconCalendar,
   IconClock,
   IconStar,
   IconUsers,
 } from '@components/icons';
 import { Breadcrumbs, Header } from '@components/layout';
+import NotFound from '@components/not-found.astro';
 import { FullCastCrew, KeyCrew, SectionSearch } from '@components/sections';
 import { Badge } from '@components/starwind/badge';
-import { Button } from '@components/starwind/button';
 import {
   Tabs,
   TabsContent,
@@ -18,6 +17,7 @@ import {
 } from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getEpisode, getSeries } from '@lib/api';
+import { buildBreadcrumbSchema, buildEpisodeSchema } from '@lib/schema';
 import type { EpisodeDetails, SeriesDetails } from '@lib/types';
 import {
   formatDate,
@@ -42,6 +42,10 @@ try {
 } catch (e) {
   console.error('Failed to fetch episode:', e);
   error = 'Failed to load episode details.';
+}
+
+if (error || !episode) {
+  Astro.response.status = 404;
 }
 
 const guestStars = episode?.guestStars || [];
@@ -86,30 +90,40 @@ const defaultTab =
   requestedTab && tabValues.includes(requestedTab)
     ? requestedTab
     : tabValues[0];
+
+const jsonLd =
+  episode && series
+    ? [
+        buildEpisodeSchema(episode, series, seasonName),
+        buildBreadcrumbSchema([
+          { name: series.name, url: `/series/${seriesId}` },
+          {
+            name: seasonName,
+            url: `/series/${seriesId}/seasons/${seasonNumber}`,
+          },
+          { name: `Episode ${episode.episodeNumber}` },
+        ]),
+      ]
+    : undefined;
 ---
 
 <Layout
   title={episode && series
     ? `${episodeCode}: ${episode.name} - ${series.name} - MiniMovie`
     : 'Episode - MiniMovie'}
+  description={episode?.overview}
+  image={stillUrl}
+  jsonLd={jsonLd}
 >
   <Header />
 
   <main class="container mx-auto px-4 py-8 flex-1">
     {
       error || !episode ? (
-        <div class="text-center py-16">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
-            <IconAlertCircle class="h-8 w-8" />
-          </div>
-          <h1 class="text-2xl font-semibold mb-2">Episode not found</h1>
-          <p class="text-muted-foreground mb-6">
-            {error || "The episode you're looking for doesn't exist."}
-          </p>
-          <Button href="/" variant="outline">
-            Back to Home
-          </Button>
-        </div>
+        <NotFound
+          title="Episode not found"
+          message={error || "The episode you're looking for doesn't exist."}
+        />
       ) : (
         <div class="space-y-8">
           <Breadcrumbs items={breadcrumbItems} searchQuery={searchQuery} />
@@ -124,6 +138,8 @@ const defaultTab =
                     src={stillUrl}
                     alt={episode.name}
                     class="h-full w-full object-cover"
+                    width="384"
+                    height="216"
                   />
                 ) : (
                   <div class="flex h-full w-full items-center justify-center text-2xl font-semibold text-muted-foreground">
@@ -188,25 +204,37 @@ const defaultTab =
           <Tabs defaultValue={defaultTab}>
             <TabsList>
               {(cast.length > 0 || episode.credits) && (
-                <TabsTrigger value="cast-crew">
+                <TabsTrigger
+                  value="cast-crew"
+                  default={defaultTab === 'cast-crew'}
+                >
                   <IconUsers class="size-4" /> Cast & Crew
                 </TabsTrigger>
               )}
               {guestStars.length > 0 && (
-                <TabsTrigger value="guest-stars">
+                <TabsTrigger
+                  value="guest-stars"
+                  default={defaultTab === 'guest-stars'}
+                >
                   <IconStar class="size-4" /> Guest Stars
                 </TabsTrigger>
               )}
             </TabsList>
 
             {(cast.length > 0 || episode.credits) && (
-              <TabsContent value="cast-crew">
+              <TabsContent
+                value="cast-crew"
+                default={defaultTab === 'cast-crew'}
+              >
                 <FullCastCrew cast={cast} credits={episode.credits} />
               </TabsContent>
             )}
 
             {guestStars.length > 0 && (
-              <TabsContent value="guest-stars">
+              <TabsContent
+                value="guest-stars"
+                default={defaultTab === 'guest-stars'}
+              >
                 <div class="space-y-4">
                   <SectionSearch placeholder="Search guest stars..." />
                   <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">

@@ -2,6 +2,7 @@
 // Usage: import { IconSearch } from '@components/icons';
 // Then: <IconSearch class="h-5 w-5" />
 
+export { default as IconTmdb } from '@components/icons/tmdb.svg';
 export { default as IconAlertCircle } from '@tabler/icons/outline/alert-circle.svg';
 export { default as IconAlertTriangle } from '@tabler/icons/outline/alert-triangle.svg';
 export { default as IconAntenna } from '@tabler/icons/outline/antenna.svg';
@@ -32,3 +33,4 @@ export { default as IconTrendingUp } from '@tabler/icons/outline/trending-up.svg
 export { default as IconUser } from '@tabler/icons/outline/user.svg';
 export { default as IconUsers } from '@tabler/icons/outline/users.svg';
 export { default as IconVideo } from '@tabler/icons/outline/video.svg';
+export { default as IconVideoOff } from '@tabler/icons/outline/video-off.svg';

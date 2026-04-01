@@ -1,7 +1,6 @@
 ---
 import { CreditCard } from '@components/cards';
 import {
-  IconAlertCircle,
   IconCake,
   IconDeviceTv,
   IconInfoCircle,
@@ -11,8 +10,8 @@ import {
   IconUser,
 } from '@components/icons';
 import { Header } from '@components/layout';
+import NotFound from '@components/not-found.astro';
 import { SectionSearch } from '@components/sections';
-import { Button } from '@components/starwind/button';
 import {
   Tabs,
   TabsContent,
@@ -21,8 +20,14 @@ import {
 } from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getPerson } from '@lib/api';
+import { buildPersonSchema } from '@lib/schema';
 import type { FilmCredit, PersonDetails } from '@lib/types';
-import { formatPersonAge, getInitials, resizeImageUrl } from '@lib/utils';
+import {
+  formatPersonAge,
+  getInitials,
+  resizeImageUrl,
+  truncateText,
+} from '@lib/utils';
 
 const { id } = Astro.params;
 
@@ -34,6 +39,10 @@ try {
 } catch (e) {
   console.error('Failed to fetch person:', e);
   error = 'Failed to load person details.';
+}
+
+if (error || !person) {
+  Astro.response.status = 404;
 }
 
 const movieCredits = person?.movieCredits || [];
@@ -80,26 +89,25 @@ const defaultTab =
   requestedTab && tabValues.includes(requestedTab)
     ? requestedTab
     : tabValues[0];
+
+const jsonLd = person ? buildPersonSchema(person) : undefined;
 ---
 
-<Layout title={person ? `${person.name} - MiniMovie` : 'Person - MiniMovie'}>
+<Layout
+  title={person ? `${person.name} - MiniMovie` : 'Person - MiniMovie'}
+  description={person ? truncateText(person.biography || '', 160) : undefined}
+  image={photoUrl}
+  jsonLd={jsonLd}
+>
   <Header />
 
   <main class="container mx-auto px-4 py-8 flex-1">
     {
       error || !person ? (
-        <div class="text-center py-16">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
-            <IconAlertCircle class="h-8 w-8" />
-          </div>
-          <h1 class="text-2xl font-semibold mb-2">Person not found</h1>
-          <p class="text-muted-foreground mb-6">
-            {error || "The person you're looking for doesn't exist."}
-          </p>
-          <Button href="/" variant="outline">
-            Back to Home
-          </Button>
-        </div>
+        <NotFound
+          title="Person not found"
+          message={error || "The person you're looking for doesn't exist."}
+        />
       ) : (
         <div class="space-y-8">
           {/* Hero Section */}
@@ -112,6 +120,8 @@ const defaultTab =
                     src={photoUrl}
                     alt={person.name}
                     class="h-full w-full object-cover"
+                    width="256"
+                    height="384"
                   />
                 ) : (
                   <div class="flex h-full w-full items-center justify-center text-4xl font-semibold text-muted-foreground">
@@ -182,12 +192,15 @@ const defaultTab =
           <Tabs defaultValue={defaultTab}>
             <TabsList>
               {knownFor.length > 0 && (
-                <TabsTrigger value="known-for">
+                <TabsTrigger
+                  value="known-for"
+                  default={defaultTab === 'known-for'}
+                >
                   <IconStar class="size-4" /> Known For
                 </TabsTrigger>
               )}
               {sortedMovieCredits.length > 0 && (
-                <TabsTrigger value="movies">
+                <TabsTrigger value="movies" default={defaultTab === 'movies'}>
                   <IconMovie class="size-4" /> Movies
                   <span class="text-xs text-muted-foreground">
                     {sortedMovieCredits.length}
@@ -195,20 +208,26 @@ const defaultTab =
                 </TabsTrigger>
               )}
               {sortedSeriesCredits.length > 0 && (
-                <TabsTrigger value="series">
+                <TabsTrigger value="series" default={defaultTab === 'series'}>
                   <IconDeviceTv class="size-4" /> TV Series
                   <span class="text-xs text-muted-foreground">
                     {sortedSeriesCredits.length}
                   </span>
                 </TabsTrigger>
               )}
-              <TabsTrigger value="more-info">
+              <TabsTrigger
+                value="more-info"
+                default={defaultTab === 'more-info'}
+              >
                 <IconInfoCircle class="size-4" /> More Info
               </TabsTrigger>
             </TabsList>
 
             {knownFor.length > 0 && (
-              <TabsContent value="known-for">
+              <TabsContent
+                value="known-for"
+                default={defaultTab === 'known-for'}
+              >
                 <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
                   {knownFor.map((credit) => (
                     <CreditCard
@@ -228,7 +247,7 @@ const defaultTab =
             )}
 
             {sortedMovieCredits.length > 0 && (
-              <TabsContent value="movies">
+              <TabsContent value="movies" default={defaultTab === 'movies'}>
                 <div class="space-y-4">
                   <SectionSearch placeholder="Search movies..." />
                   <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
@@ -248,7 +267,7 @@ const defaultTab =
             )}
 
             {sortedSeriesCredits.length > 0 && (
-              <TabsContent value="series">
+              <TabsContent value="series" default={defaultTab === 'series'}>
                 <div class="space-y-4">
                   <SectionSearch placeholder="Search series..." />
                   <div class="grid grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-4">
@@ -267,7 +286,7 @@ const defaultTab =
               </TabsContent>
             )}
 
-            <TabsContent value="more-info">
+            <TabsContent value="more-info" default={defaultTab === 'more-info'}>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 {person.alsoKnownAs && person.alsoKnownAs.length > 0 && (
                   <div class="md:col-span-2">

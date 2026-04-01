@@ -24,5 +24,5 @@ pnpm-debug.log*
 # jetbrains setting folder
 .idea/
 
-# Other
-openapi/
+# Temp
+src/pages/sitemap.xml.ts

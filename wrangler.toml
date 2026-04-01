@@ -2,10 +2,15 @@ name = "minimovie-ui"
 main = "@astrojs/cloudflare/entrypoints/server"
 compatibility_date = "2025-05-21"
 compatibility_flags = ["nodejs_compat"]
+workers_dev = false
 
 [vars]
 LOG_LEVEL = "INFO"
 API_BASE_URL = "https://api.minimovie.info"
+
+[limits]
+cpu_ms = 1000
+subrequests = 10
 
 [[routes]]
 pattern = "minimovie.info"

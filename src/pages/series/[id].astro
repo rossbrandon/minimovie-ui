@@ -1,7 +1,6 @@
 ---
 import { SeasonCard } from '@components/cards';
 import {
-  IconAlertCircle,
   IconAntenna,
   IconCalendar,
   IconClock,
@@ -12,6 +11,7 @@ import {
   IconVideo,
 } from '@components/icons';
 import { Header } from '@components/layout';
+import NotFound from '@components/not-found.astro';
 import {
   FullCastCrew,
   KeyCrew,
@@ -19,8 +19,6 @@ import {
   WhereToWatch,
 } from '@components/sections';
 import { Badge } from '@components/starwind/badge';
-import { Button } from '@components/starwind/button';
-
 import {
   Tabs,
   TabsContent,
@@ -29,6 +27,7 @@ import {
 } from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getSeries } from '@lib/api';
+import { buildSeriesSchema } from '@lib/schema';
 import type { SeriesDetails } from '@lib/types';
 import {
   formatAgeDisplay,
@@ -52,6 +51,10 @@ try {
 } catch (e) {
   console.error('Failed to fetch series:', e);
   error = 'Failed to load series details.';
+}
+
+if (error || !series) {
+  Astro.response.status = 404;
 }
 
 const allCast = series?.credits?.cast || [];
@@ -88,26 +91,25 @@ const defaultTab =
   requestedTab && tabValues.includes(requestedTab)
     ? requestedTab
     : tabValues[0];
+
+const jsonLd = series ? buildSeriesSchema(series) : undefined;
 ---
 
-<Layout title={series ? `${series.name} - MiniMovie` : 'Series - MiniMovie'}>
+<Layout
+  title={series ? `${series.name} - MiniMovie` : 'Series - MiniMovie'}
+  description={series?.overview}
+  image={series?.posterUrl}
+  jsonLd={jsonLd}
+>
   <Header />
 
   <main class="container mx-auto px-4 py-8 flex-1">
     {
       error || !series ? (
-        <div class="text-center py-16">
-          <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/10 text-error mb-4">
-            <IconAlertCircle class="h-8 w-8" />
-          </div>
-          <h1 class="text-2xl font-semibold mb-2">Series not found</h1>
-          <p class="text-muted-foreground mb-6">
-            {error || "The series you're looking for doesn't exist."}
-          </p>
-          <Button href="/" variant="outline">
-            Back to Home
-          </Button>
-        </div>
+        <NotFound
+          title="Series not found"
+          message={error || "The series you're looking for doesn't exist."}
+        />
       ) : (
         <div class="space-y-8">
           {/* Hero Section */}
@@ -120,6 +122,8 @@ const defaultTab =
                     src={series.posterUrl}
                     alt={series.name}
                     class="h-full w-full object-cover"
+                    width="256"
+                    height="384"
                   />
                 ) : (
                   <div class="flex h-full w-full items-center justify-center text-4xl font-semibold text-muted-foreground">
@@ -256,12 +260,15 @@ const defaultTab =
           <Tabs defaultValue={defaultTab}>
             <TabsList>
               {cast.length > 0 && (
-                <TabsTrigger value="top-cast">
+                <TabsTrigger
+                  value="top-cast"
+                  default={defaultTab === 'top-cast'}
+                >
                   <IconUsers class="size-4" /> Top Cast
                 </TabsTrigger>
               )}
               {seasons.length > 0 && (
-                <TabsTrigger value="seasons">
+                <TabsTrigger value="seasons" default={defaultTab === 'seasons'}>
                   <IconStack2 class="size-4" /> Seasons
                   <span class="text-xs text-muted-foreground">
                     {seasons.length}
@@ -269,28 +276,37 @@ const defaultTab =
                 </TabsTrigger>
               )}
               {cast.length > 0 && (
-                <TabsTrigger value="full-cast">
+                <TabsTrigger
+                  value="full-cast"
+                  default={defaultTab === 'full-cast'}
+                >
                   <IconUsers class="size-4" /> Cast & Crew
                 </TabsTrigger>
               )}
               {series.whereToWatch && (
-                <TabsTrigger value="where-to-watch">
+                <TabsTrigger
+                  value="where-to-watch"
+                  default={defaultTab === 'where-to-watch'}
+                >
                   <IconPlayerPlay class="size-4" /> Where to Watch
                 </TabsTrigger>
               )}
-              <TabsTrigger value="more-info">
+              <TabsTrigger
+                value="more-info"
+                default={defaultTab === 'more-info'}
+              >
                 <IconInfoCircle class="size-4" /> More Info
               </TabsTrigger>
             </TabsList>
 
             {cast.length > 0 && (
-              <TabsContent value="top-cast">
+              <TabsContent value="top-cast" default={defaultTab === 'top-cast'}>
                 <TopCast cast={cast} />
               </TabsContent>
             )}
 
             {seasons.length > 0 && (
-              <TabsContent value="seasons">
+              <TabsContent value="seasons" default={defaultTab === 'seasons'}>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {seasons.map((season) => (
                     <SeasonCard
@@ -309,7 +325,10 @@ const defaultTab =
             )}
 
             {cast.length > 0 && (
-              <TabsContent value="full-cast">
+              <TabsContent
+                value="full-cast"
+                default={defaultTab === 'full-cast'}
+              >
                 <FullCastCrew
                   cast={cast}
                   credits={series.credits}
@@ -320,12 +339,15 @@ const defaultTab =
             )}
 
             {series.whereToWatch && (
-              <TabsContent value="where-to-watch">
+              <TabsContent
+                value="where-to-watch"
+                default={defaultTab === 'where-to-watch'}
+              >
                 <WhereToWatch whereToWatch={series.whereToWatch} />
               </TabsContent>
             )}
 
-            <TabsContent value="more-info">
+            <TabsContent value="more-info" default={defaultTab === 'more-info'}>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 {series.originalName && series.originalName !== series.name && (
                   <div>
