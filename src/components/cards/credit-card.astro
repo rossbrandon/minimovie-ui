@@ -94,7 +94,9 @@ const eps = credit.episodeCount
     }
   </div>
 
-  <div class="pointer-events-none relative flex-1 min-w-0 py-2 pr-1 sm:flex-1 sm:py-0 sm:pr-0 flex flex-col gap-0.5 sm:gap-1 sm:p-3 sm:pb-2">
+  <div
+    class="pointer-events-none relative flex-1 min-w-0 py-2 pr-1 sm:flex-1 sm:py-0 sm:pr-0 flex flex-col gap-0.5 sm:gap-1 sm:p-3 sm:pb-2"
+  >
     <h3
       class="font-medium leading-tight line-clamp-1 sm:line-clamp-2 text-sm group-hover:text-amber-500 transition-colors"
     >
@@ -118,34 +120,44 @@ const eps = credit.episodeCount
         </p>
       )
     }
-    {eps && !episodeCountHref && (
-      <p class="text-xs text-muted-foreground italic">{eps}</p>
-    )}
-    {ageDisplay && (
-      <span class="text-xs text-muted-foreground/70">{ageDisplay}</span>
-    )}
+    {
+      eps && !episodeCountHref && (
+        <p class="text-xs text-muted-foreground italic">{eps}</p>
+      )
+    }
+    {
+      ageDisplay && (
+        <span class="text-xs text-muted-foreground/70">{ageDisplay}</span>
+      )
+    }
   </div>
 
-  {episodeCountHref && (
-    <a
-      href={episodeCountHref}
-      class="relative z-10 shrink-0 flex items-center gap-1.5 px-2 h-11 mr-1 rounded-lg text-amber-500 hover:bg-accent/50 transition-colors sm:hidden"
-    >
-      <IconStack2 class="size-4" />
-      <span class="text-xs font-medium">{eps}</span>
-    </a>
-  )}
-
-  <div class="hidden sm:flex sm:mt-auto sm:min-h-[32px] sm:items-center sm:justify-center sm:border-t sm:border-border/50">
-    {episodeCountHref ? (
+  {
+    episodeCountHref && (
       <a
         href={episodeCountHref}
-        class="pointer-events-auto relative z-10 flex w-full items-center justify-center gap-1 text-xs font-medium text-amber-500/80 hover:text-amber-500 hover:bg-accent/50 min-h-[32px] px-2 transition-colors"
+        class="relative z-10 shrink-0 flex items-center gap-1.5 px-2 h-11 mr-1 rounded-lg text-amber-500 hover:bg-accent/50 transition-colors sm:hidden"
       >
-        <IconStack2 class="size-3" />
-        {eps}
-        <IconChevronRight class="size-3" />
+        <IconStack2 class="size-4" />
+        <span class="text-xs font-medium">{eps}</span>
       </a>
-    ) : null}
+    )
+  }
+
+  <div
+    class="hidden sm:flex sm:mt-auto sm:min-h-[32px] sm:items-center sm:justify-center sm:border-t sm:border-border/50"
+  >
+    {
+      episodeCountHref ? (
+        <a
+          href={episodeCountHref}
+          class="pointer-events-auto relative z-10 flex w-full items-center justify-center gap-1 text-xs font-medium text-amber-500/80 hover:text-amber-500 hover:bg-accent/50 min-h-[32px] px-2 transition-colors"
+        >
+          <IconStack2 class="size-3" />
+          {eps}
+          <IconChevronRight class="size-3" />
+        </a>
+      ) : null
+    }
   </div>
 </div>

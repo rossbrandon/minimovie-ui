@@ -51,105 +51,133 @@ const ageDisplay = formatAgeDisplay({
 const personHref = `/people/${id}`;
 ---
 
-<div class="group relative flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2 sm:h-full">
-  {linkToPerson && (
-    <a
-      href={personHref}
-      class="absolute inset-0 z-0 sm:hidden"
-      data-astro-prefetch={prefetch ? '' : undefined}
-    >
-      <span class="sr-only">{name}</span>
-    </a>
-  )}
+<div
+  class="group relative flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2 sm:h-full"
+>
+  {
+    linkToPerson && (
+      <a
+        href={personHref}
+        class="absolute inset-0 z-0 sm:hidden"
+        data-astro-prefetch={prefetch ? '' : undefined}
+      >
+        <span class="sr-only">{name}</span>
+      </a>
+    )
+  }
 
-  {linkToPerson ? (
-    <a
-      href={personHref}
-      class="shrink-0 pointer-events-none sm:pointer-events-auto sm:group"
-      data-astro-prefetch={prefetch ? '' : undefined}
-    >
-      <div class="h-12 w-12 sm:h-20 sm:w-20 overflow-hidden rounded-lg bg-muted">
-        {photoUrl ? (
-          <img
-            src={photoUrl}
-            alt={name}
-            class="h-full w-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div class="flex h-full w-full items-center justify-center text-sm sm:text-lg font-semibold text-muted-foreground">
-            {initials}
-          </div>
-        )}
-      </div>
-    </a>
-  ) : (
-    <div class="shrink-0">
-      <div class="h-12 w-12 sm:h-20 sm:w-20 overflow-hidden rounded-lg bg-muted">
-        {photoUrl ? (
-          <img
-            src={photoUrl}
-            alt={name}
-            class="h-full w-full object-cover"
-            loading="lazy"
-          />
-        ) : (
-          <div class="flex h-full w-full items-center justify-center text-sm sm:text-lg font-semibold text-muted-foreground">
-            {initials}
-          </div>
-        )}
-      </div>
-    </div>
-  )}
-
-  <div class="pointer-events-none flex-1 min-w-0 text-left sm:pointer-events-auto sm:flex-1 sm:text-center sm:max-w-[100px] sm:pb-1">
-    {linkToPerson ? (
-      <a href={personHref} class="hidden sm:block group/name" data-astro-prefetch={prefetch ? '' : undefined}>
-        <p class="font-medium text-sm leading-tight line-clamp-1 sm:line-clamp-2 group-hover/name:text-amber-500 transition-colors">
-          {name}
-        </p>
+  {
+    linkToPerson ? (
+      <a
+        href={personHref}
+        class="shrink-0 pointer-events-none sm:pointer-events-auto sm:group"
+        data-astro-prefetch={prefetch ? '' : undefined}
+      >
+        <div class="h-12 w-12 sm:h-20 sm:w-20 overflow-hidden rounded-lg bg-muted">
+          {photoUrl ? (
+            <img
+              src={photoUrl}
+              alt={name}
+              class="h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div class="flex h-full w-full items-center justify-center text-sm sm:text-lg font-semibold text-muted-foreground">
+              {initials}
+            </div>
+          )}
+        </div>
       </a>
     ) : (
-      <p class="hidden sm:block font-medium text-sm leading-tight line-clamp-2">
-        {name}
-      </p>
-    )}
-    <p class="sm:hidden font-medium text-sm leading-tight line-clamp-1 group-hover:text-amber-500 transition-colors">
+      <div class="shrink-0">
+        <div class="h-12 w-12 sm:h-20 sm:w-20 overflow-hidden rounded-lg bg-muted">
+          {photoUrl ? (
+            <img
+              src={photoUrl}
+              alt={name}
+              class="h-full w-full object-cover"
+              loading="lazy"
+            />
+          ) : (
+            <div class="flex h-full w-full items-center justify-center text-sm sm:text-lg font-semibold text-muted-foreground">
+              {initials}
+            </div>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  <div
+    class="pointer-events-none flex-1 min-w-0 text-left sm:pointer-events-auto sm:flex-1 sm:text-center sm:max-w-[100px] sm:pb-1"
+  >
+    {
+      linkToPerson ? (
+        <a
+          href={personHref}
+          class="hidden sm:block group/name"
+          data-astro-prefetch={prefetch ? '' : undefined}
+        >
+          <p class="font-medium text-sm leading-tight line-clamp-1 sm:line-clamp-2 group-hover/name:text-amber-500 transition-colors">
+            {name}
+          </p>
+        </a>
+      ) : (
+        <p class="hidden sm:block font-medium text-sm leading-tight line-clamp-2">
+          {name}
+        </p>
+      )
+    }
+    <p
+      class="sm:hidden font-medium text-sm leading-tight line-clamp-1 group-hover:text-amber-500 transition-colors"
+    >
       {name}
     </p>
-    {role && (
-      <p class="text-xs text-muted-foreground line-clamp-1 sm:line-clamp-2 mt-0.5">
-        {role}
-      </p>
-    )}
-    {eps && !episodeCountHref && (
-      <p class="text-xs text-muted-foreground mt-0.5">{eps}</p>
-    )}
-    {ageDisplay && (
-      <p class="text-xs text-muted-foreground/70 mt-0.5">{ageDisplay}</p>
-    )}
+    {
+      role && (
+        <p class="text-xs text-muted-foreground line-clamp-1 sm:line-clamp-2 mt-0.5">
+          {role}
+        </p>
+      )
+    }
+    {
+      eps && !episodeCountHref && (
+        <p class="text-xs text-muted-foreground mt-0.5">{eps}</p>
+      )
+    }
+    {
+      ageDisplay && (
+        <p class="text-xs text-muted-foreground/70 mt-0.5">{ageDisplay}</p>
+      )
+    }
   </div>
 
-  {episodeCountHref && (
-    <a
-      href={episodeCountHref}
-      class="relative z-10 shrink-0 flex items-center gap-1.5 px-2 h-11 rounded-lg text-amber-500 hover:bg-accent/50 transition-colors sm:hidden"
-    >
-      <IconStack2 class="size-4" />
-      <span class="text-xs font-medium">{eps}</span>
-    </a>
-  )}
-
-  <div class="hidden sm:flex sm:mt-auto sm:w-full sm:min-h-[32px] sm:items-center sm:justify-center sm:border-t sm:border-border/50">
-    {episodeCountHref ? (
+  {
+    episodeCountHref && (
       <a
         href={episodeCountHref}
-        class="flex w-full items-center justify-center gap-1 text-xs font-medium text-amber-500/80 hover:text-amber-500 hover:bg-accent/50 min-h-[32px] px-2 transition-colors"
+        class="relative z-10 shrink-0 flex items-center gap-1.5 px-2 h-11 rounded-lg text-amber-500 hover:bg-accent/50 transition-colors sm:hidden"
       >
-        <IconStack2 class="size-3" />
-        {eps}
-        <IconChevronRight class="size-3" />
+        <IconStack2 class="size-4" />
+        <span class="text-xs font-medium">{eps}</span>
       </a>
-    ) : null}
+    )
+  }
+
+  <div
+    class="hidden sm:flex sm:mt-auto sm:w-full sm:min-h-[32px] sm:items-center sm:justify-center sm:border-t sm:border-border/50"
+  >
+    {
+      episodeCountHref ? (
+        <a
+          href={episodeCountHref}
+          class="flex w-full items-center justify-center gap-1 text-xs font-medium text-amber-500/80 hover:text-amber-500 hover:bg-accent/50 min-h-[32px] px-2 transition-colors"
+        >
+          <IconStack2 class="size-3" />
+          {eps}
+          <IconChevronRight class="size-3" />
+        </a>
+      ) : null
+    }
   </div>
 </div>

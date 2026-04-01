@@ -11,14 +11,8 @@ interface Props {
   airDate?: string;
 }
 
-const {
-  seriesId,
-  seasonNumber,
-  episodeNumber,
-  name,
-  stillPath,
-  airDate,
-} = Astro.props;
+const { seriesId, seasonNumber, episodeNumber, name, stillPath, airDate } =
+  Astro.props;
 
 const href = `/series/${seriesId}/seasons/${seasonNumber}/episodes/${episodeNumber}`;
 const episodeCode = formatEpisodeCode(seasonNumber, episodeNumber);
