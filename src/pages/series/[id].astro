@@ -35,7 +35,7 @@ import {
   formatRating,
   formatRuntime,
   formatYearsAgo,
-  tmdbImageUrl,
+  getImageUrl,
 } from '@lib/utils';
 
 import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
@@ -99,7 +99,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
 <Layout
   title={series ? `${series.name} - MiniMovie` : 'Series - MiniMovie'}
   description={series?.overview}
-  image={tmdbImageUrl(series?.posterPath, 'w780')}
+  image={getImageUrl(series?.posterPath, 'w780')}
   jsonLd={jsonLd}
 >
   <Header />
@@ -120,7 +120,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
               <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
                 {series.posterPath ? (
                   <img
-                    src={tmdbImageUrl(series.posterPath, 'w780')}
+                    src={getImageUrl(series.posterPath, 'w780')}
                     alt={series.name}
                     class="h-full w-full object-cover"
                     width="256"
@@ -231,7 +231,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
                     <div class="flex items-center gap-2 rounded-lg bg-muted px-3 py-1.5">
                       {network.logoPath ? (
                         <img
-                          src={tmdbImageUrl(network.logoPath, 'w92')}
+                          src={getImageUrl(network.logoPath, 'w92')}
                           alt={network.name}
                           class="h-5 w-auto max-w-[60px] object-contain"
                           loading="lazy"

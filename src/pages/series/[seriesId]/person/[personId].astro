@@ -13,7 +13,7 @@ import {
 import Layout from '@layouts/Layout.astro';
 import { getPersonSeriesCredits } from '@lib/api';
 import type { PersonSeriesCredits } from '@lib/types';
-import { tmdbImageUrl } from '@lib/utils';
+import { getImageUrl } from '@lib/utils';
 
 const { seriesId, personId } = Astro.params;
 
@@ -33,8 +33,8 @@ if (error || !data) {
 
 const personName = data?.person.name || 'Unknown';
 const seriesName = data?.series.name || 'Unknown';
-const personPhoto = tmdbImageUrl(data?.person.photoPath, 'h632');
-const seriesPoster = tmdbImageUrl(data?.series.posterPath, 'w185');
+const personPhoto = getImageUrl(data?.person.photoPath, 'h632');
+const seriesPoster = getImageUrl(data?.series.posterPath, 'w185');
 const roles = data?.roles?.map((r) => r.character).join(', ') || '';
 
 const breadcrumbItems = data
@@ -149,7 +149,7 @@ const defaultTab =
                   <p class="text-sm text-muted-foreground mb-4">
                     {season.episodes.length} of {season.totalEpisodes} episodes
                   </p>
-                  <div class="grid gap-2">
+                  <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     {season.episodes.map((ep) => (
                       <EpisodeAppearanceCard
                         seriesId={Number(seriesId)}

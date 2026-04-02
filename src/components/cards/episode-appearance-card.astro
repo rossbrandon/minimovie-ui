@@ -1,6 +1,7 @@
 ---
 import { IconCalendar } from '@components/icons';
-import { formatDate, formatEpisodeCode, tmdbImageUrl } from '@lib/utils';
+import { Badge } from '@components/starwind/badge';
+import { formatDate, formatEpisodeCode, getImageUrl } from '@lib/utils';
 
 interface Props {
   seriesId: number;
@@ -16,7 +17,8 @@ const { seriesId, seasonNumber, episodeNumber, name, stillPath, airDate } =
 
 const href = `/series/${seriesId}/seasons/${seasonNumber}/episodes/${episodeNumber}`;
 const episodeCode = formatEpisodeCode(seasonNumber, episodeNumber);
-const stillUrl = tmdbImageUrl(stillPath, 'w300');
+const stillUrl = getImageUrl(stillPath, 'w300');
+const isUpcoming = airDate ? new Date(airDate) > new Date() : false;
 ---
 
 <a
@@ -51,9 +53,14 @@ const stillUrl = tmdbImageUrl(stillPath, 'w300');
 
     {
       airDate && (
-        <div class="flex items-center gap-1 mt-1 text-sm text-muted-foreground">
+        <div class="flex items-center gap-1.5 mt-1 text-sm text-muted-foreground">
           <IconCalendar class="h-3.5 w-3.5" />
           <span>{formatDate(airDate)}</span>
+          {isUpcoming && (
+            <Badge variant="outline" class="text-xs">
+              Upcoming
+            </Badge>
+          )}
         </div>
       )
     }

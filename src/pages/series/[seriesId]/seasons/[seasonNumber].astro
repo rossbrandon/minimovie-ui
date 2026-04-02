@@ -28,7 +28,7 @@ import {
   formatDate,
   formatRating,
   formatYearsAgo,
-  tmdbImageUrl,
+  getImageUrl,
 } from '@lib/utils';
 
 import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
@@ -104,7 +104,7 @@ const jsonLd =
     ? `${season.name} - ${series.name} - MiniMovie`
     : 'Season - MiniMovie'}
   description={season?.overview}
-  image={tmdbImageUrl(season?.posterPath, 'w780')}
+  image={getImageUrl(season?.posterPath, 'w780')}
   jsonLd={jsonLd}
 >
   <Header />
@@ -127,7 +127,7 @@ const jsonLd =
               <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
                 {season.posterPath ? (
                   <img
-                    src={tmdbImageUrl(season.posterPath, 'w780')}
+                    src={getImageUrl(season.posterPath, 'w780')}
                     alt={season.name}
                     class="h-full w-full object-cover"
                     width="256"

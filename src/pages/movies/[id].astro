@@ -36,7 +36,7 @@ import {
   formatRating,
   formatRuntime,
   formatYearsAgo,
-  tmdbImageUrl,
+  getImageUrl,
 } from '@lib/utils';
 
 import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
@@ -87,7 +87,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
 <Layout
   title={movie ? `${movie.title} - MiniMovie` : 'Movie - MiniMovie'}
   description={movie?.overview}
-  image={tmdbImageUrl(movie?.posterPath, 'w780')}
+  image={getImageUrl(movie?.posterPath, 'w780')}
   jsonLd={jsonLd}
 >
   <Header />
@@ -108,7 +108,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
               <div class="w-64 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
                 {movie.posterPath ? (
                   <img
-                    src={tmdbImageUrl(movie.posterPath, 'w780')}
+                    src={getImageUrl(movie.posterPath, 'w780')}
                     alt={movie.title}
                     class="h-full w-full object-cover"
                     width="256"
@@ -244,7 +244,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                             {director.photoPath ? (
                               <img
-                                src={tmdbImageUrl(director.photoPath, 'w185')}
+                                src={getImageUrl(director.photoPath, 'w185')}
                                 alt={director.name}
                                 class="h-full w-full object-cover"
                                 loading="lazy"
@@ -279,7 +279,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                             {producer.photoPath ? (
                               <img
-                                src={tmdbImageUrl(producer.photoPath, 'w185')}
+                                src={getImageUrl(producer.photoPath, 'w185')}
                                 alt={producer.name}
                                 class="h-full w-full object-cover"
                                 loading="lazy"
@@ -314,7 +314,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                             {writer.photoPath ? (
                               <img
-                                src={tmdbImageUrl(writer.photoPath, 'w185')}
+                                src={getImageUrl(writer.photoPath, 'w185')}
                                 alt={writer.name}
                                 class="h-full w-full object-cover"
                                 loading="lazy"
@@ -347,7 +347,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                           <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
                             {cinematographer.photoPath ? (
                               <img
-                                src={tmdbImageUrl(
+                                src={getImageUrl(
                                   cinematographer.photoPath,
                                   'w185'
                                 )}

@@ -144,7 +144,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
     escapeHtml,
     formatYear,
     getInitials,
-    tmdbImageUrl,
+    getImageUrl,
   } from '@lib/utils';
 
   interface SearchResult {
@@ -183,7 +183,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
 
   const renderResultItem = (result: SearchResult): string => {
     const config = MEDIA_CONFIG[result.mediaType];
-    const posterUrl = tmdbImageUrl(result.posterPath, 'w92');
+    const posterUrl = getImageUrl(result.posterPath, 'w92');
     const initials = getInitials(result.title);
     const year = formatYear(result.releaseDate);
 

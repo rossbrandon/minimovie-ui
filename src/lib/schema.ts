@@ -6,7 +6,7 @@ import type {
   SeasonDetails,
   SeriesDetails,
 } from './types';
-import { tmdbImageUrl } from './utils';
+import { getImageUrl } from './utils';
 
 const MAX_CAST_IN_SCHEMA = 16; // Should match Top Cast section
 
@@ -33,7 +33,7 @@ function buildMovieSchema(movie: MovieDetails) {
     name: movie.title,
     url: `${SITE_URL}/movies/${movie.id}`,
     ...(movie.overview && { description: movie.overview }),
-    ...(movie.posterPath && { image: tmdbImageUrl(movie.posterPath, 'w780') }),
+    ...(movie.posterPath && { image: getImageUrl(movie.posterPath, 'w780') }),
     ...(movie.releaseDate && { datePublished: movie.releaseDate }),
     ...(movie.runtime && { duration: toIsoDuration(movie.runtime) }),
     ...(movie.genres?.length && { genre: movie.genres }),
@@ -63,7 +63,7 @@ function buildSeriesSchema(series: SeriesDetails) {
     url: `${SITE_URL}/series/${series.id}`,
     ...(series.overview && { description: series.overview }),
     ...(series.posterPath && {
-      image: tmdbImageUrl(series.posterPath, 'w780'),
+      image: getImageUrl(series.posterPath, 'w780'),
     }),
     ...(series.firstAirDate && { startDate: series.firstAirDate }),
     ...(series.lastAirDate && { endDate: series.lastAirDate }),
@@ -91,7 +91,7 @@ function buildSeasonSchema(season: SeasonDetails, series: SeriesDetails) {
     url: `${SITE_URL}/series/${series.id}/seasons/${season.seasonNumber}`,
     ...(season.overview && { description: season.overview }),
     ...(season.posterPath && {
-      image: tmdbImageUrl(season.posterPath, 'w780'),
+      image: getImageUrl(season.posterPath, 'w780'),
     }),
     seasonNumber: season.seasonNumber,
     ...(season.episodes?.length && {
@@ -118,7 +118,7 @@ function buildEpisodeSchema(
     url: `${SITE_URL}/series/${series.id}/seasons/${episode.seasonNumber}/episodes/${episode.episodeNumber}`,
     ...(episode.overview && { description: episode.overview }),
     ...(episode.stillPath && {
-      image: tmdbImageUrl(episode.stillPath, 'original'),
+      image: getImageUrl(episode.stillPath, 'original'),
     }),
     episodeNumber: episode.episodeNumber,
     ...(episode.airDate && { datePublished: episode.airDate }),
@@ -150,7 +150,7 @@ function buildPersonSchema(person: PersonDetails) {
     name: person.name,
     url: `${SITE_URL}/people/${person.id}`,
     ...(person.biography && { description: person.biography.slice(0, 300) }),
-    ...(person.photoPath && { image: tmdbImageUrl(person.photoPath, 'h632') }),
+    ...(person.photoPath && { image: getImageUrl(person.photoPath, 'h632') }),
     ...(person.birthday && { birthDate: person.birthday }),
     ...(person.deathday && { deathDate: person.deathday }),
     ...(person.placeOfBirth && {

@@ -5,7 +5,7 @@ import {
   formatEpisodeCode,
   formatRating,
   formatRuntime,
-  tmdbImageUrl,
+  getImageUrl,
 } from '@lib/utils';
 
 interface Props {
@@ -37,7 +37,7 @@ const {
 const href = `/series/${seriesId}/seasons/${seasonNumber}/episodes/${episodeNumber}`;
 const episodeCode = formatEpisodeCode(seasonNumber, episodeNumber);
 const rating = formatRating(voteAverage);
-const stillUrl = tmdbImageUrl(stillPath, 'w300');
+const stillUrl = getImageUrl(stillPath, 'w300');
 ---
 
 <a

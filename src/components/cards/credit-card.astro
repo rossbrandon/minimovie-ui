@@ -7,7 +7,7 @@ import {
   formatRating,
   formatYear,
   getInitials,
-  tmdbImageUrl,
+  getImageUrl,
 } from '@lib/utils';
 
 interface Props {
@@ -38,7 +38,7 @@ const href =
   mediaType === 'movie' ? `/movies/${credit.id}` : `/series/${credit.id}`;
 const year = formatYear(credit.releaseDate);
 const initials = getInitials(credit.title);
-const posterUrl = tmdbImageUrl(credit.posterPath, 'w342');
+const posterUrl = getImageUrl(credit.posterPath, 'w342');
 
 const ageAtRelease =
   personBirthday && credit.releaseDate

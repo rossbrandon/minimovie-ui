@@ -1,7 +1,7 @@
 ---
 import { IconStack2 } from '@components/icons';
 import type { Credits, OverflowItem, Person } from '@lib/types';
-import { formatAgeDisplay, tmdbImageUrl } from '@lib/utils';
+import { formatAgeDisplay, getImageUrl } from '@lib/utils';
 
 import CrewGrid from './crew-grid.astro';
 import SectionSearch from './section-search.astro';
@@ -57,7 +57,7 @@ const crewSections = [
                   <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
                     {person.photoPath ? (
                       <img
-                        src={tmdbImageUrl(person.photoPath, 'w185')}
+                        src={getImageUrl(person.photoPath, 'w185')}
                         alt={person.name}
                         class="h-full w-full object-cover"
                         loading="lazy"

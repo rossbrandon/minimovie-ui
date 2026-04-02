@@ -25,7 +25,7 @@ import type { FilmCredit, PersonDetails } from '@lib/types';
 import {
   formatPersonAge,
   getInitials,
-  tmdbImageUrl,
+  getImageUrl,
   truncateText,
 } from '@lib/utils';
 
@@ -89,7 +89,7 @@ const ageInfo = person
   ? formatPersonAge(person.birthday, person.deathday, person.currentAge)
   : null;
 
-const photoUrl = tmdbImageUrl(person?.photoPath, 'h632');
+const photoUrl = getImageUrl(person?.photoPath, 'h632');
 
 const tabValues = [
   knownFor.length > 0 && 'known-for',

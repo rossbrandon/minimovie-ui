@@ -1,6 +1,6 @@
 ---
 import { IconCalendar, IconVideo } from '@components/icons';
-import { formatDate, getInitials, tmdbImageUrl } from '@lib/utils';
+import { formatDate, getInitials, getImageUrl } from '@lib/utils';
 
 interface Props {
   seriesId: number;
@@ -26,7 +26,7 @@ const {
 
 const href = `/series/${seriesId}/seasons/${seasonNumber}`;
 const initials = getInitials(name);
-const posterUrl = tmdbImageUrl(posterPath, 'w185');
+const posterUrl = getImageUrl(posterPath, 'w185');
 ---
 
 <a

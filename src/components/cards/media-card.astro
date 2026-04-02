@@ -1,7 +1,7 @@
 ---
 import { Badge } from '@components/starwind/badge';
 import type { MediaType } from '@lib/types';
-import { formatYear, getInitials, tmdbImageUrl } from '@lib/utils';
+import { formatYear, getInitials, getImageUrl } from '@lib/utils';
 
 interface Props {
   id: number;
@@ -40,8 +40,8 @@ const year = formatYear(releaseDate);
 const initials = getInitials(title);
 const posterUrl =
   mediaType === 'person'
-    ? tmdbImageUrl(posterPath, 'w185')
-    : tmdbImageUrl(posterPath, 'w342');
+    ? getImageUrl(posterPath, 'w185')
+    : getImageUrl(posterPath, 'w342');
 
 const mediaTypeLabel =
   mediaType === 'movie' ? 'Movie' : mediaType === 'series' ? 'TV' : 'Person';

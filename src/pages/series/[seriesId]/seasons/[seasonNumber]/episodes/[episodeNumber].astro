@@ -25,7 +25,7 @@ import {
   formatRating,
   formatRuntime,
   formatYearsAgo,
-  tmdbImageUrl,
+  getImageUrl,
 } from '@lib/utils';
 
 const { seriesId, seasonNumber, episodeNumber } = Astro.params;
@@ -58,7 +58,7 @@ const seasonName =
   series?.seasons?.find((s) => s.seasonNumber === Number(seasonNumber))?.name ||
   `Season ${seasonNumber}`;
 
-const stillUrl = tmdbImageUrl(episode?.stillPath, 'original');
+const stillUrl = getImageUrl(episode?.stillPath, 'original');
 
 const keyCrewEntries = [
   { label: 'Director', person: episode?.credits?.directors?.[0] },

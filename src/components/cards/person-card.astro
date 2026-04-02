@@ -1,6 +1,6 @@
 ---
 import { IconStack2 } from '@components/icons';
-import { formatAgeDisplay, getInitials, tmdbImageUrl } from '@lib/utils';
+import { formatAgeDisplay, getInitials, getImageUrl } from '@lib/utils';
 
 interface Props {
   id: number;
@@ -39,7 +39,7 @@ const eps = episodeCount
   : '';
 
 const initials = getInitials(name);
-const photoUrl = tmdbImageUrl(photoPath, 'w185');
+const photoUrl = getImageUrl(photoPath, 'w185');
 const ageDisplay = formatAgeDisplay({
   ageAtRelease,
   currentAge,
