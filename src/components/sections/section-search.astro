@@ -146,30 +146,27 @@ const { placeholder = 'Search by name or character...', overflowData } =
             .querySelectorAll<HTMLElement>('[data-dynamic]')
             .forEach((el) => el.remove());
 
-          Array.from(container.children).forEach((child) => {
-            if (!(child instanceof HTMLElement)) return;
-            if (
-              child.classList.contains('section-search-wrapper') ||
-              child.classList.contains('section-search-count')
-            )
-              return;
+          container
+            .querySelectorAll<HTMLElement>('.section-search-grid')
+            .forEach((grid) => {
+              let gridVisible = 0;
 
-            const links = child.querySelectorAll<HTMLAnchorElement>(
-              'a:not([data-dynamic])'
-            );
-            if (links.length === 0) return;
+              Array.from(grid.children).forEach((item) => {
+                if (!(item instanceof HTMLElement)) return;
 
-            let sectionVisible = 0;
-            links.forEach((link) => {
-              const text = link.textContent?.toLowerCase() || '';
-              const match = !query || text.includes(query);
-              link.style.display = match ? '' : 'none';
-              if (match) sectionVisible++;
+                const text = item.textContent?.toLowerCase() || '';
+                const match = !query || text.includes(query);
+                item.style.display = match ? '' : 'none';
+                if (match) gridVisible++;
+              });
+
+              const section = grid.parentElement;
+              if (section && section !== container) {
+                section.style.display = gridVisible > 0 ? '' : 'none';
+              }
+
+              totalVisible += gridVisible;
             });
-
-            child.style.display = sectionVisible > 0 ? '' : 'none';
-            totalVisible += sectionVisible;
-          });
 
           if (overflowItems && query && targetGrid) {
             const matches = overflowItems.filter((item) =>

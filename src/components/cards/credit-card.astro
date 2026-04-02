@@ -147,10 +147,10 @@ const eps = credit.episodeCount
     episodeCountHref && (
       <a
         href={episodeCountHref}
-        class="relative z-10 shrink-0 flex items-center gap-1.5 px-2 h-11 mr-1 rounded-lg text-amber-500 hover:bg-accent/50 transition-colors sm:hidden"
+        class="relative z-10 shrink-0 flex items-center gap-1 text-xs text-muted-foreground bg-muted rounded-md px-2 py-1 mr-1 hover:text-amber-500 transition-colors sm:hidden"
       >
-        <IconStack2 class="size-4" />
-        <span class="text-xs font-medium">{eps}</span>
+        <IconStack2 class="size-3" />
+        {eps}
       </a>
     )
   }

@@ -14,7 +14,7 @@ const { title, people } = Astro.props;
   people.length > 0 && (
     <div>
       <h2 class="text-sm font-medium text-muted-foreground mb-3">{title}</h2>
-      <div class="flex flex-wrap gap-3">
+      <div class="section-search-grid flex flex-wrap gap-3">
         {people.map((person) => (
           <a
             href={`/people/${person.id}`}

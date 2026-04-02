@@ -52,7 +52,8 @@ const personHref = `/people/${id}`;
 ---
 
 <div
-  class="group relative flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2"
+  class="group relative flex items-center gap-3 rounded-lg border border-border bg-card transition-colors hover:bg-accent/50
+         sm:flex-col sm:items-center sm:gap-2 sm:border-0 sm:bg-transparent sm:hover:bg-transparent"
 >
   {
     linkToPerson && (
@@ -70,7 +71,7 @@ const personHref = `/people/${id}`;
     linkToPerson ? (
       <a
         href={personHref}
-        class="shrink-0 pointer-events-none sm:pointer-events-auto sm:group sm:w-full"
+        class="shrink-0 pointer-events-none ml-3 sm:ml-0 sm:pointer-events-auto sm:group sm:w-full"
         data-astro-prefetch={prefetch ? '' : undefined}
       >
         <div class="h-12 w-12 sm:w-full sm:h-auto sm:aspect-2/3 overflow-hidden rounded-lg bg-muted">
@@ -89,7 +90,7 @@ const personHref = `/people/${id}`;
         </div>
       </a>
     ) : (
-      <div class="shrink-0 sm:w-full">
+      <div class="shrink-0 ml-3 sm:ml-0 sm:w-full">
         <div class="h-12 w-12 sm:w-full sm:h-auto sm:aspect-2/3 overflow-hidden rounded-lg bg-muted">
           {photoUrl ? (
             <img
@@ -109,7 +110,7 @@ const personHref = `/people/${id}`;
   }
 
   <div
-    class="pointer-events-none flex-1 min-w-0 text-left sm:pointer-events-auto sm:flex-1 sm:text-center sm:pb-1"
+    class="pointer-events-none flex-1 min-w-0 text-left py-2 pr-1 sm:pointer-events-auto sm:flex-1 sm:text-center sm:py-0 sm:pr-0 sm:pb-1"
   >
     {
       linkToPerson ? (
@@ -167,10 +168,10 @@ const personHref = `/people/${id}`;
     episodeCountHref && (
       <a
         href={episodeCountHref}
-        class="relative z-10 shrink-0 flex items-center gap-1.5 px-2 h-11 rounded-lg text-amber-500 hover:bg-accent/50 transition-colors sm:hidden"
+        class="relative z-10 shrink-0 flex items-center gap-1 text-xs text-muted-foreground bg-muted rounded-md px-2 py-1 mr-1 hover:text-amber-500 transition-colors sm:hidden"
       >
-        <IconStack2 class="size-4" />
-        <span class="text-xs font-medium">{eps}</span>
+        <IconStack2 class="size-3" />
+        {eps}
       </a>
     )
   }

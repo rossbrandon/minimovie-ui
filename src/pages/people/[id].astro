@@ -265,7 +265,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
               <TabsContent value="movies" default={defaultTab === 'movies'}>
                 <div class="space-y-4">
                   <SectionSearch placeholder="Search movies..." />
-                  <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
+                  <div class="section-search-grid grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
                     {sortedMovieCredits.map((credit) => (
                       <CreditCard
                         credit={credit}
@@ -285,7 +285,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
               <TabsContent value="series" default={defaultTab === 'series'}>
                 <div class="space-y-4">
                   <SectionSearch placeholder="Search series..." />
-                  <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
+                  <div class="section-search-grid grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
                     {sortedSeriesCredits.map((credit) => (
                       <CreditCard
                         credit={credit}
