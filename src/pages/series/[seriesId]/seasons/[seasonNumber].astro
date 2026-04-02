@@ -11,6 +11,7 @@ import NotFound from '@components/not-found.astro';
 import {
   FullCastCrew,
   KeyCrew,
+  QuickWatchInfo,
   TopCast,
   WhereToWatch,
 } from '@components/sections';
@@ -178,6 +179,10 @@ const jsonLd =
                   </div>
                 )}
               </div>
+
+              {season.whereToWatch && (
+                <QuickWatchInfo whereToWatch={season.whereToWatch} />
+              )}
 
               {/* Overview */}
               <div class="space-y-2">

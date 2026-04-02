@@ -1,0 +1,100 @@
+---
+import { IconCoin, IconPlayerPlay, IconShoppingCart } from '@components/icons';
+import {
+  getFirstQuickWatchEntry,
+  getQuickWatchInfo,
+} from '@lib/quick-watch-utils';
+import type { WhereToWatch } from '@lib/types';
+
+interface Props {
+  whereToWatch?: WhereToWatch;
+  watchTabHref?: string;
+}
+
+const { whereToWatch, watchTabHref = '?tab=where-to-watch' } = Astro.props;
+
+const entry = getFirstQuickWatchEntry(whereToWatch);
+const info = entry ? getQuickWatchInfo(entry) : null;
+---
+
+{
+  entry && info && (
+    <a
+      href={watchTabHref}
+      class="inline-flex max-w-full flex-wrap items-center gap-2 rounded-lg py-1 -my-0.5 mb-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+      aria-label={`${info.actionText} ${entry.label} — view all options`}
+      data-quick-watch-info
+    >
+      {info.icon === 'play' && (
+        <IconPlayerPlay
+          class={`h-4 w-4 shrink-0 ${info.colorClass}`}
+          aria-hidden="true"
+        />
+      )}
+      {info.icon === 'coin' && (
+        <IconCoin
+          class={`h-4 w-4 shrink-0 ${info.colorClass}`}
+          aria-hidden="true"
+        />
+      )}
+      {info.icon === 'cart' && (
+        <IconShoppingCart
+          class={`h-4 w-4 shrink-0 ${info.colorClass}`}
+          aria-hidden="true"
+        />
+      )}
+      <span class={`shrink-0 text-sm font-medium ${info.colorClass}`}>
+        {info.actionText}
+      </span>
+      <div class="flex items-center gap-2">
+        {entry.logoPath ? (
+          <img
+            src={`https://image.tmdb.org/t/p/w45${entry.logoPath}`}
+            alt=""
+            class="h-5 w-5 rounded"
+            loading="lazy"
+          />
+        ) : (
+          <div
+            class="h-5 w-5 shrink-0 rounded bg-muted-foreground/20"
+            aria-hidden="true"
+          />
+        )}
+        <span class="text-sm text-foreground">{entry.label}</span>
+      </div>
+    </a>
+  )
+}
+
+<script>
+  const g = globalThis as typeof globalThis & {
+    __mmQuickWatchInfoNav?: boolean;
+  };
+  if (!g.__mmQuickWatchInfoNav) {
+    g.__mmQuickWatchInfoNav = true;
+    document.addEventListener('click', (e: MouseEvent) => {
+      if (!(e.target instanceof Element)) return;
+      const a = e.target.closest('a[data-quick-watch-info]');
+      if (!(a instanceof HTMLAnchorElement)) return;
+      if (e.defaultPrevented) return;
+      if (e.button !== 0) return;
+      if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+
+      let targetUrl: URL;
+      try {
+        targetUrl = new URL(a.href);
+      } catch {
+        return;
+      }
+      if (targetUrl.pathname !== window.location.pathname) return;
+
+      const trigger = document.querySelector<HTMLButtonElement>(
+        'button[data-tabs-trigger][data-value="where-to-watch"]'
+      );
+      if (!trigger) return;
+
+      e.preventDefault();
+      trigger.click();
+    });
+  }
+</script>

@@ -1,5 +1,6 @@
 ---
 import { IconCalendar, IconClock, IconStar } from '@components/icons';
+import { Badge } from '@components/starwind/badge';
 import {
   formatDate,
   formatEpisodeCode,
@@ -38,6 +39,7 @@ const href = `/series/${seriesId}/seasons/${seasonNumber}/episodes/${episodeNumb
 const episodeCode = formatEpisodeCode(seasonNumber, episodeNumber);
 const rating = formatRating(voteAverage);
 const stillUrl = getImageUrl(stillPath, 'w300');
+const isUpcoming = airDate ? new Date(airDate) > new Date() : false;
 ---
 
 <a
@@ -87,7 +89,7 @@ const stillUrl = getImageUrl(stillPath, 'w300');
       class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground"
     >
       {
-        runtime && (
+        !!runtime && (
           <div class="flex items-center gap-1">
             <IconClock class="h-3.5 w-3.5" />
             <span>{formatRuntime(runtime)}</span>
@@ -100,6 +102,13 @@ const stillUrl = getImageUrl(stillPath, 'w300');
             <IconCalendar class="h-3.5 w-3.5" />
             <span>{formatDate(airDate)}</span>
           </div>
+        )
+      }
+      {
+        isUpcoming && (
+          <Badge variant="outline" class="text-xs">
+            Upcoming
+          </Badge>
         )
       }
     </div>

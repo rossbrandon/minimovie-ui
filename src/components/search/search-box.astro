@@ -140,12 +140,7 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
 <script>
   // Disabled prefetching for now due to Cloudflare free tier limits
   // import { prefetch } from 'astro:prefetch';
-  import {
-    escapeHtml,
-    formatYear,
-    getInitials,
-    getImageUrl,
-  } from '@lib/utils';
+  import { escapeHtml, formatYear, getImageUrl, getInitials } from '@lib/utils';
 
   interface SearchResult {
     id: number;

@@ -1,6 +1,7 @@
 ---
 import { IconCalendar, IconVideo } from '@components/icons';
-import { formatDate, getInitials, getImageUrl } from '@lib/utils';
+import { Badge } from '@components/starwind/badge';
+import { formatDate, getImageUrl, getInitials } from '@lib/utils';
 
 interface Props {
   seriesId: number;
@@ -27,6 +28,7 @@ const {
 const href = `/series/${seriesId}/seasons/${seasonNumber}`;
 const initials = getInitials(name);
 const posterUrl = getImageUrl(posterPath, 'w185');
+const isUpcoming = airDate ? new Date(airDate) > new Date() : !episodeCount;
 ---
 
 <a
@@ -62,7 +64,7 @@ const posterUrl = getImageUrl(posterPath, 'w185');
       class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground"
     >
       {
-        episodeCount && (
+        !!episodeCount && (
           <div class="flex items-center gap-1">
             <IconVideo class="h-3.5 w-3.5" />
             <span>{episodeCount} episodes</span>
@@ -75,6 +77,13 @@ const posterUrl = getImageUrl(posterPath, 'w185');
             <IconCalendar class="h-3.5 w-3.5" />
             <span>{formatDate(airDate)}</span>
           </div>
+        )
+      }
+      {
+        isUpcoming && (
+          <Badge variant="outline" class="text-xs">
+            Upcoming
+          </Badge>
         )
       }
     </div>
