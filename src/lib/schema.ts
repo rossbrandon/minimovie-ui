@@ -8,7 +8,7 @@ import type {
 } from './types';
 import { tmdbImageUrl } from './utils';
 
-const MAX_CAST_IN_SCHEMA = 12; // Should match Top Cast section
+const MAX_CAST_IN_SCHEMA = 16; // Should match Top Cast section
 
 function toIsoDuration(minutes: number): string {
   const h = Math.floor(minutes / 60);

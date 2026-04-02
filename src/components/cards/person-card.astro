@@ -1,5 +1,5 @@
 ---
-import { IconChevronRight, IconStack2 } from '@components/icons';
+import { IconStack2 } from '@components/icons';
 import { formatAgeDisplay, getInitials, tmdbImageUrl } from '@lib/utils';
 
 interface Props {
@@ -52,7 +52,7 @@ const personHref = `/people/${id}`;
 ---
 
 <div
-  class="group relative flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2 sm:h-full"
+  class="group relative flex items-center gap-3 sm:flex-col sm:items-center sm:gap-2"
 >
   {
     linkToPerson && (
@@ -70,36 +70,36 @@ const personHref = `/people/${id}`;
     linkToPerson ? (
       <a
         href={personHref}
-        class="shrink-0 pointer-events-none sm:pointer-events-auto sm:group"
+        class="shrink-0 pointer-events-none sm:pointer-events-auto sm:group sm:w-full"
         data-astro-prefetch={prefetch ? '' : undefined}
       >
-        <div class="h-12 w-12 sm:h-20 sm:w-20 overflow-hidden rounded-lg bg-muted">
+        <div class="h-12 w-12 sm:w-full sm:h-auto sm:aspect-2/3 overflow-hidden rounded-lg bg-muted">
           {photoUrl ? (
             <img
               src={photoUrl}
               alt={name}
-              class="h-full w-full object-cover"
+              class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <div class="flex h-full w-full items-center justify-center text-sm sm:text-lg font-semibold text-muted-foreground">
+            <div class="flex h-full w-full items-center justify-center text-sm sm:text-2xl font-semibold text-muted-foreground">
               {initials}
             </div>
           )}
         </div>
       </a>
     ) : (
-      <div class="shrink-0">
-        <div class="h-12 w-12 sm:h-20 sm:w-20 overflow-hidden rounded-lg bg-muted">
+      <div class="shrink-0 sm:w-full">
+        <div class="h-12 w-12 sm:w-full sm:h-auto sm:aspect-2/3 overflow-hidden rounded-lg bg-muted">
           {photoUrl ? (
             <img
               src={photoUrl}
               alt={name}
-              class="h-full w-full object-cover"
+              class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
             />
           ) : (
-            <div class="flex h-full w-full items-center justify-center text-sm sm:text-lg font-semibold text-muted-foreground">
+            <div class="flex h-full w-full items-center justify-center text-sm sm:text-2xl font-semibold text-muted-foreground">
               {initials}
             </div>
           )}
@@ -109,16 +109,16 @@ const personHref = `/people/${id}`;
   }
 
   <div
-    class="pointer-events-none flex-1 min-w-0 text-left sm:pointer-events-auto sm:flex-1 sm:text-center sm:max-w-[100px] sm:pb-1"
+    class="pointer-events-none flex-1 min-w-0 text-left sm:pointer-events-auto sm:flex-1 sm:text-center sm:pb-1"
   >
     {
       linkToPerson ? (
         <a
           href={personHref}
-          class="hidden sm:block group/name"
+          class="hidden sm:block"
           data-astro-prefetch={prefetch ? '' : undefined}
         >
-          <p class="font-medium text-sm leading-tight line-clamp-1 sm:line-clamp-2 group-hover/name:text-amber-500 transition-colors">
+          <p class="font-medium text-sm leading-tight line-clamp-1 sm:line-clamp-2 group-hover:text-amber-500 transition-colors">
             {name}
           </p>
         </a>
@@ -150,6 +150,17 @@ const personHref = `/people/${id}`;
         <p class="text-xs text-muted-foreground/70 mt-0.5">{ageDisplay}</p>
       )
     }
+    {
+      episodeCountHref && (
+        <a
+          href={episodeCountHref}
+          class="hidden sm:inline-flex items-center gap-1 text-xs text-muted-foreground bg-muted rounded-md px-2 py-0.5 hover:text-amber-500 transition-colors mt-1"
+        >
+          <IconStack2 class="size-3" />
+          {eps}
+        </a>
+      )
+    }
   </div>
 
   {
@@ -163,21 +174,4 @@ const personHref = `/people/${id}`;
       </a>
     )
   }
-
-  <div
-    class="hidden sm:flex sm:mt-auto sm:w-full sm:min-h-[32px] sm:items-center sm:justify-center sm:border-t sm:border-border/50"
-  >
-    {
-      episodeCountHref ? (
-        <a
-          href={episodeCountHref}
-          class="flex w-full items-center justify-center gap-1 text-xs font-medium text-amber-500/80 hover:text-amber-500 hover:bg-accent/50 min-h-[32px] px-2 transition-colors"
-        >
-          <IconStack2 class="size-3" />
-          {eps}
-          <IconChevronRight class="size-3" />
-        </a>
-      ) : null
-    }
-  </div>
 </div>

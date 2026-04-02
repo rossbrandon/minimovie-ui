@@ -4,6 +4,12 @@ import { IconVideo } from '@components/icons';
 import { Breadcrumbs, Header } from '@components/layout';
 import NotFound from '@components/not-found.astro';
 import { Badge } from '@components/starwind/badge';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getPersonSeriesCredits } from '@lib/api';
 import type { PersonSeriesCredits } from '@lib/types';
@@ -27,7 +33,7 @@ if (error || !data) {
 
 const personName = data?.person.name || 'Unknown';
 const seriesName = data?.series.name || 'Unknown';
-const personPhoto = tmdbImageUrl(data?.person.photoPath, 'w185');
+const personPhoto = tmdbImageUrl(data?.person.photoPath, 'h632');
 const seriesPoster = tmdbImageUrl(data?.series.posterPath, 'w185');
 const roles = data?.roles?.map((r) => r.character).join(', ') || '';
 
@@ -37,6 +43,13 @@ const breadcrumbItems = data
       { label: data.person.name },
     ]
   : [];
+
+const tabValues = data?.seasons.map((s) => `season-${s.seasonNumber}`) || [];
+const requestedTab = Astro.url.searchParams.get('tab');
+const defaultTab =
+  requestedTab && tabValues.includes(requestedTab)
+    ? requestedTab
+    : tabValues[0];
 ---
 
 <Layout
@@ -62,47 +75,49 @@ const breadcrumbItems = data
           <Breadcrumbs items={breadcrumbItems} />
 
           {/* Hero */}
-          <div class="flex flex-col sm:flex-row gap-6 items-start">
-            <a href={`/people/${data.person.id}`} class="shrink-0 group">
-              <div class="h-28 w-28 overflow-hidden rounded-lg bg-muted shadow-lg">
+          <div class="flex flex-col md:flex-row gap-8">
+            <a href={`/people/${data.person.id}`} class="shrink-0 mx-auto md:mx-0 group">
+              <div class="w-40 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
                 {personPhoto ? (
                   <img
                     src={personPhoto}
                     alt={personName}
                     class="h-full w-full object-cover group-hover:scale-105 transition-transform"
-                    width="112"
-                    height="112"
+                    width="160"
+                    height="240"
                   />
                 ) : (
-                  <div class="flex h-full w-full items-center justify-center text-2xl font-semibold text-muted-foreground">
+                  <div class="flex h-full w-full items-center justify-center text-3xl font-semibold text-muted-foreground">
                     {personName.charAt(0)}
                   </div>
                 )}
               </div>
             </a>
 
-            <div class="flex-1 space-y-2">
-              <h1 class="text-3xl md:text-4xl font-bold">
-                <a
-                  href={`/people/${data.person.id}`}
-                  class="hover:text-amber-500 transition-colors"
-                >
-                  {personName}
-                </a>
-              </h1>
-              <p class="text-lg text-muted-foreground">
-                in{' '}
-                <a
-                  href={`/series/${seriesId}`}
-                  class="hover:text-foreground transition-colors"
-                >
-                  {seriesName}
-                </a>
-              </p>
+            <div class="flex-1 space-y-3">
+              <div>
+                <h1 class="text-3xl md:text-4xl font-bold">
+                  <a
+                    href={`/people/${data.person.id}`}
+                    class="hover:text-amber-500 transition-colors"
+                  >
+                    {personName}
+                  </a>
+                </h1>
+                <p class="text-lg text-muted-foreground mt-1">
+                  in{' '}
+                  <a
+                    href={`/series/${seriesId}`}
+                    class="hover:text-amber-500 transition-colors"
+                  >
+                    {seriesName}
+                  </a>
+                </p>
+              </div>
               {roles && <p class="text-muted-foreground">as {roles}</p>}
-              <div class="flex items-center gap-2 pt-1">
+              <div class="flex items-center gap-2">
                 <Badge variant="default">
-                  <IconVideo class="size-3.5" />
+                  <IconVideo class="size-3.5 mr-1" />
                   {data.totalEpisodeCount}{' '}
                   {data.totalEpisodeCount === 1 ? 'Episode' : 'Episodes'}
                 </Badge>
@@ -111,31 +126,45 @@ const breadcrumbItems = data
           </div>
 
           {/* Season-by-season breakdown */}
-          <div class="space-y-6">
-            {data.seasons.map((season) => (
-              <div class="space-y-3">
-                <div class="flex items-center gap-3">
-                  <h2 class="text-xl font-semibold">{season.name}</h2>
-                  <span class="text-sm text-muted-foreground">
-                    {season.episodes.length} of {season.totalEpisodes} episodes
-                  </span>
-                </div>
+          <Tabs defaultValue={defaultTab}>
+            <TabsList>
+              {data.seasons.map((season) => {
+                const value = `season-${season.seasonNumber}`;
+                return (
+                  <TabsTrigger value={value} default={defaultTab === value}>
+                    <IconVideo class="size-4" />
+                    {season.name}
+                    <span class="text-xs text-muted-foreground">
+                      {season.episodes.length}/{season.totalEpisodes}
+                    </span>
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
 
-                <div class="grid gap-2">
-                  {season.episodes.map((ep) => (
-                    <EpisodeAppearanceCard
-                      seriesId={Number(seriesId)}
-                      seasonNumber={season.seasonNumber}
-                      episodeNumber={ep.episodeNumber}
-                      name={ep.name}
-                      stillPath={ep.stillPath}
-                      airDate={ep.airDate}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
+            {data.seasons.map((season) => {
+              const value = `season-${season.seasonNumber}`;
+              return (
+                <TabsContent value={value} default={defaultTab === value}>
+                  <p class="text-sm text-muted-foreground mb-4">
+                    {season.episodes.length} of {season.totalEpisodes} episodes
+                  </p>
+                  <div class="grid gap-2">
+                    {season.episodes.map((ep) => (
+                      <EpisodeAppearanceCard
+                        seriesId={Number(seriesId)}
+                        seasonNumber={season.seasonNumber}
+                        episodeNumber={ep.episodeNumber}
+                        name={ep.name}
+                        stillPath={ep.stillPath}
+                        airDate={ep.airDate}
+                      />
+                    ))}
+                  </div>
+                </TabsContent>
+              );
+            })}
+          </Tabs>
         </div>
       )
     }
