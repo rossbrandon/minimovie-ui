@@ -38,7 +38,12 @@ interface Accum {
 }
 
 const BRAND_RULES: BrandRule[] = [
-  { key: 'apple', label: 'Apple TV', patterns: ['apple tv', 'itunes'] },
+  {
+    key: 'apple',
+    label: 'Apple TV',
+    patterns: ['apple tv'],
+    exactNames: ['apple tv'],
+  },
   { key: 'netflix', label: 'Netflix', patterns: ['netflix'] },
   { key: 'hulu', label: 'Hulu', patterns: ['hulu'] },
   {
@@ -54,7 +59,7 @@ const BRAND_RULES: BrandRule[] = [
   },
   {
     key: 'max',
-    label: 'Max',
+    label: 'HBO Max',
     patterns: ['hbo max'],
     exactNames: ['max'],
   },
@@ -94,7 +99,7 @@ function matchBrand(normalized: string): string | null {
       return rule.key;
     }
     for (const p of rule.patterns) {
-      if (normalized.includes(p)) {
+      if (normalized.startsWith(p)) {
         return rule.key;
       }
     }
@@ -215,6 +220,11 @@ function getQuickWatchEntries(
       hasBuy: acc.hasBuy,
     });
   }
+
+  out.sort((a, b) => {
+    if (a.hasStream !== b.hasStream) return a.hasStream ? -1 : 1;
+    return 0;
+  });
 
   return out;
 }
