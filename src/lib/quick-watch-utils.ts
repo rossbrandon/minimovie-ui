@@ -38,24 +38,13 @@ interface Accum {
 }
 
 const BRAND_RULES: BrandRule[] = [
+  { key: 'apple', label: 'Apple TV', patterns: ['apple tv', 'itunes'] },
   { key: 'netflix', label: 'Netflix', patterns: ['netflix'] },
   { key: 'hulu', label: 'Hulu', patterns: ['hulu'] },
   {
     key: 'disney',
     label: 'Disney+',
     patterns: ['disney+', 'disney plus', 'disney'],
-  },
-  {
-    key: 'amazon',
-    label: 'Amazon',
-    patterns: [
-      'amazon prime video',
-      'prime video',
-      'amazon video',
-      'amazon channel',
-      'freevee',
-      'amazon',
-    ],
   },
   { key: 'peacock', label: 'Peacock', patterns: ['peacock'] },
   {
@@ -69,7 +58,18 @@ const BRAND_RULES: BrandRule[] = [
     patterns: ['hbo max'],
     exactNames: ['max'],
   },
-  { key: 'apple', label: 'Apple TV', patterns: ['apple tv', 'itunes'] },
+  {
+    key: 'amazon',
+    label: 'Amazon',
+    patterns: [
+      'amazon prime video',
+      'prime video',
+      'amazon video',
+      'amazon channel',
+      'freevee',
+      'amazon',
+    ],
+  },
   {
     key: 'google',
     label: 'YouTube / Google',
