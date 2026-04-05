@@ -10,6 +10,11 @@ export default defineConfig({
   adapter: cloudflare(),
   vite: {
     plugins: [tailwindcss()],
+    server: {
+      hmr: {
+        overlay: false,
+      },
+    },
   },
   fonts: [
     {

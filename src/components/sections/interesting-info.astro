@@ -1,0 +1,140 @@
+---
+import { IconInfoCircle } from '@components/icons';
+import { Separator } from '@components/starwind/separator';
+import { getPersonInterestingInfo } from '@lib/api';
+import type {
+  EnrichedField,
+  EnrichedSource,
+  PersonInterestingInfo,
+} from '@lib/types';
+import { formatCurrency, getHostname } from '@lib/utils';
+
+interface Props {
+  personId: number;
+  personName: string;
+}
+
+const { personId, personName } = Astro.props;
+
+function formatValue(field: EnrichedField, isNetWorth = false): string {
+  if (isNetWorth && typeof field.value === 'number') {
+    return formatCurrency(field.value, true);
+  }
+  if (Array.isArray(field.value)) {
+    return field.value.join(', ');
+  }
+  return String(field.value);
+}
+
+function getConfidenceLabel(confidence: number): string {
+  return `${Math.round(confidence * 100)}%`;
+}
+
+let info: PersonInterestingInfo | null = null;
+let failed = false;
+
+try {
+  info = await getPersonInterestingInfo(personId, personName);
+} catch {
+  failed = true;
+}
+
+const hasData =
+  info &&
+  (info.netWorth ||
+    info.parents ||
+    info.siblings ||
+    info.children ||
+    info.spouse);
+const showNotes = info?.notes && info.notes !== 'No data available' && hasData;
+
+interface FieldEntry {
+  label: string;
+  field: EnrichedField;
+  isNetWorth?: boolean;
+}
+
+const fields: FieldEntry[] = [];
+if (info?.netWorth)
+  fields.push({
+    label: 'Est. Net Worth',
+    field: info.netWorth,
+    isNetWorth: true,
+  });
+if (info?.spouse) fields.push({ label: 'Spouse', field: info.spouse });
+if (info?.parents) fields.push({ label: 'Parents', field: info.parents });
+if (info?.children) fields.push({ label: 'Children', field: info.children });
+if (info?.siblings) fields.push({ label: 'Siblings', field: info.siblings });
+---
+
+{
+  failed ? null : !hasData ? (
+    <p class="text-sm text-muted-foreground">
+      No additional information available for this person.
+    </p>
+  ) : (
+    <div class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        {fields.map(({ label, field, isNetWorth }) => (
+          <div>
+            <p class="text-muted-foreground">{label}</p>
+            <p class="font-medium">{formatValue(field, isNetWorth)}</p>
+            {field.sources && field.sources.length > 0 && (
+              <div class="flex items-center gap-1 text-xs text-muted-foreground">
+                <span class="truncate">
+                  (
+                  {field.sources.map((source: EnrichedSource, i: number) => (
+                    <>
+                      {i > 0 && ', '}
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-muted-foreground hover:underline"
+                      >
+                        {getHostname(source.url)}
+                      </a>
+                    </>
+                  ))}
+                  )
+                </span>
+                <span class="group/tip relative inline-flex items-center shrink-0">
+                  <button
+                    type="button"
+                    class="cursor-help"
+                    aria-label="Show confidence info"
+                    data-tip-toggle
+                  >
+                    <IconInfoCircle class="h-3.5 w-3.5 text-muted-foreground" />
+                  </button>
+                  <span class="invisible group-hover/tip:visible group-focus-within/tip:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs rounded bg-popover text-popover-foreground shadow-md whitespace-nowrap z-10 pointer-events-none">
+                    Confidence: {getConfidenceLabel(field.confidence)}
+                  </span>
+                </span>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {showNotes && (
+        <p class="text-xs text-muted-foreground italic">{info!.notes}</p>
+      )}
+      <Separator />
+    </div>
+  )
+}
+
+<script>
+  document
+    .querySelectorAll<HTMLButtonElement>('[data-tip-toggle]')
+    .forEach((btn) => {
+      let wasFocused = false;
+      btn.addEventListener('pointerdown', () => {
+        wasFocused = document.activeElement === btn;
+      });
+      btn.addEventListener('click', () => {
+        if (wasFocused) btn.blur();
+      });
+    });
+</script>

@@ -44,8 +44,14 @@ function formatRuntime(minutes?: number): string {
   return `${hours}h ${mins}m`;
 }
 
-function formatCurrency(amount?: number): string {
+function formatCurrency(amount?: number, compact = false): string {
   if (amount === undefined || amount === null) return '';
+
+  if (compact) {
+    if (amount >= 1_000_000_000)
+      return `$${(amount / 1_000_000_000).toFixed(1)}B`;
+    if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
+  }
 
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -164,6 +170,14 @@ function getImageUrl(
   return `${TMDB_IMAGE_BASE}/${size}${path}`;
 }
 
+function getHostname(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+}
+
 const escapeHtml = (text: string): string => {
   const div = document.createElement('div');
   div.textContent = text;
@@ -183,6 +197,7 @@ export {
   formatRuntime,
   formatYear,
   formatYearsAgo,
+  getHostname,
   getImageUrl,
   getInitials,
   truncateText,

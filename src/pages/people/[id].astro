@@ -11,7 +11,8 @@ import {
 } from '@components/icons';
 import { Header } from '@components/layout';
 import NotFound from '@components/not-found.astro';
-import { SectionSearch } from '@components/sections';
+import { InterestingInfo, SectionSearch } from '@components/sections';
+import { Skeleton } from '@components/starwind/skeleton';
 import {
   Tabs,
   TabsContent,
@@ -85,6 +86,13 @@ const knownFor = [...movieCredits, ...seriesCredits]
   .slice(0, 16)
   .map((x) => x.credit);
 
+const maxPopularity = Math.max(
+  0,
+  ...movieCredits.map((c) => c.popularity ?? 0),
+  ...seriesCredits.map((c) => c.popularity ?? 0)
+);
+const isNotable = maxPopularity >= 1.0;
+
 const ageInfo = person
   ? formatPersonAge(person.birthday, person.deathday, person.currentAge)
   : null;
@@ -95,7 +103,7 @@ const tabValues = [
   knownFor.length > 0 && 'known-for',
   sortedMovieCredits.length > 0 && 'movies',
   sortedSeriesCredits.length > 0 && 'series',
-  'more-info',
+  'interesting-info',
 ].filter(Boolean) as string[];
 
 const requestedTab = Astro.url.searchParams.get('tab');
@@ -216,7 +224,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
               {sortedMovieCredits.length > 0 && (
                 <TabsTrigger value="movies" default={defaultTab === 'movies'}>
                   <IconMovie class="size-4" /> Movies
-                  <span class="text-xs text-muted-foreground">
+                  <span class="text-xs leading-none translate-y-px text-muted-foreground">
                     {sortedMovieCredits.length}
                   </span>
                 </TabsTrigger>
@@ -224,16 +232,16 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
               {sortedSeriesCredits.length > 0 && (
                 <TabsTrigger value="series" default={defaultTab === 'series'}>
                   <IconDeviceTv class="size-4" /> TV Series
-                  <span class="text-xs text-muted-foreground">
+                  <span class="text-xs leading-none translate-y-px text-muted-foreground">
                     {sortedSeriesCredits.length}
                   </span>
                 </TabsTrigger>
               )}
               <TabsTrigger
-                value="more-info"
-                default={defaultTab === 'more-info'}
+                value="interesting-info"
+                default={defaultTab === 'interesting-info'}
               >
-                <IconInfoCircle class="size-4" /> More Info
+                <IconInfoCircle class="size-4" /> Interesting Info
               </TabsTrigger>
             </TabsList>
 
@@ -302,27 +310,57 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
               </TabsContent>
             )}
 
-            <TabsContent value="more-info" default={defaultTab === 'more-info'}>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                {person.alsoKnownAs && person.alsoKnownAs.length > 0 && (
-                  <div class="md:col-span-2">
-                    <p class="text-muted-foreground">Also Known As</p>
-                    <p class="font-medium">{person.alsoKnownAs.join(', ')}</p>
-                  </div>
-                )}
-                {person.imdbId && (
-                  <div>
-                    <p class="text-muted-foreground">IMDB</p>
-                    <a
-                      href={`https://www.imdb.com/name/${person.imdbId}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      class="font-medium text-primary hover:underline"
+            <TabsContent
+              value="interesting-info"
+              default={defaultTab === 'interesting-info'}
+            >
+              <div class="space-y-6 px-1">
+                {isNotable && (
+                  <InterestingInfo
+                    server:defer
+                    personId={person.id}
+                    personName={person.name}
+                  >
+                    <div
+                      slot="fallback"
+                      id="interesting-info-fallback"
+                      class="space-y-3"
                     >
-                      {person.imdbId}
-                    </a>
-                  </div>
+                      <p class="text-xs text-muted-foreground">
+                        Gathering insights...
+                      </p>
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <Skeleton class="h-10 w-full" />
+                        <Skeleton class="h-10 w-full" />
+                        <Skeleton class="h-10 w-full" />
+                        <Skeleton class="h-10 w-full" />
+                        <Skeleton class="h-10 w-full" />
+                      </div>
+                    </div>
+                  </InterestingInfo>
                 )}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  {person.alsoKnownAs && person.alsoKnownAs.length > 0 && (
+                    <div class="md:col-span-2">
+                      <p class="text-muted-foreground">Also Known As</p>
+                      <p class="font-medium">{person.alsoKnownAs.join(', ')}</p>
+                    </div>
+                  )}
+                  {person.imdbId && (
+                    <div>
+                      <p class="text-muted-foreground">IMDB</p>
+                      <a
+                        href={`https://www.imdb.com/name/${person.imdbId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="font-medium text-muted-foreground hover:underline"
+                      >
+                        {person.imdbId}
+                      </a>
+                    </div>
+                  )}
+                </div>
               </div>
             </TabsContent>
           </Tabs>

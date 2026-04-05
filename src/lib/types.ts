@@ -263,6 +263,26 @@ export interface PersonSeriesCredits {
   seasons: PersonSeriesSeason[];
 }
 
+export interface EnrichedSource {
+  title: string;
+  url: string;
+}
+
+export interface EnrichedField {
+  value: any;
+  confidence: number;
+  sources?: EnrichedSource[];
+}
+
+export interface PersonInterestingInfo {
+  netWorth?: EnrichedField;
+  parents?: EnrichedField;
+  siblings?: EnrichedField;
+  children?: EnrichedField;
+  spouse?: EnrichedField;
+  notes: string;
+}
+
 export interface EpisodeDetails {
   id: number;
   name: string;

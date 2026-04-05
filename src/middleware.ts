@@ -12,7 +12,11 @@ const FOUR_HOURS = 14400;
  * Excluded: non-GET requests, /search, error pages, and non-HTML responses.
  */
 export const onRequest = defineMiddleware(async (context, next) => {
-  if (context.request.method !== 'GET' || context.url.pathname === '/search') {
+  if (
+    import.meta.env.DEV ||
+    context.request.method !== 'GET' ||
+    context.url.pathname === '/search'
+  ) {
     return next();
   }
 
