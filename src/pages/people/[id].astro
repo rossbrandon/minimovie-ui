@@ -324,7 +324,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                     <div
                       slot="fallback"
                       id="interesting-info-fallback"
-                      class="space-y-3"
+                      class="space-y-4"
                     >
                       <p class="text-xs text-muted-foreground">
                         Gathering insights...
@@ -334,7 +334,11 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                         <Skeleton class="h-10 w-full" />
                         <Skeleton class="h-10 w-full" />
                         <Skeleton class="h-10 w-full" />
-                        <Skeleton class="h-10 w-full" />
+                      </div>
+                      <Skeleton class="h-12 w-full" />
+                      <div class="mt-2 pt-3">
+                        <Skeleton class="h-3 w-12 mb-1" />
+                        <Skeleton class="h-3 w-3/4" />
                       </div>
                     </div>
                   </InterestingInfo>

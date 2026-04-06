@@ -280,6 +280,7 @@ export interface PersonInterestingInfo {
   siblings?: EnrichedField;
   children?: EnrichedField;
   spouse?: EnrichedField;
+  interestingFact?: EnrichedField;
   notes: string;
 }
 

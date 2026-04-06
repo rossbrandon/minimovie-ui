@@ -16,6 +16,17 @@ interface Props {
 
 const { personId, personName } = Astro.props;
 
+function hasFieldValue(
+  field: EnrichedField | undefined
+): field is EnrichedField {
+  if (!field) return false;
+  if (field.value == null) return false;
+  if (Array.isArray(field.value) && field.value.length === 0) return false;
+  if (typeof field.value === 'string' && field.value.trim() === '')
+    return false;
+  return true;
+}
+
 function formatValue(field: EnrichedField, isNetWorth = false): string {
   if (isNetWorth && typeof field.value === 'number') {
     return formatCurrency(field.value, true);
@@ -41,11 +52,12 @@ try {
 
 const hasData =
   info &&
-  (info.netWorth ||
-    info.parents ||
-    info.siblings ||
-    info.children ||
-    info.spouse);
+  (hasFieldValue(info.netWorth) ||
+    hasFieldValue(info.parents) ||
+    hasFieldValue(info.siblings) ||
+    hasFieldValue(info.children) ||
+    hasFieldValue(info.spouse) ||
+    hasFieldValue(info.interestingFact));
 const showNotes = info?.notes && info.notes !== 'No data available' && hasData;
 
 interface FieldEntry {
@@ -55,16 +67,24 @@ interface FieldEntry {
 }
 
 const fields: FieldEntry[] = [];
-if (info?.netWorth)
+if (hasFieldValue(info?.netWorth))
   fields.push({
     label: 'Est. Net Worth',
-    field: info.netWorth,
+    field: info!.netWorth!,
     isNetWorth: true,
   });
-if (info?.spouse) fields.push({ label: 'Spouse', field: info.spouse });
-if (info?.parents) fields.push({ label: 'Parents', field: info.parents });
-if (info?.children) fields.push({ label: 'Children', field: info.children });
-if (info?.siblings) fields.push({ label: 'Siblings', field: info.siblings });
+if (hasFieldValue(info?.spouse))
+  fields.push({ label: 'Spouse', field: info!.spouse! });
+if (hasFieldValue(info?.parents))
+  fields.push({ label: 'Parents', field: info!.parents! });
+if (hasFieldValue(info?.children))
+  fields.push({ label: 'Children', field: info!.children! });
+if (hasFieldValue(info?.siblings))
+  fields.push({ label: 'Siblings', field: info!.siblings! });
+
+const interestingFact = hasFieldValue(info?.interestingFact)
+  ? info!.interestingFact!
+  : null;
 ---
 
 {
@@ -117,8 +137,56 @@ if (info?.siblings) fields.push({ label: 'Siblings', field: info.siblings });
         ))}
       </div>
 
+      {interestingFact && (
+        <div>
+          <p class="text-muted-foreground text-sm">Interesting Fact</p>
+          <p class="font-medium text-sm">{formatValue(interestingFact)}</p>
+          {interestingFact.sources && interestingFact.sources.length > 0 && (
+            <div class="flex items-center gap-1 text-xs text-muted-foreground">
+              <span class="truncate">
+                (
+                {interestingFact.sources.map(
+                  (source: EnrichedSource, i: number) => (
+                    <>
+                      {i > 0 && ', '}
+                      <a
+                        href={source.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="text-muted-foreground hover:underline"
+                      >
+                        {getHostname(source.url)}
+                      </a>
+                    </>
+                  )
+                )}
+                )
+              </span>
+              <span class="group/tip relative inline-flex items-center shrink-0">
+                <button
+                  type="button"
+                  class="cursor-help"
+                  aria-label="Show confidence info"
+                  data-tip-toggle
+                >
+                  <IconInfoCircle class="h-3.5 w-3.5 text-muted-foreground" />
+                </button>
+                <span class="invisible group-hover/tip:visible group-focus-within/tip:visible absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 text-xs rounded bg-popover text-popover-foreground shadow-md whitespace-nowrap z-10 pointer-events-none">
+                  Confidence: {getConfidenceLabel(interestingFact.confidence)}
+                </span>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
       {showNotes && (
-        <p class="text-xs text-muted-foreground italic">{info!.notes}</p>
+        <div class="mt-2 pt-3">
+          <p class="text-xs font-medium text-muted-foreground/70 uppercase tracking-wide mb-1">
+            AI Footnotes
+          </p>
+          <p class="text-xs text-muted-foreground italic">{info!.notes}</p>
+        </div>
       )}
       <Separator />
     </div>
