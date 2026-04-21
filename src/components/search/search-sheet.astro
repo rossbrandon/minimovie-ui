@@ -4,6 +4,7 @@ import {
   IconChevronLeft,
   IconSearch,
 } from '@components/icons';
+import { BrandMark } from '@components/layout';
 
 import SearchEmptyState from './empty-state.astro';
 import SearchToolbar from './search-toolbar.astro';
@@ -19,6 +20,7 @@ import SearchToolbar from './search-toolbar.astro';
   <SearchToolbar
     inputId="search-sheet-input"
     ariaLabel="Search MiniMovie"
+    placeholder="Search..."
     class="sticky top-0 z-10"
   >
     <button
@@ -32,7 +34,9 @@ import SearchToolbar from './search-toolbar.astro';
     </button>
   </SearchToolbar>
 
-  <div class="px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+  <div
+    class="flex-1 flex flex-col px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]"
+  >
     <div role="status" aria-live="polite" class="sr-only" data-sheet-status>
     </div>
     <p class="hidden text-muted-foreground mb-3" data-sheet-count></p>
@@ -47,13 +51,33 @@ import SearchToolbar from './search-toolbar.astro';
         class="font-medium text-foreground"
         data-sheet-empty-query></span>". Try a different search term.
     </SearchEmptyState>
-    <SearchEmptyState
-      icon={IconSearch}
-      title="What are you watching?"
-      data-sheet-hint
-    >
-      Enter a search term to find movies, TV series, and people.
-    </SearchEmptyState>
+    <div class="flex-1 flex flex-col" data-sheet-hint>
+      <!--
+        Brand view: shown only when the sheet is opened from the landing
+        hero AND the input is empty. The pb shrinks the centerable area so
+        the brand lands at the same y as the landing page's brand center.
+      -->
+      <div
+        class="flex-1 flex-col items-center justify-center text-center pb-[calc(314px-env(safe-area-inset-bottom))]"
+        data-sheet-brand-view
+      >
+        <BrandMark as="h2" />
+        <p class="text-muted-foreground mt-4">
+          Find movies, TV series, and people.
+        </p>
+      </div>
+      <!--
+        Default prompt view: shown from non-landing entry points or after
+        partial typing. Centered to match the brand view's vertical position.
+      -->
+      <div
+        class="flex-1 flex-col items-center justify-center text-center pb-[calc(314px-env(safe-area-inset-bottom))]"
+        data-sheet-prompt
+      >
+        <IconSearch class="h-16 w-16 text-muted-foreground/50 mb-4" />
+        <p class="text-muted-foreground">Find movies, TV series, and people.</p>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -87,6 +111,15 @@ import SearchToolbar from './search-toolbar.astro';
       transition: none;
       transform: none;
     }
+  }
+
+  [data-sheet-brand-view],
+  [data-sheet-prompt] {
+    display: none;
+  }
+  [data-sheet-brand-view].is-active,
+  [data-sheet-prompt].is-active {
+    display: flex;
   }
 </style>
 

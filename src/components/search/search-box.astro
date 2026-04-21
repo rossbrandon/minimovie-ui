@@ -82,19 +82,19 @@ const dropdownMaxHeight = isHero ? 'max-h-80' : 'max-h-72';
           </div>
         </div>
       ) : (
-        <div class="relative w-full max-w-xl mx-auto">
-          <IconSearch class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground pointer-events-none" />
+        <div class="relative w-full max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl mx-auto">
+          <IconSearch class="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground pointer-events-none" />
           <input
             type="search"
             name="q"
             placeholder={placeholder}
             value={value}
             class:list={[
-              'border-input dark:bg-input/30 text-foreground w-full rounded-md border bg-transparent shadow-xs',
-              'focus-visible:border-amber-500 focus-visible:ring-amber-500/50 transition-[color,box-shadow] focus-visible:ring-3',
-              'disabled:cursor-not-allowed disabled:opacity-50',
+              'w-full bg-transparent border-0 outline-none text-foreground',
+              'focus:ring-0 focus-visible:ring-0 focus:outline-none',
               'placeholder:text-muted-foreground',
-              'h-9 pl-9 pr-4 sm:pr-16 text-base sm:text-sm',
+              'disabled:cursor-not-allowed disabled:opacity-50',
+              'h-14 pl-10 pr-16 text-base',
             ]}
             data-search-input
             autocomplete="off"

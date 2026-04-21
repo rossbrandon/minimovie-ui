@@ -24,6 +24,8 @@ interface SheetRefs {
   count: HTMLElement;
   empty: HTMLElement;
   hint: HTMLElement;
+  brandView: HTMLElement;
+  prompt: HTMLElement;
   clear: HTMLButtonElement;
   cancel: HTMLButtonElement;
   status: HTMLElement;
@@ -164,6 +166,14 @@ function toggleClearButton(): void {
   clear.classList.toggle('inline-flex', hasValue);
 }
 
+function syncHintView(): void {
+  if (!refs) return;
+  const { brandView, prompt } = refs;
+  const useBrand = source === 'hero';
+  brandView.classList.toggle('is-active', useBrand);
+  prompt.classList.toggle('is-active', !useBrand);
+}
+
 async function runFetch(query: string): Promise<void> {
   inflight?.abort();
   inflight = new AbortController();
@@ -222,6 +232,7 @@ function renderHint(): void {
   empty.classList.add('hidden');
   count.classList.add('hidden');
   hint.classList.remove('hidden');
+  syncHintView();
 }
 
 function announce(message: string): void {
@@ -246,6 +257,10 @@ function resolveRefs(): SheetRefs | null {
   const count = sheet.querySelector<HTMLElement>('[data-sheet-count]');
   const empty = sheet.querySelector<HTMLElement>('[data-sheet-empty]');
   const hint = sheet.querySelector<HTMLElement>('[data-sheet-hint]');
+  const brandView = sheet.querySelector<HTMLElement>(
+    '[data-sheet-brand-view]'
+  );
+  const prompt = sheet.querySelector<HTMLElement>('[data-sheet-prompt]');
   const clear = sheet.querySelector<HTMLButtonElement>('[data-search-clear]');
   const cancel = sheet.querySelector<HTMLButtonElement>('[data-sheet-cancel]');
   const status = sheet.querySelector<HTMLElement>('[data-sheet-status]');
@@ -255,13 +270,27 @@ function resolveRefs(): SheetRefs | null {
     !count ||
     !empty ||
     !hint ||
+    !brandView ||
+    !prompt ||
     !clear ||
     !cancel ||
     !status
   ) {
     return null;
   }
-  return { sheet, input, results, count, empty, hint, clear, cancel, status };
+  return {
+    sheet,
+    input,
+    results,
+    count,
+    empty,
+    hint,
+    brandView,
+    prompt,
+    clear,
+    cancel,
+    status,
+  };
 }
 
 function init(): void {

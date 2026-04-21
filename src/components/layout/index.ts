@@ -1,3 +1,4 @@
+export { default as BrandMark } from './brand-mark.astro';
 export type { BreadcrumbItem } from './breadcrumbs.astro';
 export { default as Breadcrumbs } from './breadcrumbs.astro';
 export { default as Footer } from './footer.astro';
