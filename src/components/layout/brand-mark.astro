@@ -7,7 +7,7 @@ interface Props {
   [attr: `data-${string}`]: string | boolean | undefined;
 }
 
-const { as: Tag = 'h1', class: className, ...rest } = Astro.props;
+const { as: Tag = 'h1', class: className, ...rest }: Props = Astro.props;
 ---
 
 <div class:list={['space-y-3', className]} {...rest}>
