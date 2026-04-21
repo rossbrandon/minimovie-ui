@@ -35,6 +35,16 @@ let inflight: AbortController | null = null;
 let isOpen = false;
 let source: SheetSource | null = null;
 let restoreScrollY = 0;
+let didPushHistory = false;
+
+const HISTORY_MARKER = 'minimovie-search-sheet';
+
+function onPopState(): void {
+  if (!isOpen) return;
+  // Browser already popped our entry; don't try to pop it again on close.
+  didPushHistory = false;
+  closeSheet();
+}
 
 const debounced = debounce((q: string) => void runFetch(q), DEBOUNCE_MS);
 
@@ -72,6 +82,10 @@ export function openSheet(detail: SheetOpenDetail): void {
   window.scrollTo(0, 0);
   input.focus();
 
+  history.pushState({ [HISTORY_MARKER]: true }, '');
+  didPushHistory = true;
+  window.addEventListener('popstate', onPopState);
+
   trap = createFocusTrap(sheet, {
     initialFocus: () => refs?.input ?? false,
     escapeDeactivates: true,
@@ -94,6 +108,12 @@ export function closeSheet(): void {
 
   document.documentElement.removeAttribute('data-search-active');
   window.scrollTo(0, restoreScrollY);
+
+  window.removeEventListener('popstate', onPopState);
+  if (didPushHistory) {
+    didPushHistory = false;
+    history.back();
+  }
 
   if (source === 'hero') {
     // Cancel from hero discards the partial query so the hero reverts cleanly.
