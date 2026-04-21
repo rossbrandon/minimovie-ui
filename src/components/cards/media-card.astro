@@ -1,5 +1,6 @@
 ---
 import { Badge } from '@components/starwind/badge';
+import { MEDIA_CONFIG, mediaHref } from '@lib/media-config';
 import type { MediaType } from '@lib/types';
 import { formatYear, getImageUrl, getInitials } from '@lib/utils';
 
@@ -14,6 +15,7 @@ interface Props {
   knownFor?: string;
   age?: number;
   prefetch?: boolean;
+  compact?: boolean;
 }
 
 const {
@@ -27,14 +29,11 @@ const {
   knownFor,
   age,
   prefetch = false,
+  compact = false,
 } = Astro.props;
 
-const href =
-  mediaType === 'movie'
-    ? `/movies/${id}`
-    : mediaType === 'series'
-      ? `/series/${id}`
-      : `/people/${id}`;
+const { label: mediaTypeLabel, badgeVariant } = MEDIA_CONFIG[mediaType];
+const href = mediaHref(mediaType, id);
 
 const year = formatYear(releaseDate);
 const initials = getInitials(title);
@@ -42,12 +41,6 @@ const posterUrl =
   mediaType === 'person'
     ? getImageUrl(posterPath, 'w185')
     : getImageUrl(posterPath, 'w342');
-
-const mediaTypeLabel =
-  mediaType === 'movie' ? 'Movie' : mediaType === 'series' ? 'TV' : 'Person';
-
-const badgeVariant =
-  mediaType === 'movie' ? 'movie' : mediaType === 'series' ? 'tv' : 'person';
 
 const isPerson = mediaType === 'person';
 const ageText =
@@ -80,7 +73,9 @@ const ageText =
     }
   </div>
 
-  <div class="flex flex-1 flex-col gap-1 p-3">
+  <div
+    class:list={['flex flex-1 flex-col', compact ? 'gap-0.5 p-2' : 'gap-1 p-3']}
+  >
     <h3
       class="font-medium leading-tight line-clamp-2 text-sm group-hover:text-amber-500 transition-colors"
     >
@@ -102,7 +97,7 @@ const ageText =
         </p>
       )
     }
-    <div class="mt-auto pt-2">
+    <div class:list={['mt-auto', compact ? '' : 'pt-2']}>
       <Badge
         variant={badgeVariant}
         size="sm"

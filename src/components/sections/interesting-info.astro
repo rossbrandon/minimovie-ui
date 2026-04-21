@@ -74,7 +74,10 @@ if (hasFieldValue(info?.netWorth))
     isNetWorth: true,
   });
 if (hasFieldValue(info?.spouse))
-  fields.push({ label: 'Most Recent Spouse/Significant Other', field: info!.spouse! });
+  fields.push({
+    label: 'Most Recent Spouse/Significant Other',
+    field: info!.spouse!,
+  });
 if (hasFieldValue(info?.parents))
   fields.push({ label: 'Parents', field: info!.parents! });
 if (hasFieldValue(info?.children))
@@ -101,7 +104,9 @@ const interestingFact = hasFieldValue(info?.interestingFact)
             <p class="font-medium">{formatValue(field, isNetWorth)}</p>
             {field.sources && field.sources.length > 0 && (
               <div class="flex items-center gap-1 text-xs text-muted-foreground">
-                <span class="truncate">({field.sources.map((source: EnrichedSource, i: number) => (
+                <span class="truncate">
+                  (
+                  {field.sources.map((source: EnrichedSource, i: number) => (
                     <>
                       {i > 0 && ', '}
                       <a
@@ -113,7 +118,9 @@ const interestingFact = hasFieldValue(info?.interestingFact)
                         {getHostname(source.url)}
                       </a>
                     </>
-                  ))})</span>
+                  ))}
+                  )
+                </span>
                 <span class="group/tip relative inline-flex items-center shrink-0">
                   <button
                     type="button"
@@ -139,7 +146,9 @@ const interestingFact = hasFieldValue(info?.interestingFact)
           <p class="font-medium text-sm">{formatValue(interestingFact)}</p>
           {interestingFact.sources && interestingFact.sources.length > 0 && (
             <div class="flex items-center gap-1 text-xs text-muted-foreground">
-              <span class="truncate">({interestingFact.sources.map(
+              <span class="truncate">
+                (
+                {interestingFact.sources.map(
                   (source: EnrichedSource, i: number) => (
                     <>
                       {i > 0 && ', '}
@@ -153,7 +162,9 @@ const interestingFact = hasFieldValue(info?.interestingFact)
                       </a>
                     </>
                   )
-                )})</span>
+                )}
+                )
+              </span>
               <span class="group/tip relative inline-flex items-center shrink-0">
                 <button
                   type="button"

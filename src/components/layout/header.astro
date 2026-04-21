@@ -1,5 +1,5 @@
 ---
-import { IconMovie } from '@components/icons';
+import { IconMovie, IconSearch } from '@components/icons';
 import { SearchBox } from '@components/search';
 import { ThemeToggle } from '@components/theme';
 
@@ -13,13 +13,13 @@ const { searchQuery = '' } = Astro.props;
 <header
   class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60"
 >
-  <div class="w-full flex h-12 items-center px-4 pb-1">
-    <a href="/" class="flex items-center gap-2 font-semibold text-lg shrink-0">
-      <IconMovie class="h-6 w-6 text-amber-500" />
+  <div class="w-full flex min-h-12 items-center gap-2 px-4 py-1">
+    <a href="/" class="flex items-center gap-2 font-semibold text-xl shrink-0">
+      <IconMovie class="h-8 w-8 text-amber-500" />
       <span>MiniMovie</span>
     </a>
 
-    <div class="flex-1 flex justify-center px-4">
+    <div class="hidden sm:flex flex-1 justify-center px-4">
       <SearchBox
         variant="header"
         placeholder="Search..."
@@ -28,6 +28,36 @@ const { searchQuery = '' } = Astro.props;
       />
     </div>
 
+    <div class="flex-1 sm:hidden"></div>
+
+    <button
+      type="button"
+      class="sm:hidden inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+      data-open-search
+      aria-label="Open search"
+    >
+      <IconSearch class="h-5 w-5" />
+    </button>
+
     <ThemeToggle />
   </div>
 </header>
+
+<script>
+  import { dispatchOpenSheet } from '@components/search/search-sheet.client';
+
+  function bindOpenSearch(): void {
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-open-search]')
+      .forEach((btn) => {
+        if (btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', () =>
+          dispatchOpenSheet({ source: 'icon' })
+        );
+      });
+  }
+
+  bindOpenSearch();
+  document.addEventListener('astro:after-swap', bindOpenSearch);
+</script>

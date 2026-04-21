@@ -1,0 +1,16 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+
+interface Props extends HTMLAttributes<'div'> {
+  icon: (_props: { class?: string }) => unknown;
+  title: string;
+}
+
+const { icon: Icon, title, class: className = '', ...rest } = Astro.props;
+---
+
+<div class:list={['text-center py-16', className]} {...rest}>
+  <Icon class="h-16 w-16 mx-auto text-muted-foreground/50 mb-4" />
+  <h2 class="text-2xl font-semibold mb-2">{title}</h2>
+  <p class="text-muted-foreground"><slot /></p>
+</div>

@@ -1,0 +1,95 @@
+---
+import {
+  IconAlertTriangle,
+  IconChevronLeft,
+  IconSearch,
+} from '@components/icons';
+
+import SearchEmptyState from './empty-state.astro';
+import SearchToolbar from './search-toolbar.astro';
+---
+
+<div
+  class="search-sheet relative z-60 hidden flex-col bg-background sm:hidden"
+  data-search-sheet
+  role="dialog"
+  aria-modal="true"
+  aria-label="Search"
+>
+  <SearchToolbar
+    inputId="search-sheet-input"
+    ariaLabel="Search MiniMovie"
+    class="sticky top-0 z-10"
+  >
+    <button
+      slot="left"
+      type="button"
+      class="inline-flex shrink-0 h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+      data-sheet-cancel
+      aria-label="Close search"
+    >
+      <IconChevronLeft class="h-7 w-7" />
+    </button>
+  </SearchToolbar>
+
+  <div class="px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)]">
+    <div role="status" aria-live="polite" class="sr-only" data-sheet-status>
+    </div>
+    <p class="hidden text-muted-foreground mb-3" data-sheet-count></p>
+    <div class="grid grid-cols-2 gap-3" data-sheet-results></div>
+    <SearchEmptyState
+      icon={IconAlertTriangle}
+      title="No results found"
+      class="hidden"
+      data-sheet-empty
+    >
+      Nothing found for "<span
+        class="font-medium text-foreground"
+        data-sheet-empty-query></span>". Try a different search term.
+    </SearchEmptyState>
+    <SearchEmptyState
+      icon={IconSearch}
+      title="What are you watching?"
+      data-sheet-hint
+    >
+      Enter a search term to find movies, TV series, and people.
+    </SearchEmptyState>
+  </div>
+</div>
+
+<style is:global>
+  .search-sheet {
+    opacity: 0;
+    transform: translateY(12px);
+    min-height: 100lvh;
+    transition:
+      opacity 220ms ease-out,
+      transform 280ms cubic-bezier(0.32, 0.72, 0, 1);
+    will-change: opacity, transform;
+  }
+  @media (max-width: 639px) {
+    html[data-search-active] .search-sheet {
+      opacity: 1;
+      transform: translateY(0);
+      display: flex !important;
+    }
+    /*
+     * iOS Safari's translucent URL bar samples whatever sits behind it in the
+     * layout viewport. Hide every body sibling of the sheet so the body's own
+     * bg-background paints that area instead of the underlying page content.
+     */
+    html[data-search-active] body > *:not([data-search-sheet]) {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .search-sheet {
+      transition: none;
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import '@components/search/search-sheet.client';
+</script>

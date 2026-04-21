@@ -46,12 +46,12 @@ const { placeholder = 'Search by name or character...', overflowData } =
     const a = document.createElement('a');
     a.href = `/people/${item.id}`;
     a.className =
-      'group flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors';
+      'group flex items-center gap-3 p-2 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors';
     a.dataset.dynamic = 'true';
 
     const avatarDiv = document.createElement('div');
     avatarDiv.className =
-      'h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted';
+      'h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted';
 
     if (item.photoPath) {
       const img = document.createElement('img');
@@ -190,7 +190,7 @@ const { placeholder = 'Search by name or character...', overflowData } =
           if (matchCount) {
             matchCount.classList.toggle('hidden', !query);
             if (query) {
-              matchCount.textContent = `${totalVisible} match${totalVisible === 1 ? '' : 'es'} found.`;
+              matchCount.textContent = `${totalVisible} match${totalVisible === 1 ? '' : 'es'} found`;
             }
           }
         };

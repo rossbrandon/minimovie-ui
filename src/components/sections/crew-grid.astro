@@ -14,13 +14,13 @@ const { title, people } = Astro.props;
   people.length > 0 && (
     <div>
       <h2 class="text-sm font-medium text-muted-foreground mb-3">{title}</h2>
-      <div class="section-search-grid flex flex-wrap gap-3">
+      <div class="section-search-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {people.map((person) => (
           <a
             href={`/people/${person.id}`}
-            class="group flex items-center gap-2 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+            class="group flex items-center gap-3 p-2 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
           >
-            <div class="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-muted">
+            <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">
               {person.photoPath ? (
                 <img
                   src={getImageUrl(person.photoPath, 'w185')}
@@ -34,12 +34,14 @@ const { title, people } = Astro.props;
                 </div>
               )}
             </div>
-            <div>
-              <span class="text-sm font-medium group-hover:text-amber-500 transition-colors">
+            <div class="min-w-0 flex-1">
+              <p class="font-medium text-sm truncate group-hover:text-amber-500 transition-colors">
                 {person.name}
-              </span>
+              </p>
               {person.role && (
-                <p class="text-xs text-muted-foreground">{person.role}</p>
+                <p class="text-xs text-muted-foreground truncate">
+                  {person.role}
+                </p>
               )}
               {formatAgeDisplay(person) && (
                 <p class="text-xs text-muted-foreground/70">

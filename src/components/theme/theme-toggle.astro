@@ -6,7 +6,7 @@ import { Button } from '@components/starwind/button';
 <Button
   variant="ghost"
   size="icon-sm"
-  id="themeToggle"
+  data-theme-toggle
   aria-label="Toggle theme"
 >
   <IconSun class="h-5 w-5 hidden dark:block" />
@@ -17,7 +17,6 @@ import { Button } from '@components/starwind/button';
   const handleToggleClick = () => {
     const element = document.documentElement;
 
-    // Determine current theme (from attribute or system preference)
     let currentTheme = element.getAttribute('data-theme');
     if (!currentTheme) {
       currentTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -26,13 +25,20 @@ import { Button } from '@components/starwind/button';
     }
 
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-    // Set the attribute to override system preference
     element.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
   };
 
-  document
-    .getElementById('themeToggle')
-    ?.addEventListener('click', handleToggleClick);
+  function bindToggles(): void {
+    document
+      .querySelectorAll<HTMLButtonElement>('[data-theme-toggle]')
+      .forEach((btn) => {
+        if (btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', handleToggleClick);
+      });
+  }
+
+  bindToggles();
+  document.addEventListener('astro:after-swap', bindToggles);
 </script>

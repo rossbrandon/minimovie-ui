@@ -34,3 +34,4 @@ export { default as IconUser } from '@tabler/icons/outline/user.svg';
 export { default as IconUsers } from '@tabler/icons/outline/users.svg';
 export { default as IconVideo } from '@tabler/icons/outline/video.svg';
 export { default as IconVideoOff } from '@tabler/icons/outline/video-off.svg';
+export { default as IconX } from '@tabler/icons/outline/x.svg';

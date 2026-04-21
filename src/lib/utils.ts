@@ -184,8 +184,28 @@ const escapeHtml = (text: string): string => {
   return div.innerHTML;
 };
 
+function debounce<T extends (...args: never[]) => void>(
+  fn: T,
+  ms: number
+): { call: (..._args: Parameters<T>) => void; cancel: () => void } {
+  let timer: number | null = null;
+  return {
+    call(...args) {
+      if (timer !== null) window.clearTimeout(timer);
+      timer = window.setTimeout(() => fn(...args), ms);
+    },
+    cancel() {
+      if (timer !== null) {
+        window.clearTimeout(timer);
+        timer = null;
+      }
+    },
+  };
+}
+
 export {
   calculateAgeAtDate,
+  debounce,
   escapeHtml,
   formatAgeDisplay,
   formatCurrency,
