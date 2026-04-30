@@ -1,28 +1,47 @@
 import { defineMiddleware } from 'astro:middleware';
+import { getSession } from '@lib/api';
+import { getCookie, SESSION_COOKIE_NAME } from '@lib/session';
 
 const FOUR_HOURS = 14400;
 
-/*
- * Edge-caches SSR HTML responses using the Cloudflare Cache API.
- *
- * This middleware checks the Cloudflare edge cache before doing
- * a full SSR render. On a cache hit the Worker returns early
- * and on a miss the rendered response is stored for subsequent requests.
- *
- * Excluded: non-GET requests, /search, error pages, and non-HTML responses.
- */
+const NO_CACHE_PATHS = ['/profile', '/watchlist', '/api/', '/auth/'];
+
+function isPrivateRoute(pathname: string): boolean {
+  return NO_CACHE_PATHS.some((p) => pathname.startsWith(p));
+}
+
 export const onRequest = defineMiddleware(async (context, next) => {
-  if (
-    import.meta.env.DEV ||
-    context.request.method !== 'GET' ||
-    context.url.pathname === '/search'
-  ) {
+  // --- Session check (runs on every request) ---
+  const cookieHeader = context.request.headers.get('cookie') ?? '';
+  const sessionToken = getCookie(cookieHeader, SESSION_COOKIE_NAME);
+
+  context.locals.user = null;
+  context.locals.unseenAchievementCount = 0;
+
+  if (sessionToken) {
+    const cookieForAPI = `${SESSION_COOKIE_NAME}=${sessionToken}`;
+    const session = await getSession(cookieForAPI);
+    if (session?.user) {
+      context.locals.user = session.user;
+      context.locals.unseenAchievementCount = session.unseenAchievementCount;
+    }
+  }
+
+  // --- Dev mode or non-GET: skip cache ---
+  if (import.meta.env.DEV || context.request.method !== 'GET') {
     return next();
   }
 
+  // --- Private routes: always skip cache ---
+  if (isPrivateRoute(context.url.pathname)) {
+    const response = await next();
+    response.headers.set('Cache-Control', 'private, no-store');
+    return response;
+  }
+
+  // Cloudflare Cache API
   let cache: any = null;
   try {
-    // Workers runtime exposes caches.default for the zone-scoped cache
     cache =
       typeof caches !== 'undefined'
         ? (caches as unknown as { default: Cache }).default
@@ -43,7 +62,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         });
       }
     } catch {
-      // Cache API unavailable, fall through to SSR
+      // Cache API unavailable
     }
   }
 
@@ -67,7 +86,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
       cfContext.waitUntil(cache.put(url, responseToCache.clone()));
     }
   } catch {
-    // Cache write failed, response still returned to user
+    // Cache write failed
   }
 
   return responseToCache;

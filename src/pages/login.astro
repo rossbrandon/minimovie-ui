@@ -1,0 +1,161 @@
+---
+import { API_BASE_URL } from 'astro:env/server';
+import { IconMovie } from '@components/icons';
+import { ThemeToggle } from '@components/theme';
+import Layout from '@layouts/Layout.astro';
+
+import AppleLogo from '@assets/apple-logo.svg';
+import GoogleLogo from '@assets/google-logo.svg';
+
+if (Astro.locals.user) {
+  return Astro.redirect('/');
+}
+
+const errorParam = Astro.url.searchParams.get('error');
+let errorMessage = '';
+if (errorParam === 'expired_code') {
+  errorMessage = 'Your login link has expired. Please try again.';
+} else if (errorParam === 'auth_failed') {
+  errorMessage = 'Authentication failed. Please try again.';
+}
+
+const googleAuthUrl = `${API_BASE_URL}/auth/google`;
+const appleAuthUrl = `${API_BASE_URL}/auth/apple`;
+---
+
+<Layout title="Sign In - MiniMovie" noindex>
+  <div class="min-h-screen flex flex-col">
+    <header class="absolute top-4 right-4 z-10">
+      <ThemeToggle />
+    </header>
+
+    <main class="flex-1 flex flex-col items-center justify-center px-4 py-16">
+      <div class="w-full max-w-sm mx-auto text-center space-y-8">
+        <div class="space-y-3">
+          <div class="flex items-center justify-center gap-3">
+            <IconMovie class="h-10 w-10 text-amber-500" />
+            <h1 class="text-4xl md:text-5xl font-bold tracking-tight">
+              MiniMovie
+            </h1>
+          </div>
+          <p class="text-muted-foreground text-lg">Sign in to get started</p>
+        </div>
+
+        {
+          errorMessage && (
+            <div class="rounded-lg bg-destructive/10 border border-destructive/20 px-4 py-3 text-sm text-destructive">
+              {errorMessage}
+            </div>
+          )
+        }
+
+        <div class="space-y-3">
+          <a
+            href={appleAuthUrl}
+            class="apple-btn flex items-center justify-center gap-2 w-full h-11 rounded-[6px] text-[19px] tracking-[-.022em] font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+            aria-label="Continue with Apple"
+            data-auth-link
+          >
+            <AppleLogo class="w-4 h-11 shrink-0" aria-hidden="true" />
+            <span>Continue with Apple</span>
+          </a>
+
+          <a
+            href={googleAuthUrl}
+            class="google-btn flex items-center justify-center gap-[10px] w-full h-11 rounded-[6px] text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+            aria-label="Continue with Google"
+            data-auth-link
+          >
+            <GoogleLogo class="w-5 h-5 shrink-0" aria-hidden="true" />
+            <span>Continue with Google</span>
+          </a>
+        </div>
+
+        <p class="text-xs text-muted-foreground">
+          By continuing, you agree to our <a
+            href="/privacy"
+            class="underline hover:text-foreground">Privacy Policy</a
+          >. Your privacy is important to us and we do not sell your data or
+          store unnecessary information about you.
+        </p>
+      </div>
+    </main>
+  </div>
+</Layout>
+
+<script>
+  document
+    .querySelectorAll<HTMLAnchorElement>('[data-auth-link]')
+    .forEach((link) => {
+      link.addEventListener('click', () => {
+        sessionStorage.setItem('returnTo', document.referrer || '/');
+      });
+    });
+</script>
+
+<style>
+  /* Apple button: black on light, white on dark per HIG */
+  .apple-btn {
+    background-color: #000000;
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-family:
+      -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display',
+      system-ui, sans-serif;
+    letter-spacing: -0.022em;
+  }
+  .apple-btn:hover {
+    background-color: #1a1a1a;
+  }
+
+  :global([data-theme='dark']) .apple-btn {
+    background-color: #ffffff;
+    color: #000000;
+    border-color: rgba(0, 0, 0, 0.08);
+  }
+  :global([data-theme='dark']) .apple-btn:hover {
+    background-color: #f0f0f0;
+  }
+
+  /* Google button: white on light, dark on dark per branding guidelines */
+  .google-btn {
+    background-color: #ffffff;
+    color: #1f1f1f;
+    border: 1px solid #747775;
+    font-family: 'Roboto', system-ui, sans-serif;
+    font-weight: 500;
+  }
+  .google-btn:hover {
+    background-color: #f8f8f8;
+  }
+
+  :global([data-theme='dark']) .google-btn {
+    background-color: #131314;
+    color: #e3e3e3;
+    border-color: #8e918f;
+  }
+  :global([data-theme='dark']) .google-btn:hover {
+    background-color: #1f1f20;
+  }
+
+  /* System dark mode when no explicit theme is set */
+  @media (prefers-color-scheme: dark) {
+    :global(:root:not([data-theme])) .apple-btn {
+      background-color: #ffffff;
+      color: #000000;
+      border-color: rgba(0, 0, 0, 0.08);
+    }
+    :global(:root:not([data-theme])) .apple-btn:hover {
+      background-color: #f0f0f0;
+    }
+
+    :global(:root:not([data-theme])) .google-btn {
+      background-color: #131314;
+      color: #e3e3e3;
+      border-color: #8e918f;
+    }
+    :global(:root:not([data-theme])) .google-btn:hover {
+      background-color: #1f1f20;
+    }
+  }
+</style>

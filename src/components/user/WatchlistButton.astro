@@ -1,0 +1,180 @@
+---
+import { IconBookmark, IconBookmarkFilled, IconX } from '@components/icons';
+import { Button } from '@components/starwind/button';
+import { fetchUserAPI } from '@lib/api';
+import { SESSION_COOKIE_NAME } from '@lib/session';
+
+interface Props {
+  mediaType: 'movie' | 'series';
+  mediaId: number;
+}
+
+const { mediaType, mediaId } = Astro.props;
+
+const token = Astro.cookies.get(SESSION_COOKIE_NAME)?.value;
+let exists = false;
+let watchlistItemId: string | null = null;
+let status: string | null = null;
+
+if (token) {
+  const sessionCookie = `${SESSION_COOKIE_NAME}=${token}`;
+  const params = new URLSearchParams({
+    media_type: mediaType,
+    media_id: String(mediaId),
+  });
+  const res = await fetchUserAPI(
+    `/users/me/watchlist/check?${params}`,
+    sessionCookie
+  );
+  if (res.ok) {
+    const data = (await res.json()) as {
+      exists: boolean;
+      item?: { id: string; status: string };
+    };
+    exists = data.exists;
+    if (data.item) {
+      watchlistItemId = data.item.id;
+      status = data.item.status;
+    }
+  }
+}
+
+const statusLabels: Record<string, string> = {
+  want_to_watch: 'Want to Watch',
+  watched: 'Watched',
+};
+---
+
+{
+  token ? (
+    <div
+      class="flex items-center gap-2"
+      data-watchlist-container
+      data-media-type={mediaType}
+      data-media-id={String(mediaId)}
+      data-watchlist-item-id={watchlistItemId ?? ''}
+      data-watchlist-exists={String(exists)}
+      data-watchlist-status={status ?? ''}
+    >
+      <div
+        class="flex items-center gap-2"
+        data-watchlist-exists-view
+        hidden={!exists}
+      >
+        <Button
+          variant="outline"
+          size="sm"
+          class="gap-1.5"
+          data-watchlist-remove
+        >
+          <IconBookmarkFilled class="h-4 w-4 text-amber-500" />
+          <span data-watchlist-status-label>
+            {statusLabels[status!] || 'In Watchlist'}
+          </span>
+        </Button>
+        <button
+          type="button"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-destructive transition-colors"
+          data-watchlist-remove
+          aria-label="Remove from watchlist"
+        >
+          <IconX class="h-4 w-4" />
+        </button>
+      </div>
+      <span data-watchlist-add-view hidden={exists}>
+        <Button variant="outline" size="sm" class="gap-1.5" data-watchlist-add>
+          <IconBookmark class="h-4 w-4" />
+          Add to Watchlist
+        </Button>
+      </span>
+    </div>
+  ) : (
+    <Button href="/login" variant="outline" size="sm" class="gap-1.5">
+      <IconBookmark class="h-4 w-4" />
+      Sign in to track
+    </Button>
+  )
+}
+
+<script>
+  import { toast } from '@components/starwind/toast/toast-manager';
+
+  function setWatchlistView(container: HTMLElement, exists: boolean): void {
+    const existsView = container.querySelector<HTMLElement>(
+      '[data-watchlist-exists-view]'
+    );
+    const addView = container.querySelector<HTMLElement>(
+      '[data-watchlist-add-view]'
+    );
+    if (existsView) existsView.hidden = !exists;
+    if (addView) addView.hidden = exists;
+  }
+
+  function bindWatchlistButtons(): void {
+    document
+      .querySelectorAll<HTMLElement>('[data-watchlist-container]')
+      .forEach((container) => {
+        if (container.dataset.bound === 'true') return;
+        container.dataset.bound = 'true';
+
+        const mediaType = container.dataset.mediaType!;
+        const mediaId = container.dataset.mediaId!;
+
+        container
+          .querySelectorAll<HTMLElement>('[data-watchlist-add]')
+          .forEach((btn) => {
+            btn.addEventListener('click', async () => {
+              const res = await fetch('/api/watchlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  mediaType,
+                  mediaId: Number(mediaId),
+                  status: 'want_to_watch',
+                }),
+              });
+              if (res.ok) {
+                const data = await res.json();
+                container.dataset.watchlistExists = 'true';
+                container.dataset.watchlistItemId = data.id;
+                container.dataset.watchlistStatus =
+                  data.status || 'want_to_watch';
+                const label = container.querySelector<HTMLElement>(
+                  '[data-watchlist-status-label]'
+                );
+                if (label) label.textContent = 'Want to Watch';
+                setWatchlistView(container, true);
+                toast.success('Added to watchlist');
+              } else {
+                toast.error('Failed to add to watchlist');
+              }
+            });
+          });
+
+        container
+          .querySelectorAll<HTMLElement>('[data-watchlist-remove]')
+          .forEach((btn) => {
+            btn.addEventListener('click', async (e) => {
+              e.stopPropagation();
+              const itemId = container.dataset.watchlistItemId;
+              if (!itemId) return;
+              const res = await fetch(`/api/watchlist/${itemId}`, {
+                method: 'DELETE',
+              });
+              if (res.ok) {
+                container.dataset.watchlistExists = 'false';
+                container.dataset.watchlistItemId = '';
+                container.dataset.watchlistStatus = '';
+                setWatchlistView(container, false);
+                toast.success('Removed from watchlist');
+              } else {
+                toast.error('Failed to remove from watchlist');
+              }
+            });
+          });
+      });
+  }
+
+  bindWatchlistButtons();
+  document.addEventListener('astro:after-swap', bindWatchlistButtons);
+</script>

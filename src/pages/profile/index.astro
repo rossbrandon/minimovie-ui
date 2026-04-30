@@ -1,0 +1,224 @@
+---
+import { IconDownload, IconLogout, IconTrash } from '@components/icons';
+import { Header } from '@components/layout';
+import { Button } from '@components/starwind/button';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@components/starwind/card';
+import { Separator } from '@components/starwind/separator';
+import { UserAvatar } from '@components/user';
+import Layout from '@layouts/Layout.astro';
+
+if (!Astro.locals.user) {
+  return Astro.redirect('/login');
+}
+
+const user = Astro.locals.user;
+---
+
+<Layout title="Account - MiniMovie" noindex>
+  <Header />
+
+  <main class="container mx-auto px-4 py-8 flex-1 max-w-3xl">
+    <div class="space-y-8">
+      <div class="flex items-center gap-5">
+        <UserAvatar
+          avatarUrl={user.avatarUrl}
+          givenName={user.givenName}
+          size="lg"
+          class="h-16 w-16 text-xl"
+        />
+        <div>
+          <h1 class="text-3xl font-bold">{user.givenName || 'Your Account'}</h1>
+          {
+            user.username && (
+              <p class="text-muted-foreground">@{user.username}</p>
+            )
+          }
+        </div>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Data & Privacy</CardTitle>
+        </CardHeader>
+        <CardContent class="space-y-3">
+          <div class="space-y-1">
+            <p class="text-sm font-medium">Export your data</p>
+            <p class="text-xs text-muted-foreground">
+              Download all your MiniMovie data as a JSON file.
+            </p>
+          </div>
+          <form method="POST" action="/api/export" data-export-form>
+            <Button type="submit" variant="outline" size="sm" class="gap-1.5">
+              <IconDownload class="h-4 w-4" />
+              Export my data
+            </Button>
+          </form>
+
+          <Separator />
+
+          <div class="space-y-1">
+            <p class="text-sm font-medium text-destructive">Delete account</p>
+            <p class="text-xs text-muted-foreground">
+              Permanently delete your account and all associated data. This
+              cannot be undone.
+            </p>
+          </div>
+          <div data-delete-section>
+            <Button
+              variant="error"
+              size="sm"
+              class="gap-1.5"
+              data-delete-trigger
+            >
+              <IconTrash class="h-4 w-4" />
+              Delete my account
+            </Button>
+            <div
+              class="hidden mt-4 p-4 rounded-lg border border-destructive/30 bg-destructive/5 space-y-3"
+              data-delete-confirm
+            >
+              <p class="text-sm font-medium text-destructive">Are you sure?</p>
+              <p class="text-xs text-muted-foreground">
+                All your data including watchlist, watch history, stats, and
+                achievements will be permanently deleted. See our <a
+                  href="/privacy"
+                  class="underline">privacy policy</a
+                > for details.
+              </p>
+              <div class="space-y-2">
+                <label
+                  class="text-xs text-muted-foreground"
+                  for="delete-confirm-input"
+                >
+                  Type <strong>delete</strong> to confirm:
+                </label>
+                <input
+                  id="delete-confirm-input"
+                  type="text"
+                  class="w-full h-9 rounded-md border border-border bg-background px-3 text-sm"
+                  placeholder="delete"
+                  autocomplete="off"
+                  data-delete-input
+                />
+              </div>
+              <div class="flex gap-2">
+                <Button
+                  variant="error"
+                  size="sm"
+                  class="gap-1.5"
+                  data-delete-submit
+                  disabled
+                >
+                  <IconTrash class="h-4 w-4" />
+                  Permanently delete
+                </Button>
+                <Button variant="ghost" size="sm" data-delete-cancel>
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          <Separator />
+
+          <form method="POST" action="/auth/logout">
+            <Button
+              type="submit"
+              variant="ghost"
+              size="sm"
+              class="gap-1.5 text-muted-foreground"
+            >
+              <IconLogout class="h-4 w-4" />
+              Sign out
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  function bindProfileActions(): void {
+    const section = document.querySelector<HTMLElement>(
+      '[data-delete-section]'
+    );
+    if (!section || section.dataset.bound === 'true') return;
+    section.dataset.bound = 'true';
+
+    const trigger = section.querySelector<HTMLElement>('[data-delete-trigger]');
+    const confirmBox = section.querySelector<HTMLElement>(
+      '[data-delete-confirm]'
+    );
+    const input = section.querySelector<HTMLInputElement>(
+      '[data-delete-input]'
+    );
+    const submitBtn = section.querySelector<HTMLButtonElement>(
+      '[data-delete-submit]'
+    );
+    const cancelBtn = section.querySelector<HTMLElement>(
+      '[data-delete-cancel]'
+    );
+
+    trigger?.addEventListener('click', () => {
+      confirmBox?.classList.remove('hidden');
+      trigger.classList.add('hidden');
+    });
+
+    cancelBtn?.addEventListener('click', () => {
+      confirmBox?.classList.add('hidden');
+      trigger?.classList.remove('hidden');
+      if (input) input.value = '';
+      if (submitBtn) submitBtn.disabled = true;
+    });
+
+    input?.addEventListener('input', () => {
+      if (submitBtn) submitBtn.disabled = input.value !== 'delete';
+    });
+
+    submitBtn?.addEventListener('click', async () => {
+      if (input?.value !== 'delete') return;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Deleting...';
+
+      const res = await fetch('/api/account/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ confirm: 'delete' }),
+      });
+
+      if (res.redirected) {
+        window.location.href = res.url;
+      } else if (res.ok) {
+        window.location.href = '/?deleted=true';
+      } else {
+        submitBtn.textContent = 'Failed - try again';
+        submitBtn.disabled = false;
+      }
+    });
+
+    const exportForm =
+      document.querySelector<HTMLFormElement>('[data-export-form]');
+    exportForm?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const res = await fetch('/api/export', { method: 'POST' });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'minimovie-export.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    });
+  }
+
+  bindProfileActions();
+  document.addEventListener('astro:after-swap', bindProfileActions);
+</script>

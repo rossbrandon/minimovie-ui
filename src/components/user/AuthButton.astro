@@ -1,0 +1,17 @@
+---
+import { Button } from '@components/starwind/button';
+
+import UserMenu from './UserMenu.astro';
+
+const user = Astro.locals.user;
+---
+
+{
+  user ? (
+    <UserMenu avatarUrl={user.avatarUrl} givenName={user.givenName} />
+  ) : (
+    <Button href="/login" variant="ghost" size="sm">
+      Sign in
+    </Button>
+  )
+}

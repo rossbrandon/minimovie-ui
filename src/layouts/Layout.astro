@@ -3,6 +3,7 @@ import { Font } from 'astro:assets';
 import { Footer } from '@components/layout';
 import { SearchSheet } from '@components/search';
 import { ReturnToTop } from '@components/sections';
+import { Toaster } from '@components/starwind/toast';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@lib/constants';
 
 import '@styles/starwind.css';
@@ -24,6 +25,7 @@ const {
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
+const unseenCount = Astro.locals.unseenAchievementCount ?? 0;
 ---
 
 <!doctype html>
@@ -73,8 +75,10 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
   </head>
   <body
     class="min-h-screen bg-background text-foreground antialiased flex flex-col"
+    data-unseen-achievements={unseenCount > 0 ? String(unseenCount) : undefined}
   >
     <slot />
+    <Toaster position="bottom-right" />
     <Footer />
     <ReturnToTop />
     <SearchSheet />
@@ -86,3 +90,28 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
     font-family: var(--font-sans);
   }
 </style>
+
+<script>
+  import { checkAndShowAchievementToast } from '@lib/achievement-toast';
+
+  async function showAchievementToast(): Promise<void> {
+    const count = document.body.dataset.unseenAchievements;
+    if (!count || document.body.dataset.achievementShown === 'true') return;
+    document.body.dataset.achievementShown = 'true';
+    await checkAndShowAchievementToast();
+  }
+
+  function handleReturnTo(): void {
+    const returnTo = sessionStorage.getItem('returnTo');
+    if (returnTo) {
+      sessionStorage.removeItem('returnTo');
+      if (returnTo !== window.location.href && returnTo !== '/login') {
+        window.location.replace(returnTo);
+      }
+    }
+  }
+
+  handleReturnTo();
+  showAchievementToast();
+  document.addEventListener('astro:after-swap', showAchievementToast);
+</script>

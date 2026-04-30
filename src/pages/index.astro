@@ -2,14 +2,16 @@
 import { BrandMark } from '@components/layout';
 import { SearchBox } from '@components/search';
 import { ThemeToggle } from '@components/theme';
+import { AuthButton } from '@components/user';
 import Layout from '@layouts/Layout.astro';
 import { buildWebSiteSchema } from '@lib/schema';
 ---
 
 <Layout title="MiniMovie" jsonLd={buildWebSiteSchema()}>
   <div class="min-h-screen flex flex-col" data-hero-root>
-    <header class="absolute top-4 right-4 z-10">
+    <header class="absolute top-4 right-4 z-10 flex items-center gap-2">
       <ThemeToggle />
+      <AuthButton />
     </header>
 
     <main

@@ -1,0 +1,101 @@
+---
+import {
+  IconBookmark,
+  IconChartBar,
+  IconLogout,
+  IconUser,
+} from '@components/icons';
+import {
+  Dropdown,
+  DropdownContent,
+  DropdownItem,
+  DropdownLabel,
+  DropdownSeparator,
+  DropdownTrigger,
+} from '@components/starwind/dropdown';
+
+import UserAvatar from './UserAvatar.astro';
+
+interface Props {
+  avatarUrl: string | null;
+  givenName: string | null;
+}
+
+const { avatarUrl, givenName } = Astro.props;
+---
+
+<Dropdown>
+  <DropdownTrigger asChild>
+    <button
+      type="button"
+      class="inline-flex h-9 w-9 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-foreground"
+      aria-label="User menu"
+    >
+      <UserAvatar avatarUrl={avatarUrl} givenName={givenName} size="sm" />
+    </button>
+  </DropdownTrigger>
+  <DropdownContent align="end" class="min-w-[200px]">
+    <DropdownLabel class="text-sm font-medium">
+      {givenName || 'Account'}
+    </DropdownLabel>
+    <DropdownSeparator />
+    <DropdownItem as="a" href="/watchlist" class="text-sm cursor-pointer py-3 sm:py-1.5">
+      <IconBookmark class="h-4 w-4" />
+      My Watchlist
+    </DropdownItem>
+    <DropdownItem as="a" href="/profile/stats" class="text-sm cursor-pointer py-3 sm:py-1.5">
+      <IconChartBar class="h-4 w-4" />
+      Stats & Badges
+    </DropdownItem>
+    <DropdownItem as="a" href="/profile" class="text-sm cursor-pointer py-3 sm:py-1.5">
+      <IconUser class="h-4 w-4" />
+      Account
+    </DropdownItem>
+    <DropdownSeparator />
+    <DropdownItem
+      as="button"
+      data-logout-btn
+      class="text-sm cursor-pointer w-full py-3 sm:py-1.5"
+    >
+      <IconLogout class="h-4 w-4" />
+      Sign out
+    </DropdownItem>
+  </DropdownContent>
+</Dropdown>
+
+<script>
+  const PROTECTED_PREFIXES = ['/profile', '/watchlist'];
+
+  function bindLogout(): void {
+    document
+      .querySelectorAll<HTMLElement>('[data-logout-btn]')
+      .forEach((btn) => {
+        if (btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', async () => {
+          const path = window.location.pathname;
+          const isProtected = PROTECTED_PREFIXES.some((p) =>
+            path.startsWith(p)
+          );
+
+          const form = document.createElement('form');
+          form.method = 'POST';
+          form.action = '/auth/logout';
+
+          if (!isProtected) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'returnTo';
+            input.value = path;
+            form.appendChild(input);
+          }
+
+          document.body.appendChild(form);
+          form.submit();
+        });
+      });
+  }
+
+  bindLogout();
+  document.addEventListener('astro:after-swap', bindLogout);
+</script>

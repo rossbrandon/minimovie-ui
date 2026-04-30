@@ -1,0 +1,342 @@
+---
+import {
+  IconBookmark,
+  IconBookmarkFilled,
+  IconEye,
+  IconEyeCheck,
+} from '@components/icons';
+import { Button } from '@components/starwind/button';
+import {
+  ButtonGroup,
+  ButtonGroupSeparator,
+} from '@components/starwind/button-group';
+import {
+  Dropdown,
+  DropdownContent,
+  DropdownItem,
+  DropdownTrigger,
+} from '@components/starwind/dropdown';
+import { fetchUserAPI } from '@lib/api';
+import { SESSION_COOKIE_NAME } from '@lib/session';
+
+interface Props {
+  mediaType: 'movie' | 'series' | 'episode' | 'season';
+  mediaId: number;
+  seriesId?: number;
+  seasonNumber?: number;
+  episodeNumber?: number;
+}
+
+const { mediaType, mediaId, seriesId, seasonNumber, episodeNumber } =
+  Astro.props;
+
+const token = Astro.cookies.get(SESSION_COOKIE_NAME)?.value;
+const showWatchlist = mediaType === 'movie' || mediaType === 'series';
+
+let inWatchlist = false;
+let watchlistItemId: string | null = null;
+let hasWatched = false;
+let watchEventId: string | null = null;
+
+if (token) {
+  const sessionCookie = `${SESSION_COOKIE_NAME}=${token}`;
+
+  if (showWatchlist) {
+    const params = new URLSearchParams({
+      media_type: mediaType,
+      media_id: String(mediaId),
+    });
+    const res = await fetchUserAPI(
+      `/users/me/watchlist/check?${params}`,
+      sessionCookie
+    );
+    if (res.ok) {
+      const data = (await res.json()) as {
+        exists: boolean;
+        item?: { id: string; status: string };
+      };
+      inWatchlist = data.exists;
+      if (data.item) watchlistItemId = data.item.id;
+    }
+  }
+
+  const watchParams = new URLSearchParams({
+    media_type: mediaType,
+    media_id: String(mediaId),
+    limit: '1',
+  });
+  if (seriesId) watchParams.set('series_id', String(seriesId));
+  const watchRes = await fetchUserAPI(
+    `/users/me/watch-events?${watchParams}`,
+    sessionCookie
+  );
+  if (watchRes.ok) {
+    const data = (await watchRes.json()) as {
+      events: { id: string }[];
+      total: number;
+    };
+    hasWatched = data.total > 0;
+    if (data.events?.length > 0) watchEventId = data.events[0].id;
+  }
+}
+---
+
+{
+  token ? (
+    <div
+      class="inline-flex"
+      data-media-toolbar
+      data-media-type={mediaType}
+      data-media-id={String(mediaId)}
+      data-series-id={seriesId ? String(seriesId) : ''}
+      data-season-number={seasonNumber != null ? String(seasonNumber) : ''}
+      data-episode-number={episodeNumber != null ? String(episodeNumber) : ''}
+      data-watchlist-item-id={watchlistItemId ?? ''}
+      data-in-watchlist={String(inWatchlist)}
+      data-watch-event-id={watchEventId ?? ''}
+      data-has-watched={String(hasWatched)}
+    >
+      <ButtonGroup>
+        {showWatchlist && (
+          <>
+            <Button
+              variant="outline"
+              size="icon"
+              class="h-9 w-9"
+              aria-label={
+                inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'
+              }
+              title={inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
+              data-watchlist-toggle
+            >
+              <span hidden={!inWatchlist} data-icon-bookmark-filled>
+                <IconBookmarkFilled class="h-4 w-4 text-amber-500" />
+              </span>
+              <span hidden={inWatchlist} data-icon-bookmark>
+                <IconBookmark class="h-4 w-4" />
+              </span>
+            </Button>
+            <ButtonGroupSeparator />
+          </>
+        )}
+        <span data-unwatch-container hidden={!hasWatched}>
+          <Button
+            variant="outline"
+            size="icon"
+            class={`h-9 w-9 bg-emerald-500/10 border-emerald-500/30 text-emerald-600${showWatchlist ? ' rounded-l-none border-l-0' : ''}`}
+            aria-label="Unmark as watched"
+            title="Unmark as watched"
+            data-unwatch-btn
+          >
+            <IconEyeCheck class="h-4 w-4" />
+          </Button>
+        </span>
+        <span data-watch-container hidden={hasWatched}>
+          <Dropdown>
+            <DropdownTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon"
+                class={`h-9 w-9${showWatchlist ? ' rounded-l-none border-l-0' : ''}`}
+                aria-label="Mark as watched"
+                title="Mark as watched"
+                data-watch-trigger
+              >
+                <IconEye class="h-4 w-4" />
+              </Button>
+            </DropdownTrigger>
+            <DropdownContent align="end" class="min-w-[180px]">
+              <DropdownItem
+                as="button"
+                class="text-sm cursor-pointer w-full py-3 sm:py-1.5"
+                data-watched-before
+              >
+                I've seen this before
+              </DropdownItem>
+              <DropdownItem
+                as="button"
+                class="text-sm cursor-pointer w-full py-3 sm:py-1.5"
+                data-just-watched
+              >
+                I just watched this
+              </DropdownItem>
+            </DropdownContent>
+          </Dropdown>
+        </span>
+      </ButtonGroup>
+    </div>
+  ) : (
+    <Button
+      href="/login"
+      variant="outline"
+      size="sm"
+      class="gap-1.5"
+      title="Sign in to track movies and shows"
+    >
+      <IconBookmark class="h-4 w-4" />
+      Sign in to track
+    </Button>
+  )
+}
+
+<script>
+  import { toast } from '@components/starwind/toast/toast-manager';
+  import { checkAndShowAchievementToast } from '@lib/achievement-toast';
+
+  function setWatchlistUI(toolbar: HTMLElement, added: boolean): void {
+    const btn = toolbar.querySelector<HTMLElement>('[data-watchlist-toggle]');
+    if (!btn) return;
+    const filledIcon = btn.querySelector<HTMLElement>(
+      '[data-icon-bookmark-filled]'
+    );
+    const outlineIcon = btn.querySelector<HTMLElement>('[data-icon-bookmark]');
+    if (filledIcon) filledIcon.hidden = !added;
+    if (outlineIcon) outlineIcon.hidden = added;
+    const label = added ? 'Remove from watchlist' : 'Add to watchlist';
+    btn.setAttribute('aria-label', label);
+    btn.setAttribute('title', label);
+  }
+
+  function setWatchedUI(toolbar: HTMLElement, watched: boolean): void {
+    const unwatchContainer = toolbar.querySelector<HTMLElement>(
+      '[data-unwatch-container]'
+    );
+    const watchContainer = toolbar.querySelector<HTMLElement>(
+      '[data-watch-container]'
+    );
+    if (unwatchContainer) unwatchContainer.hidden = !watched;
+    if (watchContainer) watchContainer.hidden = watched;
+    if (!watched) {
+      document.dispatchEvent(new CustomEvent('starwind:init'));
+    }
+  }
+
+  function bindMediaToolbar(): void {
+    document
+      .querySelectorAll<HTMLElement>('[data-media-toolbar]')
+      .forEach((toolbar) => {
+        if (toolbar.dataset.bound === 'true') return;
+        toolbar.dataset.bound = 'true';
+
+        const mediaType = toolbar.dataset.mediaType!;
+        const mediaId = Number(toolbar.dataset.mediaId);
+        const seriesId = toolbar.dataset.seriesId
+          ? Number(toolbar.dataset.seriesId)
+          : undefined;
+        const seasonNumber = toolbar.dataset.seasonNumber
+          ? Number(toolbar.dataset.seasonNumber)
+          : undefined;
+        const episodeNumber = toolbar.dataset.episodeNumber
+          ? Number(toolbar.dataset.episodeNumber)
+          : undefined;
+
+        const watchlistToggle = toolbar.querySelector<HTMLElement>(
+          '[data-watchlist-toggle]'
+        );
+        if (watchlistToggle) {
+          watchlistToggle.addEventListener('click', async () => {
+            const inWatchlist = toolbar.dataset.inWatchlist === 'true';
+            if (inWatchlist) {
+              const itemId = toolbar.dataset.watchlistItemId;
+              if (!itemId) return;
+              const res = await fetch(`/api/watchlist/${itemId}`, {
+                method: 'DELETE',
+              });
+              if (res.ok) {
+                toolbar.dataset.inWatchlist = 'false';
+                toolbar.dataset.watchlistItemId = '';
+                setWatchlistUI(toolbar, false);
+                toast.success('Removed from watchlist');
+              } else {
+                toast.error('Failed to remove from watchlist');
+              }
+            } else {
+              const res = await fetch('/api/watchlist', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  mediaType:
+                    mediaType === 'episode' || mediaType === 'season'
+                      ? 'series'
+                      : mediaType,
+                  mediaId: seriesId || mediaId,
+                  status: 'want_to_watch',
+                }),
+              });
+              if (res.ok) {
+                const data = await res.json();
+                toolbar.dataset.inWatchlist = 'true';
+                toolbar.dataset.watchlistItemId = data.id;
+                setWatchlistUI(toolbar, true);
+                toast.success('Added to watchlist');
+              } else {
+                toast.error('Failed to add to watchlist');
+              }
+            }
+          });
+        }
+
+        const unwatchBtn =
+          toolbar.querySelector<HTMLElement>('[data-unwatch-btn]');
+        if (unwatchBtn) {
+          unwatchBtn.addEventListener('click', async () => {
+            const eventId = toolbar.dataset.watchEventId;
+            if (!eventId) return;
+            const res = await fetch(`/api/watch-events/${eventId}`, {
+              method: 'DELETE',
+            });
+            if (res.ok) {
+              toolbar.dataset.hasWatched = 'false';
+              toolbar.dataset.watchEventId = '';
+              setWatchedUI(toolbar, false);
+              toast.success('Unmarked as watched');
+            } else {
+              toast.error('Failed to unmark as watched');
+            }
+          });
+        }
+
+        async function recordWatch(justWatched: boolean): Promise<void> {
+          const payload: Record<string, unknown> = {
+            mediaType,
+            mediaId,
+            justWatched,
+          };
+          if (seriesId) payload.seriesId = seriesId;
+          if (seasonNumber != null) payload.seasonNumber = seasonNumber;
+          if (episodeNumber != null) payload.episodeNumber = episodeNumber;
+          payload.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+          const res = await fetch('/api/watch-events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          if (res.ok) {
+            const data = await res.json();
+            toolbar.dataset.hasWatched = 'true';
+            toolbar.dataset.watchEventId = data.id;
+            setWatchedUI(toolbar, true);
+            toast.success('Marked as watched');
+            setTimeout(() => checkAndShowAchievementToast(), 1000);
+          } else {
+            toast.error('Failed to mark as watched');
+          }
+        }
+
+        toolbar
+          .querySelector<HTMLElement>('[data-watched-before]')
+          ?.addEventListener('click', () => recordWatch(false));
+        toolbar
+          .querySelector<HTMLElement>('[data-just-watched]')
+          ?.addEventListener('click', () => recordWatch(true));
+      });
+  }
+
+  bindMediaToolbar();
+  document.dispatchEvent(new CustomEvent('starwind:init'));
+  document.addEventListener('astro:after-swap', () => {
+    bindMediaToolbar();
+    document.dispatchEvent(new CustomEvent('starwind:init'));
+  });
+</script>

@@ -31,7 +31,7 @@ export default defineConfig({
     csp: {
       directives: [
         "default-src 'self'",
-        "img-src 'self' https://image.tmdb.org",
+        "img-src 'self' https://image.tmdb.org https://lh3.googleusercontent.com",
       ],
     },
   },

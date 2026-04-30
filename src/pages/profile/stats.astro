@@ -1,0 +1,296 @@
+---
+import {
+  IconChartBar,
+  IconFlame,
+  IconMovie,
+  IconTrophy,
+  IconVideo,
+} from '@components/icons';
+import { Header } from '@components/layout';
+import { Badge } from '@components/starwind/badge';
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from '@components/starwind/card';
+import Layout from '@layouts/Layout.astro';
+import { fetchUserAPI } from '@lib/api';
+import { getSessionCookie } from '@lib/session';
+
+if (!Astro.locals.user) {
+  return Astro.redirect('/login');
+}
+
+const sessionCookie = getSessionCookie(Astro.cookies);
+if (!sessionCookie) return Astro.redirect('/login');
+
+interface UserStats {
+  totalMoviesWatched: number;
+  totalSeriesCompleted: number;
+  totalEpisodesWatched: number;
+  estimatedMinutesWatched: number;
+  currentStreak: number;
+  longestStreak: number;
+  genreBreakdown: { genre: string; count: number }[];
+  monthlyActivity: {
+    month: string;
+    moviesWatched: number;
+    episodesWatched: number;
+  }[];
+}
+
+interface Achievement {
+  id: string;
+  achievementId: string;
+  name: string;
+  description: string;
+  earnedViaMediaType?: string;
+  earnedViaMediaId?: number;
+  earnedViaMediaTitle?: string;
+  seenAt?: string;
+  earnedAt: string;
+}
+
+let stats: UserStats | null = null;
+let achievements: Achievement[] = [];
+
+try {
+  const [statsRes, achievementsRes] = await Promise.all([
+    fetchUserAPI('/users/me/stats', sessionCookie),
+    fetchUserAPI('/users/me/achievements', sessionCookie),
+  ]);
+
+  if (statsRes.ok) stats = (await statsRes.json()) as UserStats;
+  if (achievementsRes.ok) {
+    const data = (await achievementsRes.json()) as {
+      achievements: Achievement[];
+    };
+    achievements = data.achievements || [];
+  }
+} catch {
+  // Stats will be null, handled below
+}
+
+const maxGenreCount =
+  stats?.genreBreakdown?.reduce((max, g) => Math.max(max, g.count), 0) ?? 1;
+
+function getTierFromId(achievementId: string): string | null {
+  const parts = achievementId.split(':');
+  return parts.length > 1 ? parts[1] : null;
+}
+
+function formatWatchTime(totalMinutes: number): string {
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  if (hours === 0) return `${mins} min`;
+  if (mins === 0) return `${hours.toLocaleString()} hr`;
+  return `${hours.toLocaleString()} hr ${mins} min`;
+}
+
+const tierColors: Record<string, string> = {
+  bronze: 'text-orange-600 bg-orange-500/10 border-orange-500/20',
+  silver: 'text-slate-400 bg-slate-400/10 border-slate-400/20',
+  gold: 'text-amber-400 bg-amber-400/10 border-amber-400/20',
+};
+---
+
+<Layout title="Stats & Badges - MiniMovie" noindex>
+  <Header />
+
+  <main class="container mx-auto px-4 py-8 flex-1 max-w-4xl">
+    <div class="space-y-8">
+      <h1 class="text-3xl font-bold">Stats & Badges</h1>
+
+      {
+        !stats ? (
+          <Card>
+            <CardContent class="py-16 text-center">
+              <p class="text-muted-foreground">
+                Start watching to see your stats here!
+              </p>
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <Card>
+                <CardContent class="p-4 text-center">
+                  <IconMovie class="h-5 w-5 text-amber-500 mx-auto mb-1" />
+                  <p class="text-2xl font-bold">{stats.totalMoviesWatched}</p>
+                  <p class="text-xs text-muted-foreground">Movies</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent class="p-4 text-center">
+                  <IconVideo class="h-5 w-5 text-amber-500 mx-auto mb-1" />
+                  <p class="text-2xl font-bold">{stats.totalEpisodesWatched}</p>
+                  <p class="text-xs text-muted-foreground">Episodes</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent class="p-4 text-center">
+                  <IconMovie class="h-5 w-5 text-blue-500 mx-auto mb-1" />
+                  <p class="text-2xl font-bold">{stats.totalSeriesCompleted}</p>
+                  <p class="text-xs text-muted-foreground">Series</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent class="p-4 text-center">
+                  <IconFlame class="h-5 w-5 text-orange-500 mx-auto mb-1" />
+                  <p class="text-2xl font-bold">{stats.currentStreak}</p>
+                  <p class="text-xs text-muted-foreground">Day Streak</p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {(stats.estimatedMinutesWatched > 0 || stats.longestStreak > 0) && (
+              <div
+                class:list={[
+                  'grid gap-4',
+                  stats.estimatedMinutesWatched > 0 && stats.longestStreak > 0
+                    ? 'grid-cols-1 sm:grid-cols-2'
+                    : 'grid-cols-1',
+                ]}
+              >
+                {stats.estimatedMinutesWatched > 0 && (
+                  <Card>
+                    <CardContent class="p-4 text-center">
+                      <p class="text-sm text-muted-foreground">
+                        Total watch time
+                      </p>
+                      <p class="text-3xl font-bold">
+                        {formatWatchTime(stats.estimatedMinutesWatched)}
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+                {stats.longestStreak > 0 && (
+                  <Card>
+                    <CardContent class="p-4 text-center">
+                      <p class="text-sm text-muted-foreground">
+                        Longest streak
+                      </p>
+                      <p class="text-3xl font-bold">
+                        {stats.longestStreak} days
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
+
+            {stats.genreBreakdown && stats.genreBreakdown.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Genre Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div class="space-y-2">
+                    {stats.genreBreakdown.slice(0, 10).map((genre) => (
+                      <div class="flex items-center gap-3">
+                        <span class="text-sm w-32 shrink-0 text-right text-muted-foreground">
+                          {genre.genre}
+                        </span>
+                        <div class="flex-1 h-6 bg-muted rounded-full overflow-hidden">
+                          <div
+                            class="h-full bg-amber-500 rounded-full transition-all"
+                            style={`width: ${(genre.count / maxGenreCount) * 100}%`}
+                          />
+                        </div>
+                        <span class="text-sm font-mono w-8 text-right">
+                          {genre.count}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </>
+        )
+      }
+
+      <div class="space-y-4">
+        <div class="flex items-center gap-3">
+          <IconTrophy class="h-5 w-5 text-amber-500" />
+          <h2 class="text-xl font-semibold">Badges</h2>
+          {
+            achievements.length > 0 && (
+              <Badge variant="outline" class="text-xs">
+                {achievements.length}
+              </Badge>
+            )
+          }
+        </div>
+
+        {
+          achievements.length === 0 ? (
+            <Card>
+              <CardContent class="py-12 text-center">
+                <IconTrophy class="h-10 w-10 text-muted-foreground mx-auto mb-2" />
+                <p class="text-muted-foreground">
+                  No badges yet. Keep watching to earn them!
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {achievements.map((a) => {
+                const tier = getTierFromId(a.achievementId);
+                const mediaLink =
+                  a.earnedViaMediaType && a.earnedViaMediaId
+                    ? a.earnedViaMediaType === 'movie'
+                      ? `/movies/${a.earnedViaMediaId}`
+                      : a.earnedViaMediaType === 'series'
+                        ? `/series/${a.earnedViaMediaId}`
+                        : null
+                    : null;
+                return (
+                  <Card class={`border ${tier ? tierColors[tier] || '' : ''}`}>
+                    <CardContent class="p-4 space-y-1">
+                      <div class="flex items-center gap-2">
+                        <IconTrophy class="h-5 w-5" />
+                        <span class="font-semibold text-sm">{a.name}</span>
+                      </div>
+                      <p class="text-xs text-muted-foreground">
+                        {a.description}
+                      </p>
+                      {a.earnedViaMediaTitle && (
+                        <p class="text-xs">
+                          <span class="text-muted-foreground">Earned via:</span>
+                          {mediaLink ? (
+                            <a
+                              href={mediaLink}
+                              class="text-amber-500 hover:text-amber-500 hover:underline transition-colors"
+                            >
+                              {a.earnedViaMediaTitle}
+                            </a>
+                          ) : (
+                            <span class="text-foreground">
+                              {a.earnedViaMediaTitle}
+                            </span>
+                          )}
+                        </p>
+                      )}
+                      <div class="flex items-center gap-2">
+                        {tier && (
+                          <Badge variant="outline" class="text-xs capitalize">
+                            {tier}
+                          </Badge>
+                        )}
+                        <span class="text-xs text-muted-foreground">
+                          {new Date(a.earnedAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </main>
+</Layout>

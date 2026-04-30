@@ -257,9 +257,7 @@ function resolveRefs(): SheetRefs | null {
   const count = sheet.querySelector<HTMLElement>('[data-sheet-count]');
   const empty = sheet.querySelector<HTMLElement>('[data-sheet-empty]');
   const hint = sheet.querySelector<HTMLElement>('[data-sheet-hint]');
-  const brandView = sheet.querySelector<HTMLElement>(
-    '[data-sheet-brand-view]'
-  );
+  const brandView = sheet.querySelector<HTMLElement>('[data-sheet-brand-view]');
   const prompt = sheet.querySelector<HTMLElement>('[data-sheet-prompt]');
   const clear = sheet.querySelector<HTMLButtonElement>('[data-search-clear]');
   const cancel = sheet.querySelector<HTMLButtonElement>('[data-sheet-cancel]');

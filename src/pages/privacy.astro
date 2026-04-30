@@ -1,0 +1,439 @@
+---
+import { Header } from '@components/layout';
+import Layout from '@layouts/Layout.astro';
+
+import { legal } from '@/config/legal.config';
+---
+
+<Layout
+  title="Privacy Policy - MiniMovie"
+  description="MiniMovie privacy policy - what we collect, how we use it, and your rights."
+>
+  <Header />
+
+  <main class="container mx-auto px-4 sm:px-6 py-12 flex-1 max-w-5xl">
+    <div class="flex gap-10 lg:gap-14">
+      <nav
+        class="hidden lg:block sticky top-20 self-start shrink-0 w-52 space-y-1 text-sm"
+      >
+        <p
+          class="font-semibold text-xs uppercase tracking-wider text-muted-foreground mb-3"
+        >
+          Contents
+        </p>
+        <a
+          href="#tldr"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >TL;DR</a
+        >
+        <a
+          href="#what-we-collect"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >What We Collect</a
+        >
+        <a
+          href="#what-we-dont"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >What We Don't Collect</a
+        >
+        <a
+          href="#lawful-basis"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >Lawful Basis</a
+        >
+        <a
+          href="#how-we-use"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >How We Use Data</a
+        >
+        <a
+          href="#sub-processors"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >Sub-Processors</a
+        >
+        <a
+          href="#retention"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >Retention</a
+        >
+        <a
+          href="#your-rights"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >Your Rights</a
+        >
+        <a
+          href="#cookies"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >Cookies</a
+        >
+        <a
+          href="#children"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >Children</a
+        >
+        <a
+          href="#changes"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >Changes</a
+        >
+        <a
+          href="#contact"
+          class="block text-muted-foreground hover:text-foreground py-0.5"
+          >Contact</a
+        >
+      </nav>
+
+      <article class="privacy-policy max-w-none flex-1 min-w-0">
+        <header class="mb-12 pb-10 border-b border-border/80">
+          <h1
+            class="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-3"
+          >
+            Privacy Policy
+          </h1>
+          <p class="text-muted-foreground text-sm">
+            Effective: {legal.effectiveDate} &middot; Version {legal.version}
+          </p>
+        </header>
+
+        <div class="flex flex-col gap-10">
+          <section id="tldr">
+            <h2>TL;DR</h2>
+            <p>
+              MiniMovie is a personal movie and TV tracking app. We store only
+              what you explicitly provide through your actions (watchlist, watch
+              history) plus your first name and avatar URL from your sign-in
+              provider for display purposes. We don't sell data or track you
+              across the web. You can export or delete everything at any time
+              from your <a href="/profile">account page</a>.
+            </p>
+          </section>
+
+          <section id="what-we-collect">
+            <h2>What We Collect</h2>
+            <div class="overflow-x-auto rounded-lg border border-border">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Source</th>
+                    <th>Purpose</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Provider subject ID</td>
+                    <td>Apple or Google sign-in</td>
+                    <td>Unique account identifier</td>
+                  </tr>
+                  <tr>
+                    <td>First / given name</td>
+                    <td>Apple or Google sign-in</td>
+                    <td>Display in the UI (greeting, avatar fallback)</td>
+                  </tr>
+                  <tr>
+                    <td>Avatar URL</td>
+                    <td>Google sign-in (if available)</td>
+                    <td>Profile picture display</td>
+                  </tr>
+                  <tr>
+                    <td>Watchlist entries</td>
+                    <td>Your actions</td>
+                    <td
+                      >Track what you want to watch, are watching, or have
+                      watched</td
+                    >
+                  </tr>
+                  <tr>
+                    <td>Watch events</td>
+                    <td>Your actions</td>
+                    <td>Record when you watched something</td>
+                  </tr>
+                  <tr>
+                    <td>Session token (cookie)</td>
+                    <td>Authentication flow</td>
+                    <td>Keep you signed in</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          <section id="what-we-dont">
+            <h2>What We Don't Collect</h2>
+            <ul>
+              <li>
+                <strong>Email address</strong> — never requested, never stored
+              </li>
+              <li><strong>Full name</strong> — only the given/first name</li>
+              <li>
+                <strong>Device fingerprints</strong> — we use basic, anonymised traffic
+                analytics (page views, country); no personal tracking scripts or ad
+                pixels are used
+              </li>
+              <li><strong>Location data</strong> — not collected</li>
+            </ul>
+          </section>
+
+          <section id="lawful-basis">
+            <h2>Lawful Basis (GDPR)</h2>
+            <p>
+              We process your data under <strong>legitimate interest</strong> (providing
+              the service you signed up for) and <strong>consent</strong> (you chose
+              to sign in and use the tracking features). You may withdraw consent
+              at any time by deleting your account.
+            </p>
+          </section>
+
+          <section id="how-we-use">
+            <h2>How We Use Your Data</h2>
+            <ul>
+              <li>Display your name and avatar in the UI</li>
+              <li>Persist your watchlist and watch history</li>
+              <li>Calculate stats, streaks, and achievements</li>
+              <li>Authenticate your session</li>
+            </ul>
+            <p>
+              We do <strong>not</strong> use your data for advertising, profiling,
+              or sell it to third parties.
+            </p>
+          </section>
+
+          <section id="sub-processors">
+            <h2>Sub-Processors</h2>
+            <div class="overflow-x-auto rounded-lg border border-border">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Provider</th>
+                    <th>Purpose</th>
+                    <th>Location</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {
+                    legal.subProcessors.map((sp) => (
+                      <tr>
+                        <td>{sp.name}</td>
+                        <td>{sp.purpose}</td>
+                        <td>{sp.location}</td>
+                      </tr>
+                    ))
+                  }
+                </tbody>
+              </table>
+            </div>
+            <p>
+              Your data is stored in <strong>{legal.databaseRegion}</strong>.
+            </p>
+          </section>
+
+          <section id="retention">
+            <h2>Data Retention</h2>
+            <ul>
+              <li>
+                <strong>Account data</strong> — retained until you delete your account
+              </li>
+              <li>
+                <strong>Session tokens</strong> — expire after 30 days of inactivity
+              </li>
+              <li>
+                <strong>Auth codes</strong> — single-use, expire within 5 minutes
+              </li>
+            </ul>
+            <p>
+              When you delete your account, all data is permanently removed
+              within 24 hours.
+            </p>
+          </section>
+
+          <section id="your-rights">
+            <h2>Your Rights</h2>
+            <p>Under GDPR and similar regulations, you have the right to:</p>
+            <ul>
+              <li>
+                <strong>Access</strong> — export all your data from your <a
+                  href="/profile">account page</a
+                >
+              </li>
+              <li>
+                <strong>Rectification</strong> — update your name/avatar by re-authenticating
+                with your provider
+              </li>
+              <li>
+                <strong>Erasure</strong> — delete your account from your <a
+                  href="/profile">account page</a
+                >
+              </li>
+              <li><strong>Portability</strong> — export data as JSON</li>
+              <li>
+                <strong>Object</strong> — contact us to object to processing
+              </li>
+            </ul>
+          </section>
+
+          <section id="cookies">
+            <h2>Cookies</h2>
+            <p>
+              We use a single <strong>essential cookie</strong> to maintain your session:
+            </p>
+            <div class="overflow-x-auto rounded-lg border border-border">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cookie</th>
+                    <th>Purpose</th>
+                    <th>Duration</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><code>__Host-mm_session</code></td>
+                    <td>Session authentication</td>
+                    <td>30 days</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p>
+              No analytics, marketing, or third-party cookies are used. A cookie
+              banner is not required because we only use essential cookies.
+            </p>
+          </section>
+
+          <section id="children">
+            <h2>Children</h2>
+            <p>
+              MiniMovie is not directed at children under 13. We do not
+              knowingly collect data from children. If you believe a child has
+              provided us with data, please contact us and we will delete it.
+            </p>
+          </section>
+
+          <section id="changes">
+            <h2>Changes to This Policy</h2>
+            <p>
+              We may update this policy from time to time. Material changes will
+              be communicated via the app. The version number and effective date
+              at the top of this page always reflect the current version.
+            </p>
+          </section>
+
+          <section id="contact">
+            <h2>Contact</h2>
+            <p>
+              For privacy questions, data requests, or concerns, email us at
+              <a href={`mailto:${legal.contactEmail}`}>{legal.contactEmail}</a>.
+            </p>
+          </section>
+        </div>
+      </article>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .privacy-policy > div > section {
+    scroll-margin-top: 6rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .privacy-policy h2 {
+    font-size: clamp(1.125rem, 2.2vw, 1.375rem);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.35;
+    color: var(--foreground);
+  }
+
+  .privacy-policy > div > section p,
+  .privacy-policy > div > section li {
+    font-size: 0.9375rem;
+    line-height: 1.72;
+    color: var(--foreground);
+  }
+
+  .privacy-policy > div > section p {
+    opacity: 0.92;
+  }
+
+  .privacy-policy ul {
+    list-style-position: outside;
+    padding-left: 1.25rem;
+  }
+
+  .privacy-policy li {
+    margin-bottom: 0.35rem;
+  }
+
+  .privacy-policy li::marker {
+    color: var(--muted-foreground);
+  }
+
+  .privacy-policy a {
+    color: var(--primary);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+  }
+
+  .privacy-policy a:hover {
+    text-decoration-thickness: 2px;
+  }
+
+  .privacy-policy table {
+    width: 100%;
+    min-width: 28rem;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    text-align: left;
+  }
+
+  .privacy-policy thead {
+    background-color: var(--muted);
+  }
+
+  .privacy-policy th {
+    padding: 0.7rem 1rem;
+    font-weight: 600;
+    color: var(--foreground);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .privacy-policy td {
+    padding: 0.65rem 1rem;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .privacy-policy tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .privacy-policy tbody tr:nth-child(even) {
+    background-color: color-mix(in oklab, var(--muted) 35%, transparent);
+  }
+
+  .privacy-policy code {
+    font-size: 0.8125rem;
+    font-family: ui-monospace, 'Cascadia Code', monospace;
+    background-color: var(--muted);
+    padding: 0.15rem 0.4rem;
+    border-radius: calc(var(--radius) - 0.25rem);
+  }
+
+  @media print {
+    nav {
+      display: none !important;
+    }
+    article {
+      max-width: 100% !important;
+    }
+    .privacy-policy thead {
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+  }
+</style>

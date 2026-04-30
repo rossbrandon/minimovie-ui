@@ -1,0 +1,111 @@
+---
+import { IconCheck, IconEye } from '@components/icons';
+import { Button } from '@components/starwind/button';
+import { SESSION_COOKIE_NAME } from '@lib/session';
+
+interface Props {
+  mediaType: 'movie' | 'episode' | 'series';
+  mediaId: number;
+  seriesId?: number;
+  seasonNumber?: number;
+  episodeNumber?: number;
+}
+
+const { mediaType, mediaId, seriesId, seasonNumber, episodeNumber } =
+  Astro.props;
+const token = Astro.cookies.get(SESSION_COOKIE_NAME)?.value;
+---
+
+{
+  token && (
+    <div
+      class="flex items-center gap-2"
+      data-watch-status
+      data-media-type={mediaType}
+      data-media-id={String(mediaId)}
+      data-series-id={seriesId ? String(seriesId) : ''}
+      data-season-number={seasonNumber != null ? String(seasonNumber) : ''}
+      data-episode-number={episodeNumber != null ? String(episodeNumber) : ''}
+    >
+      <Button
+        variant="ghost"
+        size="sm"
+        class="gap-1.5 text-muted-foreground"
+        data-watched-before
+      >
+        <IconEye class="h-4 w-4" />
+        Watched before
+      </Button>
+      <Button
+        variant="ghost"
+        size="sm"
+        class="gap-1.5 text-muted-foreground"
+        data-just-watched
+      >
+        <IconCheck class="h-4 w-4" />
+        Just watched
+      </Button>
+      <span
+        class="hidden items-center gap-1.5 rounded-md bg-emerald-500/10 px-3 py-1.5 text-sm font-medium text-emerald-600 dark:text-emerald-400"
+        data-watched-done
+      >
+        <IconCheck class="h-4 w-4" />
+      </span>
+    </div>
+  )
+}
+
+<script>
+  function bindWatchStatus(): void {
+    document
+      .querySelectorAll<HTMLElement>('[data-watch-status]')
+      .forEach((container) => {
+        if (container.dataset.bound === 'true') return;
+        container.dataset.bound = 'true';
+
+        const payload: Record<string, unknown> = {
+          mediaType: container.dataset.mediaType,
+          mediaId: Number(container.dataset.mediaId),
+        };
+        if (container.dataset.seriesId)
+          payload.seriesId = Number(container.dataset.seriesId);
+        if (container.dataset.seasonNumber)
+          payload.seasonNumber = Number(container.dataset.seasonNumber);
+        if (container.dataset.episodeNumber)
+          payload.episodeNumber = Number(container.dataset.episodeNumber);
+
+        async function recordWatch(justWatched: boolean): Promise<void> {
+          const res = await fetch('/api/watch-events', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              ...payload,
+              justWatched,
+              timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            }),
+          });
+          if (res.ok) {
+            const buttons = container.querySelectorAll<HTMLElement>(
+              '[data-watched-before],[data-just-watched]'
+            );
+            buttons.forEach((btn) => btn.classList.add('hidden'));
+            const done = container.querySelector<HTMLElement>(
+              '[data-watched-done]'
+            );
+            if (done) done.classList.remove('hidden');
+            done?.classList.add('flex');
+          }
+        }
+
+        container
+          .querySelector<HTMLElement>('[data-watched-before]')
+          ?.addEventListener('click', () => recordWatch(false));
+        container
+          .querySelector<HTMLElement>('[data-just-watched]')
+          ?.addEventListener('click', () => recordWatch(true));
+      });
+  }
+
+  bindWatchStatus();
+  document.addEventListener('astro:after-swap', bindWatchStatus);
+</script>
