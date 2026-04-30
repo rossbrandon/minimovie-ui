@@ -54,6 +54,7 @@ const {
     private cleanupAutoUpdate: (() => void) | null = null;
     private openChildCount: number = 0;
     private parentHandler: DropdownHandler | null = null;
+    private closeAnimationTimerRef: number | null = null;
 
     constructor(dropdown: HTMLElement, dropdownIdx: number) {
       this.dropdown = dropdown;
@@ -129,6 +130,7 @@ const {
       // Set up additional ARIA attributes
       this.trigger.setAttribute('aria-controls', this.content.id);
       this.content.setAttribute('aria-labelledby', this.trigger.id);
+      this.content.setAttribute('aria-hidden', 'true');
     }
 
     private setupEvents() {
@@ -416,13 +418,22 @@ const {
     }
 
     private openDropdown() {
-      if (this.isClosing) return;
       if (!this.content || !this.trigger || (this.trigger as any).disabled)
         return;
+      if (this.isClosing) {
+        this.clearCloseAnimationTimer();
+        this.isClosing = false;
+      }
 
       this.isOpen = true;
       this.trigger.setAttribute('aria-expanded', 'true');
+      this.content.removeAttribute('hidden');
+      this.content.removeAttribute('inert');
+      this.content.setAttribute('aria-hidden', 'false');
       this.content.style.removeProperty('display');
+      this.content.style.removeProperty('visibility');
+      this.content.style.removeProperty('pointer-events');
+      this.content.style.removeProperty('animation-name');
 
       // Portal sub-content to body before triggering animation
       if (this.isSubmenu) {
@@ -454,6 +465,9 @@ const {
       this.isClosing = true;
       this.isOpen = false;
       this.content.setAttribute('data-state', 'closed');
+      this.content.setAttribute('inert', '');
+      this.content.setAttribute('aria-hidden', 'true');
+      this.content.style.pointerEvents = 'none';
 
       // Set focus back on trigger only if opened or closed by keyboard
       // Skip focus if a close-all with focusRoot is closing this submenu (root will handle focus)
@@ -470,13 +484,17 @@ const {
       }
 
       // Give the content time to animate before hiding
-      setTimeout(() => {
+      this.clearCloseAnimationTimer();
+      this.closeAnimationTimerRef = window.setTimeout(() => {
         if (!this.content) return;
         if (this.isSubmenu) {
           this.unportalContent();
         }
         this.content.style.display = 'none';
+        this.content.style.visibility = 'hidden';
+        this.content.style.animationName = 'none';
         this.isClosing = false;
+        this.closeAnimationTimerRef = null;
       }, this.animationDuration);
 
       this.trigger.setAttribute('aria-expanded', 'false');
@@ -504,6 +522,13 @@ const {
       if (this.closeTimerRef !== null) {
         window.clearTimeout(this.closeTimerRef);
         this.closeTimerRef = null;
+      }
+    }
+
+    private clearCloseAnimationTimer() {
+      if (this.closeAnimationTimerRef !== null) {
+        window.clearTimeout(this.closeAnimationTimerRef);
+        this.closeAnimationTimerRef = null;
       }
     }
 

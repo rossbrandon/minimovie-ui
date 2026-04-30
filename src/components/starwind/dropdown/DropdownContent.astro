@@ -99,11 +99,15 @@ const {
   role="menu"
   data-side={side}
   data-align={align}
-  data-state="initial"
+  data-state="closed"
   tabindex="-1"
+  aria-hidden="true"
   aria-orientation="vertical"
   style={{
     display: 'none',
+    visibility: 'hidden',
+    pointerEvents: 'none',
+    animationName: 'none',
     animationDuration: `${animationDuration}ms`,
     marginTop: side === 'bottom' ? `${sideOffset}px` : undefined,
     marginBottom: side === 'top' ? `${sideOffset}px` : undefined,

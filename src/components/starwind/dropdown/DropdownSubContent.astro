@@ -24,9 +24,13 @@ const { class: className, animationDuration = 150, ...rest } = Astro.props;
   role="menu"
   data-state="closed"
   tabindex="-1"
+  aria-hidden="true"
   aria-orientation="vertical"
   style={{
     display: 'none',
+    visibility: 'hidden',
+    pointerEvents: 'none',
+    animationName: 'none',
     animationDuration: `${animationDuration}ms`,
   }}
   {...rest}
