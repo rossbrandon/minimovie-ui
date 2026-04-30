@@ -4,7 +4,7 @@ import { getCookie, SESSION_COOKIE_NAME } from '@lib/session';
 
 const FOUR_HOURS = 14400;
 
-const NO_CACHE_PATHS = ['/profile', '/watchlist', '/api/', '/auth/'];
+const NO_CACHE_PATHS = ['/profile', '/watchlist', '/api/', '/auth/', '/_server-islands/'];
 
 function isPrivateRoute(pathname: string): boolean {
   return NO_CACHE_PATHS.some((p) => pathname.startsWith(p));

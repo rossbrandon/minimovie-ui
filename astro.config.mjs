@@ -33,6 +33,9 @@ export default defineConfig({
         "default-src 'self'",
         "img-src 'self' https://image.tmdb.org https://lh3.googleusercontent.com",
       ],
+      scriptDirective: {
+        resources: ["'self'", 'https://static.cloudflareinsights.com'],
+      },
     },
   },
   env: {

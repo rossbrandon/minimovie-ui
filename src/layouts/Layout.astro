@@ -25,7 +25,6 @@ const {
 } = Astro.props;
 
 const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
-const unseenCount = Astro.locals.unseenAchievementCount ?? 0;
 ---
 
 <!doctype html>
@@ -75,7 +74,6 @@ const unseenCount = Astro.locals.unseenAchievementCount ?? 0;
   </head>
   <body
     class="min-h-screen bg-background text-foreground antialiased flex flex-col"
-    data-unseen-achievements={unseenCount > 0 ? String(unseenCount) : undefined}
   >
     <slot />
     <Toaster position="bottom-right" />
@@ -95,10 +93,27 @@ const unseenCount = Astro.locals.unseenAchievementCount ?? 0;
   import { checkAndShowAchievementToast } from '@lib/achievement-toast';
 
   async function showAchievementToast(): Promise<void> {
-    const count = document.body.dataset.unseenAchievements;
-    if (!count || document.body.dataset.achievementShown === 'true') return;
+    if (document.body.dataset.achievementShown === 'true') return;
+    const authEl = document.querySelector('[data-auth-state]');
+    const count = authEl?.getAttribute('data-unseen-achievements');
+    if (!count) return;
     document.body.dataset.achievementShown = 'true';
     await checkAndShowAchievementToast();
+  }
+
+  function observeAuthState(): void {
+    const existing = document.querySelector('[data-auth-state]');
+    if (existing) {
+      showAchievementToast();
+      return;
+    }
+    const observer = new MutationObserver(() => {
+      if (document.querySelector('[data-auth-state]')) {
+        observer.disconnect();
+        showAchievementToast();
+      }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function handleReturnTo(): void {
@@ -112,6 +127,6 @@ const unseenCount = Astro.locals.unseenAchievementCount ?? 0;
   }
 
   handleReturnTo();
-  showAchievementToast();
-  document.addEventListener('astro:after-swap', showAchievementToast);
+  observeAuthState();
+  document.addEventListener('astro:after-swap', observeAuthState);
 </script>
