@@ -1,11 +1,11 @@
 ---
-import { Button } from '@components/starwind/button';
-
 import AuthButtonIsland from './AuthButtonIsland.astro';
 ---
 
 <AuthButtonIsland server:defer>
-  <Button slot="fallback" href="/login" variant="ghost" size="sm">
-    Sign in
-  </Button>
+  <span
+    slot="fallback"
+    aria-hidden="true"
+    class="inline-flex h-9 w-9 rounded-full bg-muted/60"
+  ></span>
 </AuthButtonIsland>
