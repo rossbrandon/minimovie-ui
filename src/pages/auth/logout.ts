@@ -11,7 +11,12 @@ export const POST: APIRoute = async ({ cookies, redirect, request }) => {
     );
   }
 
-  cookies.delete(SESSION_COOKIE_NAME, { path: '/' });
+  cookies.delete(SESSION_COOKIE_NAME, {
+    path: '/',
+    secure: import.meta.env.PROD,
+    httpOnly: true,
+    sameSite: 'lax',
+  });
 
   const form = await request.formData().catch(() => null);
   const returnTo = form?.get('returnTo');

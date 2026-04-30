@@ -39,15 +39,27 @@ const { avatarUrl, givenName } = Astro.props;
       {givenName || 'Account'}
     </DropdownLabel>
     <DropdownSeparator />
-    <DropdownItem as="a" href="/watchlist" class="text-sm cursor-pointer py-3 sm:py-1.5">
+    <DropdownItem
+      as="a"
+      href="/watchlist"
+      class="text-sm cursor-pointer py-3 sm:py-1.5"
+    >
       <IconBookmark class="h-4 w-4" />
       My Watchlist
     </DropdownItem>
-    <DropdownItem as="a" href="/profile/stats" class="text-sm cursor-pointer py-3 sm:py-1.5">
+    <DropdownItem
+      as="a"
+      href="/profile/stats"
+      class="text-sm cursor-pointer py-3 sm:py-1.5"
+    >
       <IconChartBar class="h-4 w-4" />
       Stats & Badges
     </DropdownItem>
-    <DropdownItem as="a" href="/profile" class="text-sm cursor-pointer py-3 sm:py-1.5">
+    <DropdownItem
+      as="a"
+      href="/profile"
+      class="text-sm cursor-pointer py-3 sm:py-1.5"
+    >
       <IconUser class="h-4 w-4" />
       Account
     </DropdownItem>

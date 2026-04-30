@@ -4,42 +4,52 @@ import { getCookie, SESSION_COOKIE_NAME } from '@lib/session';
 
 const FOUR_HOURS = 14400;
 
-const NO_CACHE_PATHS = ['/profile', '/watchlist', '/api/', '/auth/', '/_server-islands/'];
+const NO_CACHE_PATHS = [
+  '/login',
+  '/profile',
+  '/watchlist',
+  '/api/',
+  '/auth/',
+  '/_server-islands/',
+];
 
 function isPrivateRoute(pathname: string): boolean {
   return NO_CACHE_PATHS.some((p) => pathname.startsWith(p));
 }
 
-export const onRequest = defineMiddleware(async (context, next) => {
-  // --- Session check (runs on every request) ---
+async function resolveSession(
+  context: Parameters<Parameters<typeof defineMiddleware>[0]>[0]
+): Promise<void> {
   const cookieHeader = context.request.headers.get('cookie') ?? '';
   const sessionToken = getCookie(cookieHeader, SESSION_COOKIE_NAME);
-
-  context.locals.user = null;
-  context.locals.unseenAchievementCount = 0;
-
   if (sessionToken) {
-    const cookieForAPI = `${SESSION_COOKIE_NAME}=${sessionToken}`;
-    const session = await getSession(cookieForAPI);
+    const session = await getSession(`${SESSION_COOKIE_NAME}=${sessionToken}`);
     if (session?.user) {
       context.locals.user = session.user;
       context.locals.unseenAchievementCount = session.unseenAchievementCount;
     }
   }
+}
 
-  // --- Dev mode or non-GET: skip cache ---
+export const onRequest = defineMiddleware(async (context, next) => {
+  context.locals.user = null;
+  context.locals.unseenAchievementCount = 0;
+
+  // --- Dev mode or non-GET: resolve session, skip cache ---
   if (import.meta.env.DEV || context.request.method !== 'GET') {
+    await resolveSession(context);
     return next();
   }
 
-  // --- Private routes: always skip cache ---
+  // --- Private routes: resolve session, skip cache ---
   if (isPrivateRoute(context.url.pathname)) {
+    await resolveSession(context);
     const response = await next();
     response.headers.set('Cache-Control', 'private, no-store');
     return response;
   }
 
-  // Cloudflare Cache API
+  // --- Public routes: try Cloudflare Cache API first (no session check needed) ---
   let cache: any = null;
   try {
     cache =
@@ -66,6 +76,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
+  // Cache miss: render the shell (user-independent; all user content is server:defer)
   const response = await next();
 
   const contentType = response.headers.get('content-type') || '';
