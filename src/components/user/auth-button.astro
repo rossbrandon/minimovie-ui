@@ -1,0 +1,10 @@
+---
+import AuthButtonIsland from './auth-button-island.astro';
+---
+
+<AuthButtonIsland server:defer>
+  <span
+    slot="fallback"
+    aria-hidden="true"
+    class="inline-flex h-9 w-9 rounded-full bg-muted/60"></span>
+</AuthButtonIsland>

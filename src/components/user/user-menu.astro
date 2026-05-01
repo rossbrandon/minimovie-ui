@@ -14,7 +14,7 @@ import {
   DropdownTrigger,
 } from '@components/starwind/dropdown';
 
-import UserAvatar from './UserAvatar.astro';
+import { UserAvatar } from '@components/user';
 
 interface Props {
   avatarUrl: string | null;
@@ -34,7 +34,7 @@ const { avatarUrl, givenName } = Astro.props;
       <UserAvatar avatarUrl={avatarUrl} givenName={givenName} size="sm" />
     </button>
   </DropdownTrigger>
-  <DropdownContent align="end" class="min-w-[200px]">
+  <DropdownContent align="end" class="min-w-50">
     <DropdownLabel class="text-sm font-medium">
       {givenName || 'Account'}
     </DropdownLabel>

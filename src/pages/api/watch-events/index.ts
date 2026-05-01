@@ -2,6 +2,11 @@ import { fetchUserAPI } from '@lib/api';
 import { getSessionCookie } from '@lib/session';
 import type { APIRoute } from 'astro';
 
+export interface CreateWatchEventResponse {
+  status: string;
+  id: string;
+}
+
 export const POST: APIRoute = async ({ cookies, request }) => {
   const sessionCookie = getSessionCookie(cookies);
   if (!sessionCookie) return new Response(null, { status: 401 });
@@ -12,7 +17,9 @@ export const POST: APIRoute = async ({ cookies, request }) => {
     headers: { 'Content-Type': 'application/json' },
     body,
   });
-  return new Response(res.body, {
+
+  const data = (await res.json()) as CreateWatchEventResponse;
+  return new Response(JSON.stringify(data), {
     status: res.status,
     headers: { 'Content-Type': 'application/json' },
   });
