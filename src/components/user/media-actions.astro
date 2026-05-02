@@ -35,37 +35,40 @@ let watchEventId: string | null = null;
 if (user) {
   const sessionCookie = getSessionCookie(Astro.cookies)!;
 
-  if (showWatchlist) {
-    const params = new URLSearchParams({
-      media_type: mediaType,
-      media_id: String(mediaId),
-    });
-    const res = await fetchUserAPI(
-      `/users/me/watchlist/check?${params}`,
-      sessionCookie
-    );
-    if (res.ok) {
-      const data = (await res.json()) as {
-        exists: boolean;
-        item?: { id: string; status: string };
-      };
-      inWatchlist = data.exists;
-      if (data.item) watchlistItemId = data.item.id;
-    }
-  }
-
-  const watchParams = new URLSearchParams({
+  const watchlistParams = new URLSearchParams({
+    media_type: mediaType,
+    media_id: String(mediaId),
+  });
+  const watchEventParams = new URLSearchParams({
     media_type: mediaType,
     media_id: String(mediaId),
     limit: '1',
   });
-  if (seriesId) watchParams.set('series_id', String(seriesId));
-  const watchRes = await fetchUserAPI(
-    `/users/me/watch-events?${watchParams}`,
-    sessionCookie
-  );
-  if (watchRes.ok) {
-    const data = (await watchRes.json()) as {
+  if (seriesId) {
+    watchEventParams.set('series_id', String(seriesId));
+  }
+
+  const [watchlistRes, watchEventsRes] = await Promise.all([
+    showWatchlist
+      ? fetchUserAPI(
+          `/users/me/watchlist/check?${watchlistParams}`,
+          sessionCookie
+        )
+      : Promise.resolve(null),
+    fetchUserAPI(`/users/me/watch-events?${watchEventParams}`, sessionCookie),
+  ]);
+
+  if (watchlistRes?.ok) {
+    const data = (await watchlistRes.json()) as {
+      exists: boolean;
+      item?: { id: string; status: string };
+    };
+    inWatchlist = data.exists;
+    if (data.item) watchlistItemId = data.item.id;
+  }
+
+  if (watchEventsRes.ok) {
+    const data = (await watchEventsRes.json()) as {
       events: { id: string }[];
       total: number;
     };
@@ -154,9 +157,12 @@ if (user) {
 }
 
 <script>
-  import type { CreateWatchEventResponse } from '@/pages/api/watch-events/index';
   import { toast } from '@components/starwind/toast/toast-manager';
   import { checkAndShowAchievementToast } from '@lib/achievement-toast';
+
+  import type { CreateWatchEventResponse } from '@/pages/api/watch-events/index';
+
+  // --- DOM helpers ---
 
   function getToolbar(e: Event): HTMLElement | null {
     return (e.target as HTMLElement).closest<HTMLElement>(
@@ -189,113 +195,208 @@ if (user) {
     if (watchContainer) watchContainer.hidden = watched;
   }
 
+  // --- State snapshot/restore (for optimistic-update revert) ---
+
+  interface ToolbarSnapshot {
+    inWatchlist: string;
+    watchlistItemId: string;
+    hasWatched: string;
+    watchEventId: string;
+  }
+
+  function snapshotState(toolbar: HTMLElement): ToolbarSnapshot {
+    return {
+      inWatchlist: toolbar.dataset.inWatchlist ?? 'false',
+      watchlistItemId: toolbar.dataset.watchlistItemId ?? '',
+      hasWatched: toolbar.dataset.hasWatched ?? 'false',
+      watchEventId: toolbar.dataset.watchEventId ?? '',
+    };
+  }
+
+  function restoreState(toolbar: HTMLElement, snap: ToolbarSnapshot): void {
+    toolbar.dataset.inWatchlist = snap.inWatchlist;
+    toolbar.dataset.watchlistItemId = snap.watchlistItemId;
+    toolbar.dataset.hasWatched = snap.hasWatched;
+    toolbar.dataset.watchEventId = snap.watchEventId;
+    setWatchlistUI(toolbar, snap.inWatchlist === 'true');
+    setWatchedUI(toolbar, snap.hasWatched === 'true');
+  }
+
+  // --- Busy lock (re-entry guard; CSS in <style> dims the toolbar) ---
+
+  function setBusy(toolbar: HTMLElement, busy: boolean): void {
+    toolbar.dataset.busy = busy ? 'true' : 'false';
+  }
+
+  function isBusy(toolbar: HTMLElement): boolean {
+    return toolbar.dataset.busy === 'true';
+  }
+
+  // --- Handlers (optimistic update → fetch → confirm or revert) ---
+
   async function handleWatchlistToggle(toolbar: HTMLElement): Promise<void> {
-    const inWatchlist = toolbar.dataset.inWatchlist === 'true';
-    if (inWatchlist) {
-      const itemId = toolbar.dataset.watchlistItemId;
-      if (!itemId) return;
-      const res = await fetch(`/api/watchlist/${itemId}`, { method: 'DELETE' });
-      if (res.ok) {
-        toolbar.dataset.inWatchlist = 'false';
+    if (isBusy(toolbar)) {
+      return;
+    }
+    const snap = snapshotState(toolbar);
+    const wasInWatchlist = snap.inWatchlist === 'true';
+    setBusy(toolbar, true);
+
+    toolbar.dataset.inWatchlist = String(!wasInWatchlist);
+    setWatchlistUI(toolbar, !wasInWatchlist);
+
+    try {
+      if (wasInWatchlist) {
+        const res = await fetch(`/api/watchlist/${snap.watchlistItemId}`, {
+          method: 'DELETE',
+        });
+        if (!res.ok) {
+          throw new Error('failed');
+        }
         toolbar.dataset.watchlistItemId = '';
-        setWatchlistUI(toolbar, false);
         toast.success('Removed from watchlist');
       } else {
-        toast.error('Failed to remove from watchlist');
-      }
-    } else {
-      const mediaType = toolbar.dataset.mediaType!;
-      const seriesId = toolbar.dataset.seriesId;
-      const res = await fetch('/api/watchlist', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mediaType:
-            mediaType === 'episode' || mediaType === 'season'
-              ? 'series'
-              : mediaType,
-          mediaId: Number(seriesId || toolbar.dataset.mediaId),
-          status: 'want_to_watch',
-        }),
-      });
-      if (res.ok) {
+        const mediaType = toolbar.dataset.mediaType!;
+        const seriesId = toolbar.dataset.seriesId;
+        const res = await fetch('/api/watchlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            mediaType:
+              mediaType === 'episode' || mediaType === 'season'
+                ? 'series'
+                : mediaType,
+            mediaId: Number(seriesId || toolbar.dataset.mediaId),
+            status: 'want_to_watch',
+          }),
+        });
+        if (!res.ok) {
+          throw new Error('failed');
+        }
         const data = await res.json();
-        toolbar.dataset.inWatchlist = 'true';
         toolbar.dataset.watchlistItemId = data.id;
-        setWatchlistUI(toolbar, true);
         toast.success('Added to watchlist');
-      } else {
-        toast.error('Failed to add to watchlist');
       }
+    } catch {
+      restoreState(toolbar, snap);
+      toast.error(
+        wasInWatchlist
+          ? 'Failed to remove from watchlist'
+          : 'Failed to add to watchlist'
+      );
+    } finally {
+      setBusy(toolbar, false);
     }
   }
 
   async function handleUnwatch(toolbar: HTMLElement): Promise<void> {
-    const eventId = toolbar.dataset.watchEventId;
-    if (!eventId) return;
-    const res = await fetch(`/api/watch-events/${eventId}`, {
-      method: 'DELETE',
-    });
-    if (res.ok) {
-      toolbar.dataset.hasWatched = 'false';
-      toolbar.dataset.watchEventId = '';
-      setWatchedUI(toolbar, false);
+    if (isBusy(toolbar)) {
+      return;
+    }
+    const snap = snapshotState(toolbar);
+    if (!snap.watchEventId) {
+      return;
+    }
+    setBusy(toolbar, true);
+
+    toolbar.dataset.hasWatched = 'false';
+    toolbar.dataset.watchEventId = '';
+    setWatchedUI(toolbar, false);
+
+    try {
+      const res = await fetch(`/api/watch-events/${snap.watchEventId}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) {
+        throw new Error('failed');
+      }
       toast.success('Removed from watch history');
-    } else {
+    } catch {
+      restoreState(toolbar, snap);
       toast.error('Failed to remove from watch history');
+    } finally {
+      setBusy(toolbar, false);
     }
   }
 
   async function handleRecordWatch(toolbar: HTMLElement): Promise<void> {
-    const payload: Record<string, unknown> = {
-      mediaType: toolbar.dataset.mediaType,
-      mediaId: Number(toolbar.dataset.mediaId),
-      justWatched: true,
-    };
-    const seriesId = toolbar.dataset.seriesId;
-    const seasonNumber = toolbar.dataset.seasonNumber;
-    const episodeNumber = toolbar.dataset.episodeNumber;
-    if (seriesId) payload.seriesId = Number(seriesId);
-    if (seasonNumber) payload.seasonNumber = Number(seasonNumber);
-    if (episodeNumber) payload.episodeNumber = Number(episodeNumber);
-    payload.timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (isBusy(toolbar)) {
+      return;
+    }
+    const snap = snapshotState(toolbar);
+    setBusy(toolbar, true);
 
-    const res = await fetch('/api/watch-events', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    if (res.ok) {
+    // Optimistic flip; the real watchEventId comes back in the response.
+    toolbar.dataset.hasWatched = 'true';
+    toolbar.dataset.watchEventId = '';
+    setWatchedUI(toolbar, true);
+
+    try {
+      const payload: Record<string, unknown> = {
+        mediaType: toolbar.dataset.mediaType,
+        mediaId: Number(toolbar.dataset.mediaId),
+        justWatched: true,
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+      };
+      if (toolbar.dataset.seriesId)
+        payload.seriesId = Number(toolbar.dataset.seriesId);
+      if (toolbar.dataset.seasonNumber)
+        payload.seasonNumber = Number(toolbar.dataset.seasonNumber);
+      if (toolbar.dataset.episodeNumber)
+        payload.episodeNumber = Number(toolbar.dataset.episodeNumber);
+
+      const res = await fetch('/api/watch-events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        throw new Error('failed');
+      }
       const data = (await res.json()) as CreateWatchEventResponse;
       toolbar.dataset.watchEventId = data.id;
-      toolbar.dataset.hasWatched = 'true';
-      setWatchedUI(toolbar, true);
       toast.success('Marked as watched');
       setTimeout(() => checkAndShowAchievementToast(), 1000);
-    } else {
+    } catch {
+      restoreState(toolbar, snap);
       toast.error('Failed to mark as watched');
+    } finally {
+      setBusy(toolbar, false);
     }
   }
 
-  document.addEventListener('click', (e) => {
-    const target = e.target as HTMLElement;
+  // --- Click delegation. Idempotent bind survives island re-render / view transitions. ---
 
-    if (target.closest('[data-watchlist-toggle]')) {
-      const toolbar = getToolbar(e);
-      if (toolbar) handleWatchlistToggle(toolbar);
-      return;
-    }
+  if (!document.documentElement.dataset.mmMediaActionsBound) {
+    document.documentElement.dataset.mmMediaActionsBound = 'true';
+    document.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
 
-    if (target.closest('[data-unwatch-btn]')) {
-      const toolbar = getToolbar(e);
-      if (toolbar) handleUnwatch(toolbar);
-      return;
-    }
+      if (target.closest('[data-watchlist-toggle]')) {
+        const toolbar = getToolbar(e);
+        if (toolbar) handleWatchlistToggle(toolbar);
+        return;
+      }
 
-    if (target.closest('[data-just-watched]')) {
-      const toolbar = getToolbar(e);
-      if (toolbar) handleRecordWatch(toolbar);
-      return;
-    }
-  });
+      if (target.closest('[data-unwatch-btn]')) {
+        const toolbar = getToolbar(e);
+        if (toolbar) handleUnwatch(toolbar);
+        return;
+      }
+
+      if (target.closest('[data-just-watched]')) {
+        const toolbar = getToolbar(e);
+        if (toolbar) handleRecordWatch(toolbar);
+        return;
+      }
+    });
+  }
 </script>
+
+<style>
+  [data-media-toolbar][data-busy='true'] {
+    pointer-events: none;
+    opacity: 0.6;
+    transition: opacity 100ms ease;
+  }
+</style>
