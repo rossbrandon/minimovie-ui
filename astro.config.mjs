@@ -32,6 +32,7 @@ export default defineConfig({
       directives: [
         "default-src 'self'",
         "img-src 'self' https://image.tmdb.org https://lh3.googleusercontent.com",
+        "connect-src 'self' https://api.minimovie.info",
       ],
       scriptDirective: {
         resources: ["'self'", 'https://static.cloudflareinsights.com'],
