@@ -14,7 +14,7 @@ const NO_CACHE_PATHS = [
 ];
 
 type MiddlewareContext = Parameters<Parameters<typeof defineMiddleware>[0]>[0];
-d;
+
 function isPrivateRoute(pathname: string): boolean {
   return NO_CACHE_PATHS.some((p) => pathname.startsWith(p));
 }

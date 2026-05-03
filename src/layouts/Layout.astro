@@ -66,6 +66,12 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
     <Font cssVariable="--font-sans" preload />
     <title>{title}</title>
     <script is:inline>
+      // Check for the non-HttpOnly mm_authed cookie before any content paints
+      // so we can set the appropriate component visibility via CSS to reduce FOUC.
+      // Marker cookie is a UI hint only and not related to application security.
+      if (document.cookie.split('; ').includes('mm_authed=1')) {
+        document.documentElement.classList.add('authed');
+      }
       const localStorageTheme = localStorage?.getItem('theme') ?? '';
       if (['dark', 'light'].includes(localStorageTheme)) {
         document.documentElement.setAttribute('data-theme', localStorageTheme);
@@ -87,35 +93,19 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
   body {
     font-family: var(--font-sans);
   }
+
+  .authed-only {
+    display: none;
+  }
+  html.authed .anon-only {
+    display: none;
+  }
+  html.authed .authed-only {
+    display: contents;
+  }
 </style>
 
 <script>
-  import { checkAndShowAchievementToast } from '@lib/achievement-toast';
-
-  async function showAchievementToast(): Promise<void> {
-    if (document.body.dataset.achievementShown === 'true') return;
-    const authEl = document.querySelector('[data-auth-state]');
-    const count = authEl?.getAttribute('data-unseen-achievements');
-    if (!count) return;
-    document.body.dataset.achievementShown = 'true';
-    await checkAndShowAchievementToast();
-  }
-
-  function observeAuthState(): void {
-    const existing = document.querySelector('[data-auth-state]');
-    if (existing) {
-      showAchievementToast();
-      return;
-    }
-    const observer = new MutationObserver(() => {
-      if (document.querySelector('[data-auth-state]')) {
-        observer.disconnect();
-        showAchievementToast();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-  }
-
   function handleReturnTo(): void {
     const returnTo = sessionStorage.getItem('returnTo');
     if (returnTo) {
@@ -127,6 +117,4 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
   }
 
   handleReturnTo();
-  observeAuthState();
-  document.addEventListener('astro:after-swap', observeAuthState);
 </script>

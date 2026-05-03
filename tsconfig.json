@@ -4,6 +4,8 @@
   "exclude": ["dist"],
   "compilerOptions": {
     "baseUrl": ".",
+    "jsx": "preserve",
+    "jsxImportSource": "solid-js",
     "paths": {
       "@/*": ["src/*"],
       "@assets/*": ["src/assets/*"],

@@ -1,4 +1,5 @@
 import cloudflare from '@astrojs/cloudflare';
+import solidJs from '@astrojs/solid-js';
 import tailwindcss from '@tailwindcss/vite';
 // @ts-check
 import { defineConfig, envField, fontProviders } from 'astro/config';
@@ -8,6 +9,7 @@ export default defineConfig({
   prefetch: false,
   output: 'server',
   adapter: cloudflare(),
+  integrations: [solidJs()],
   vite: {
     plugins: [tailwindcss()],
     server: {
@@ -54,6 +56,11 @@ export default defineConfig({
       API_TOKEN: envField.string({
         context: 'server',
         access: 'secret',
+      }),
+      PUBLIC_API_BASE_URL: envField.string({
+        context: 'client',
+        access: 'public',
+        default: 'https://api.minimovie.info',
       }),
     },
   },

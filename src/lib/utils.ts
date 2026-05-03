@@ -1,6 +1,12 @@
+import { twMerge } from 'tailwind-merge';
+
 import type { AgeDisplayOptions } from './types';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
+
+function cn(...classes: Array<string | undefined | null | false>): string {
+  return twMerge(classes.filter(Boolean).join(' '));
+}
 
 function formatDate(dateString?: string): string {
   if (!dateString) return '';
@@ -205,6 +211,7 @@ function debounce<T extends (...args: never[]) => void>(
 
 export {
   calculateAgeAtDate,
+  cn,
   debounce,
   escapeHtml,
   formatAgeDisplay,

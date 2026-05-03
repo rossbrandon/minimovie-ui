@@ -9,7 +9,6 @@ import { Breadcrumbs, Header } from '@components/layout';
 import NotFound from '@components/not-found.astro';
 import { FullCastCrew, KeyCrew } from '@components/sections';
 import { Badge } from '@components/starwind/badge';
-import { Skeleton } from '@components/starwind/skeleton';
 import {
   Tabs,
   TabsContent,
@@ -173,15 +172,12 @@ const jsonLd =
                     )}
                   </div>
                   <MediaActions
-                    server:defer
                     mediaType="episode"
                     mediaId={episode.id}
                     seriesId={Number(seriesId)}
                     seasonNumber={episode.seasonNumber}
                     episodeNumber={episode.episodeNumber}
-                  >
-                    <Skeleton slot="fallback" class="h-9 w-12" />
-                  </MediaActions>
+                  />
                 </div>
               </div>
 

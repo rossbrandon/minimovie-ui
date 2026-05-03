@@ -15,7 +15,6 @@ import {
   TopCast,
   WhereToWatch,
 } from '@components/sections';
-import { Skeleton } from '@components/starwind/skeleton';
 import {
   Tabs,
   TabsContent,
@@ -156,14 +155,11 @@ const jsonLd =
                   <h1 class="text-3xl md:text-4xl font-bold">{season.name}</h1>
                 </div>
                 <MediaActions
-                  server:defer
                   mediaType="season"
                   mediaId={season.id}
                   seriesId={Number(seriesId)}
                   seasonNumber={season.seasonNumber}
-                >
-                  <Skeleton slot="fallback" class="h-9 w-12" />
-                </MediaActions>
+                />
               </div>
 
               {/* Metadata */}
