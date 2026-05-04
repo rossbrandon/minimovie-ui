@@ -145,59 +145,66 @@ const MediaToolbar: Component<Props> = (props) => {
     );
   }
 
-  // While the initial fetch is in flight we render the buttons disabled
   return (
-    <div class="inline-flex" role="group">
-      <Show when={showWatchlist()}>
-        <Button
-          variant="outline"
-          size="icon"
-          disabled={busy() || ctx.loading}
-          aria-label={
-            ctx()?.inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'
-          }
-          title={
-            ctx()?.inWatchlist ? 'Remove from watchlist' : 'Add to watchlist'
-          }
-          onClick={toggleWatchlist}
-        >
-          <Show
-            when={ctx()?.inWatchlist}
-            fallback={<IconBookmark class="size-5" />}
-          >
-            <IconBookmarkFilled class="size-5 text-amber-500" />
+    <Show when={ctx()}>
+      {(state) => (
+        <div class="inline-flex" role="group">
+          <Show when={showWatchlist()}>
+            <Button
+              variant="outline"
+              size="icon"
+              disabled={busy()}
+              aria-label={
+                state().inWatchlist
+                  ? 'Remove from watchlist'
+                  : 'Add to watchlist'
+              }
+              title={
+                state().inWatchlist
+                  ? 'Remove from watchlist'
+                  : 'Add to watchlist'
+              }
+              onClick={toggleWatchlist}
+            >
+              <Show
+                when={state().inWatchlist}
+                fallback={<IconBookmark class="size-5" />}
+              >
+                <IconBookmarkFilled class="size-5 text-amber-500" />
+              </Show>
+            </Button>
           </Show>
-        </Button>
-      </Show>
-      <Show
-        when={ctx()?.hasWatched}
-        fallback={
-          <Button
-            variant="outline"
-            size="icon"
-            class={showWatchlist() ? 'rounded-l-none border-l-0' : ''}
-            disabled={busy() || ctx.loading}
-            aria-label="Mark as watched"
-            title="Mark as watched"
-            onClick={recordWatch}
+          <Show
+            when={state().hasWatched}
+            fallback={
+              <Button
+                variant="outline"
+                size="icon"
+                class={showWatchlist() ? 'rounded-l-none border-l-0' : ''}
+                disabled={busy()}
+                aria-label="Mark as watched"
+                title="Mark as watched"
+                onClick={recordWatch}
+              >
+                <IconEye class="size-5" />
+              </Button>
+            }
           >
-            <IconEye class="size-5" />
-          </Button>
-        }
-      >
-        <Button
-          variant="outline"
-          size="icon"
-          class={`bg-emerald-500/10 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/20${showWatchlist() ? ' rounded-l-none border-l-0' : ''}`}
-          disabled={busy() || ctx.loading}
-          aria-label="Unmark as watched"
-          title="Unmark as watched"
-          onClick={unwatch}
-        >
-          <IconEyeCheck class="size-5" />
-        </Button>
-      </Show>
-    </div>
+            <Button
+              variant="outline"
+              size="icon"
+              class={`bg-emerald-500/10 border-emerald-500/30 text-emerald-600 hover:bg-emerald-500/20${showWatchlist() ? ' rounded-l-none border-l-0' : ''}`}
+              disabled={busy()}
+              aria-label="Unmark as watched"
+              title="Unmark as watched"
+              onClick={unwatch}
+            >
+              <IconEyeCheck class="size-5" />
+            </Button>
+          </Show>
+        </div>
+      )}
+    </Show>
   );
 };
 

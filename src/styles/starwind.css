@@ -148,9 +148,19 @@
     @apply border-border outline-outline/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
   }
   button {
     @apply cursor-pointer;
+  }
+
+  .authed-only {
+    display: none;
+  }
+  html.authed .anon-only {
+    display: none;
+  }
+  html.authed .authed-only {
+    display: contents;
   }
 }

@@ -3,9 +3,10 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --site http://localhost:4321",
+    "host": "astro dev --host --site http://localhost:4321",
     "build": "astro build",
-    "preview": "astro preview",
+    "preview": "rm -rf .wrangler/state && rm -rf dist/ && astro build --site http://localhost:4321 && astro preview",
     "astro": "astro",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

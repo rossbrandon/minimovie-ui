@@ -1,6 +1,10 @@
 import { defineMiddleware } from 'astro:middleware';
 import { getSession } from '@lib/api';
-import { getCookie, SESSION_COOKIE_NAME } from '@lib/session';
+import {
+  getCookie,
+  MARKER_COOKIE_NAME,
+  SESSION_COOKIE_NAME,
+} from '@lib/session';
 
 const FOUR_HOURS = 14400;
 
@@ -13,10 +17,20 @@ const NO_CACHE_PATHS = [
   '/_server-islands/',
 ];
 
+// Paths that read `Astro.locals.user` server-side (redirect guards or
+// rendering user fields). Other routes never look at locals.user, so we can
+// skip the /auth/session round-trip entirely. Client islands are responsible
+// for fetching session data on the routes that don't appear here.
+const SESSION_REQUIRED_PATHS = ['/login', '/profile', '/watchlist'];
+
 type MiddlewareContext = Parameters<Parameters<typeof defineMiddleware>[0]>[0];
 
 function isPrivateRoute(pathname: string): boolean {
   return NO_CACHE_PATHS.some((p) => pathname.startsWith(p));
+}
+
+function needsServerSideSession(pathname: string): boolean {
+  return SESSION_REQUIRED_PATHS.some((p) => pathname.startsWith(p));
 }
 
 // True when this request must bypass the edge cache: dev mode, mutating
@@ -30,6 +44,9 @@ function shouldBypassCache(context: MiddlewareContext): boolean {
 
 async function resolveSession(context: MiddlewareContext): Promise<void> {
   const cookieHeader = context.request.headers.get('cookie') ?? '';
+  if (getCookie(cookieHeader, MARKER_COOKIE_NAME) !== '1') {
+    return;
+  }
   const sessionToken = getCookie(cookieHeader, SESSION_COOKIE_NAME);
   if (!sessionToken) {
     return;
@@ -111,37 +128,105 @@ function writeToCacheAsync(
   return cacheable;
 }
 
+// --- Security headers ---
+
+const SCRIPT_SRC = [
+  "'self'",
+  "'unsafe-inline'",
+  'https://static.cloudflareinsights.com',
+];
+const STYLE_SRC = ["'self'", "'unsafe-inline'"];
+const IMG_SRC = [
+  "'self'",
+  'data:',
+  'https://image.tmdb.org',
+  'https://lh3.googleusercontent.com',
+];
+const FONT_SRC = ["'self'", 'data:'];
+const CONNECT_SRC = ["'self'", 'https://api.minimovie.info'];
+const LOCAL_CONNECT_SRC = [...CONNECT_SRC, 'http://localhost:8080'];
+
+function cspDirective(name: string, sources: readonly string[]): string {
+  return `${name} ${sources.join(' ')}`;
+}
+
+const BASE_CSP_DIRECTIVES = [
+  cspDirective('default-src', ["'self'"]),
+  cspDirective('script-src', SCRIPT_SRC),
+  cspDirective('style-src', STYLE_SRC),
+  cspDirective('img-src', IMG_SRC),
+  cspDirective('font-src', FONT_SRC),
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  "object-src 'none'",
+];
+
+function getCspHeader(hostname: string): string {
+  const isLocal = hostname === 'localhost' || hostname === '127.0.0.1';
+  const connectSrc = cspDirective(
+    'connect-src',
+    isLocal ? LOCAL_CONNECT_SRC : CONNECT_SRC
+  );
+  return [...BASE_CSP_DIRECTIVES, connectSrc].join('; ');
+}
+
+function applySecurityHeaders(response: Response, hostname: string): Response {
+  response.headers.set('Content-Security-Policy', getCspHeader(hostname));
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=()'
+  );
+  return response;
+}
+
 // --- Orchestration ---
 //
 // The flow reads top-to-bottom:
 //   1. Normalize locals so downstream code can rely on them.
-//   2. If we shouldn't cache this request, resolve the session and pass through.
-//      Mark private routes as no-store so intermediaries don't hold them.
-//   3. Otherwise check the edge cache; on hit, return the cached response.
-//   4. On miss, render the shell and (if HTML/2xx) schedule a cache write.
+//   2. Resolve the session only on routes that consume locals.user.
+//   3. If we shouldn't cache this request, pass through; private routes
+//      get no-store so intermediaries don't hold them.
+//   4. Otherwise check the edge cache; on hit, return the cached response.
+//   5. On miss, render the shell and (if HTML/2xx) schedule a cache write.
+//
+// Every return is wrapped with `respond()` so security headers are stamped
+// uniformly — including cache hits. The cache stores the bare response
+// (headers added after `writeToCacheAsync` returns), so policy changes take
+// effect on the next deploy without invalidating the edge cache.
 
 export const onRequest = defineMiddleware(async (context, next) => {
+  const respond = (response: Response): Response =>
+    applySecurityHeaders(response, context.url.hostname);
+
   context.locals.user = null;
   context.locals.unseenAchievementCount = 0;
 
-  if (shouldBypassCache(context)) {
+  if (needsServerSideSession(context.url.pathname)) {
     await resolveSession(context);
+  }
+
+  if (shouldBypassCache(context)) {
     const response = await next();
     if (isPrivateRoute(context.url.pathname)) {
       response.headers.set('Cache-Control', 'private, no-store');
     }
-    return response;
+    return respond(response);
   }
 
   const cache = getEdgeCache();
   if (cache) {
     const cached = await readFromCache(cache, context.url.href);
-    if (cached) return cached;
+    if (cached) return respond(cached);
   }
 
   const response = await next();
   if (cache && isCacheableResponse(response)) {
-    return writeToCacheAsync(cache, context.url.href, response, context);
+    return respond(
+      writeToCacheAsync(cache, context.url.href, response, context)
+    );
   }
-  return response;
+  return respond(response);
 });

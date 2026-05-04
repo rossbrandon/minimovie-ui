@@ -6,6 +6,7 @@ import { defineConfig, envField, fontProviders } from 'astro/config';
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://minimovie.info',
   prefetch: false,
   output: 'server',
   adapter: cloudflare(),
@@ -29,18 +30,6 @@ export default defineConfig({
       fallbacks: ['sans-serif'],
     },
   ],
-  security: {
-    csp: {
-      directives: [
-        "default-src 'self'",
-        "img-src 'self' https://image.tmdb.org https://lh3.googleusercontent.com",
-        "connect-src 'self' https://api.minimovie.info",
-      ],
-      scriptDirective: {
-        resources: ["'self'", 'https://static.cloudflareinsights.com'],
-      },
-    },
-  },
   env: {
     schema: {
       LOG_LEVEL: envField.string({

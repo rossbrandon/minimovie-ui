@@ -30,7 +30,9 @@ const avatarVariants = tv({
 });
 
 interface AvatarProps
-  extends JSX.HTMLAttributes<HTMLElement>, VariantProps<typeof avatarVariants> {
+  extends
+    JSX.HTMLAttributes<HTMLSpanElement>,
+    VariantProps<typeof avatarVariants> {
   class?: string;
 }
 
@@ -42,7 +44,7 @@ const Avatar: ParentComponent<AvatarProps> = (props) => {
     'children',
   ]);
   return (
-    <figure
+    <span
       class={avatarVariants({
         variant: local.variant,
         size: local.size,
@@ -52,7 +54,7 @@ const Avatar: ParentComponent<AvatarProps> = (props) => {
       {...rest}
     >
       {local.children}
-    </figure>
+    </span>
   );
 };
 
@@ -80,20 +82,20 @@ const AvatarImage: Component<AvatarImageProps> = (props) => {
   );
 };
 
-interface AvatarFallbackProps extends JSX.HTMLAttributes<HTMLDivElement> {
+interface AvatarFallbackProps extends JSX.HTMLAttributes<HTMLSpanElement> {
   class?: string;
 }
 
 const AvatarFallback: ParentComponent<AvatarFallbackProps> = (props) => {
   const [local, rest] = splitProps(props, ['class', 'children']);
   return (
-    <div
+    <span
       class={`absolute inset-0.5 flex items-center justify-center rounded-full font-medium ${local.class ?? ''}`}
       data-slot="avatar-fallback"
       {...rest}
     >
       {local.children}
-    </div>
+    </span>
   );
 };
 

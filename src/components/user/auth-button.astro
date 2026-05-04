@@ -20,6 +20,17 @@ import { UserMenu } from './user-menu';
     <LoginButton />
   </span>
   <span class="authed-only">
-    <UserMenu client:only="solid-js" />
+    <span class="user-menu-shell relative inline-flex h-9 w-9">
+      <span
+        class="user-menu-skeleton bg-muted/50 absolute inset-0 rounded-full"
+        aria-hidden="true"></span>
+      <UserMenu client:only="solid-js" />
+    </span>
   </span>
 </span>
+
+<style>
+  .user-menu-shell:has(button) .user-menu-skeleton {
+    display: none;
+  }
+</style>

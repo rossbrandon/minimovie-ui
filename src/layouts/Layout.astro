@@ -89,22 +89,6 @@ const canonicalUrl = new URL(Astro.url.pathname, SITE_URL).href;
   </body>
 </html>
 
-<style is:global>
-  body {
-    font-family: var(--font-sans);
-  }
-
-  .authed-only {
-    display: none;
-  }
-  html.authed .anon-only {
-    display: none;
-  }
-  html.authed .authed-only {
-    display: contents;
-  }
-</style>
-
 <script>
   function handleReturnTo(): void {
     const returnTo = sessionStorage.getItem('returnTo');

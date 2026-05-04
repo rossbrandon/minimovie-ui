@@ -1,21 +1,29 @@
 import type { AstroCookies } from 'astro';
 
-const IS_PROD = import.meta.env.PROD;
-// Session cookie. Prod uses `__Secure-` prefix; dev uses an unprefixed name for localhost
-const SESSION_COOKIE_NAME = IS_PROD ? '__Secure-mm_session' : 'mm_session_dev';
-// Non-HttpOnly marker cookie used for FOUC prevention in the UI: an inline
-// pre-paint script reads it to decide which version of auth-aware components
-// to show before any framework boots.
-// This is a UI hint only and does not carry any secret.
+const SITE = new URL(import.meta.env.SITE ?? 'https://minimovie.info');
+
+const SECURE_SESSION_COOKIE_NAME = '__Secure-mm_session';
+const DEV_SESSION_COOKIE_NAME = 'mm_session_dev';
 const MARKER_COOKIE_NAME = 'mm_authed';
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days
-const COOKIE_DOMAIN = IS_PROD ? '.minimovie.info' : undefined;
+const MINIMOVIE_COOKIE_DOMAIN = '.minimovie.info';
+
+const isSecureSite = SITE.protocol === 'https:';
+const isMinimovieDomain =
+  SITE.hostname === 'minimovie.info' ||
+  SITE.hostname.endsWith('.minimovie.info');
+
+const SESSION_COOKIE_NAME = isSecureSite
+  ? SECURE_SESSION_COOKIE_NAME
+  : DEV_SESSION_COOKIE_NAME;
+const COOKIE_DOMAIN =
+  isSecureSite && isMinimovieDomain ? MINIMOVIE_COOKIE_DOMAIN : undefined;
 
 function getSessionCookieOptions() {
   return {
     path: '/',
     httpOnly: true,
-    secure: IS_PROD,
+    secure: isSecureSite,
     sameSite: 'lax' as const,
     maxAge: COOKIE_MAX_AGE,
     domain: COOKIE_DOMAIN,
@@ -26,7 +34,7 @@ function getMarkerCookieOptions() {
   return {
     path: '/',
     httpOnly: false,
-    secure: IS_PROD,
+    secure: isSecureSite,
     sameSite: 'lax' as const,
     maxAge: COOKIE_MAX_AGE,
     domain: COOKIE_DOMAIN,
@@ -63,7 +71,9 @@ function getCookie(header: string, name: string): string | undefined {
 
 function getSessionCookie(cookies: AstroCookies): string | null {
   const token = cookies.get(SESSION_COOKIE_NAME)?.value;
-  if (!token) return null;
+  if (!token) {
+    return null;
+  }
   return `${SESSION_COOKIE_NAME}=${token}`;
 }
 
