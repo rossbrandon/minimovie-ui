@@ -20,3 +20,5 @@ Disallow: /
 
 User-agent: DotBot
 Disallow: /
+
+Sitemap: https://minimovie.info/sitemap.xml
