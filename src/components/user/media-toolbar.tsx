@@ -153,6 +153,7 @@ const MediaToolbar: Component<Props> = (props) => {
             <Button
               variant="outline"
               size="icon"
+              class="rounded-r-none"
               disabled={busy()}
               aria-label={
                 state().inWatchlist
