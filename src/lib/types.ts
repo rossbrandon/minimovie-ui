@@ -20,6 +20,7 @@ export interface AgeDisplayOptions {
   birthday?: string;
   deathday?: string;
   ageRange?: string;
+  showDeathAge?: boolean;
 }
 
 export interface SearchResult {

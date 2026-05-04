@@ -263,6 +263,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                       personCurrentAge={person.currentAge}
                       personId={person.id}
                       prefetch={true}
+                      showDeathAge={false}
                     />
                   ))}
                 </div>
@@ -282,6 +283,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                         personBirthday={person.birthday}
                         personDeathday={person.deathday}
                         personCurrentAge={person.currentAge}
+                        showDeathAge={false}
                       />
                     ))}
                   </div>
@@ -303,6 +305,7 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                         personDeathday={person.deathday}
                         personCurrentAge={person.currentAge}
                         personId={person.id}
+                        showDeathAge={false}
                       />
                     ))}
                   </div>

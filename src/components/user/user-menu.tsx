@@ -9,7 +9,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/solid';
-import { checkAndShowAchievementToast } from '@lib/achievement-toast';
 import { clearAuthMarker, isMarkedAuthed } from '@lib/auth-marker';
 import { fetchSession } from '@lib/user-api';
 import {
@@ -18,17 +17,35 @@ import {
   IconLogout,
   IconUser,
 } from '@tabler/icons-solidjs';
-import { type Component, createEffect, createResource, Show } from 'solid-js';
+import { type Component, createSignal, onMount, Show } from 'solid-js';
 
 const PROTECTED_PREFIXES = ['/profile', '/watchlist'];
+const USER_DATA_CACHE_KEY = 'mm_user_data_v1';
 
-const loadSession = async () => {
-  const data = await fetchSession();
-  if (!data) {
-    // Session is gone: clear the marker cookie
-    clearAuthMarker();
+interface UserDataCache {
+  givenName: string | null;
+  avatarUrl: string | null;
+}
+
+const readCachedUserData = (): UserDataCache | null => {
+  try {
+    const raw = sessionStorage.getItem(USER_DATA_CACHE_KEY);
+    return raw ? (JSON.parse(raw) as UserDataCache) : null;
+  } catch {
+    return null;
   }
-  return data;
+};
+
+const writeCachedUserData = (data: UserDataCache | null): void => {
+  try {
+    if (data) {
+      sessionStorage.setItem(USER_DATA_CACHE_KEY, JSON.stringify(data));
+    } else {
+      sessionStorage.removeItem(USER_DATA_CACHE_KEY);
+    }
+  } catch {
+    // Storage unavailable (private mode, quota); degrade silently.
+  }
 };
 
 const logout = (): void => {
@@ -56,45 +73,40 @@ const UserMenu: Component = () => {
     return null;
   }
 
-  const [session] = createResource(loadSession);
+  const [userData, setUserData] = createSignal<UserDataCache | undefined>(
+    readCachedUserData() ?? undefined
+  );
 
-  // Once the session resolves, preload the avatar image. The dropdown stays
-  // hidden until *this* resolves so the trigger never paints with a fallback
-  // glyph and then swap-flickers to the loaded image.
-  const [ready] = createResource(session, async (s) => {
-    if (!s.user.avatarUrl) {
-      return true;
-    }
-    return new Promise<boolean>((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(true);
-      img.src = s.user.avatarUrl!;
-    });
-  });
-
-  // Fire the achievement toast once when the session loads with unseen badges
-  createEffect(() => {
-    const s = session();
-    if (!s || s.unseenAchievementCount === 0) {
+  onMount(async () => {
+    // Cache hit: trust session for the lifetime of the tab
+    if (readCachedUserData()) {
       return;
     }
-    if (document.body.dataset.achievementShown === 'true') {
-      return;
+
+    try {
+      const session = await fetchSession();
+      if (!session) {
+        clearAuthMarker();
+        writeCachedUserData(null);
+        return;
+      }
+
+      const next: UserDataCache = {
+        givenName: session.user.givenName,
+        avatarUrl: session.user.avatarUrl,
+      };
+      setUserData(next);
+      writeCachedUserData(next);
+    } catch {
+      // Network failure: keep whatever cached user data we have
     }
-    document.body.dataset.achievementShown = 'true';
-    checkAndShowAchievementToast();
   });
 
-  // Hold off rendering until the session AND avatar image are both ready —
-  // the Astro skeleton stays visible the whole time. This guarantees a single
-  // skeleton-to-avatar transition with no intermediate "?" flash.
   return (
-    <Show when={ready() && session()}>
-      {(s) => {
-        const givenName = () => s().user.givenName;
-        const avatarUrl = () => s().user.avatarUrl;
-        const initial = () => (givenName()?.charAt(0) ?? '?').toUpperCase();
+    <Show when={userData()}>
+      {(data) => {
+        const initial = () =>
+          (data().givenName?.charAt(0) ?? '?').toUpperCase();
 
         return (
           <DropdownMenu>
@@ -103,10 +115,10 @@ const UserMenu: Component = () => {
               aria-label="User menu"
             >
               <Avatar size="sm">
-                <Show when={avatarUrl()}>
+                <Show when={data().avatarUrl}>
                   <AvatarImage
-                    src={avatarUrl()!}
-                    alt={givenName() ?? 'User avatar'}
+                    src={data().avatarUrl!}
+                    alt={data().givenName ?? 'User avatar'}
                   />
                 </Show>
                 <AvatarFallback class="bg-amber-500 text-white">
@@ -115,7 +127,9 @@ const UserMenu: Component = () => {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent class="min-w-50" placement="bottom-end">
-              <DropdownMenuLabel>{givenName() || 'Account'}</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                {data().givenName || 'Account'}
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem as="a" href="/watchlist">
                 <IconBookmark /> My Watchlist

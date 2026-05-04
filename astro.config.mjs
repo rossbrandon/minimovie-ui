@@ -4,9 +4,13 @@ import tailwindcss from '@tailwindcss/vite';
 // @ts-check
 import { defineConfig, envField, fontProviders } from 'astro/config';
 
+const DEV_PORT = 4321;
+const isProd = process.env.NODE_ENV === 'production';
+
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://minimovie.info',
+  site: isProd ? 'https://minimovie.info' : `http://localhost:${DEV_PORT}`,
+  server: { port: DEV_PORT },
   prefetch: false,
   output: 'server',
   adapter: cloudflare(),

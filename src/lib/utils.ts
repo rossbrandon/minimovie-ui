@@ -99,13 +99,20 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 function formatAgeDisplay(options: AgeDisplayOptions): string | null {
-  const { ageAtRelease, currentAge, birthday, deathday, ageRange } = options;
+  const {
+    ageAtRelease,
+    currentAge,
+    birthday,
+    deathday,
+    ageRange,
+    showDeathAge = true,
+  } = options;
 
   if (ageRange) return `Ages ${ageRange}`;
 
   if (!ageAtRelease) return null;
 
-  if (birthday && deathday) {
+  if (showDeathAge && birthday && deathday) {
     const ageAtDeath = calculateAgeAtDate(birthday, deathday);
     return `Age ${ageAtRelease} (died at ${ageAtDeath})`;
   }
