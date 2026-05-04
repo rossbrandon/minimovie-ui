@@ -67,7 +67,7 @@ const DropdownMenuItem = <T extends ValidComponent = 'div'>(
   return (
     <KDropdownMenu.Item
       class={cn(
-        'focus:bg-muted focus:text-foreground relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-3 py-2 text-sm outline-none transition-colors',
+        'focus:bg-accent focus:text-accent-foreground relative flex cursor-pointer select-none items-center gap-2 rounded-sm px-3 py-2 text-sm outline-none transition-colors',
         'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
         '[&_svg]:size-4 [&_svg]:shrink-0',
         local.class

@@ -5,7 +5,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@components/solid';
@@ -111,7 +110,7 @@ const UserMenu: Component = () => {
         return (
           <DropdownMenu>
             <DropdownMenuTrigger
-              class="focus-visible:outline-foreground inline-flex h-9 w-9 items-center justify-center rounded-full focus-visible:outline-2 focus-visible:outline-offset-2"
+              class="focus-visible:outline-foreground hover:bg-foreground/15 data-[expanded]:bg-foreground/15 inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
               aria-label="User menu"
             >
               <Avatar size="sm">
@@ -127,9 +126,9 @@ const UserMenu: Component = () => {
               </Avatar>
             </DropdownMenuTrigger>
             <DropdownMenuContent class="min-w-50" placement="bottom-end">
-              <DropdownMenuLabel>
+              <DropdownMenuItem as="a" href="/watchlist" class="font-medium">
                 {data().givenName || 'Account'}
-              </DropdownMenuLabel>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem as="a" href="/watchlist">
                 <IconBookmark /> My Watchlist
