@@ -1,5 +1,5 @@
 import { fetchUserAPI } from '@lib/api';
-import { getSessionCookie, SESSION_COOKIE_NAME } from '@lib/session';
+import { clearSessionCookies, getSessionCookie } from '@lib/session';
 import type { APIRoute } from 'astro';
 
 export const POST: APIRoute = async ({ cookies, redirect, request }) => {
@@ -11,12 +11,7 @@ export const POST: APIRoute = async ({ cookies, redirect, request }) => {
     );
   }
 
-  cookies.delete(SESSION_COOKIE_NAME, {
-    path: '/',
-    secure: import.meta.env.PROD,
-    httpOnly: true,
-    sameSite: 'lax',
-  });
+  clearSessionCookies(cookies);
 
   const form = await request.formData().catch(() => null);
   const returnTo = form?.get('returnTo');

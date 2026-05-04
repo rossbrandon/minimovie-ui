@@ -19,7 +19,6 @@ import {
   WhereToWatch,
 } from '@components/sections';
 import { Badge } from '@components/starwind/badge';
-import { Skeleton } from '@components/starwind/skeleton';
 import {
   Tabs,
   TabsContent,
@@ -130,13 +129,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
               <div>
                 <div class="flex items-start justify-between gap-4">
                   <h1 class="text-3xl md:text-4xl font-bold">{movie.title}</h1>
-                  <MediaActions
-                    server:defer
-                    mediaType="movie"
-                    mediaId={movie.id}
-                  >
-                    <Skeleton slot="fallback" class="h-9 w-20" />
-                  </MediaActions>
+                  <MediaActions mediaType="movie" mediaId={movie.id} />
                 </div>
                 {movie.tagline && (
                   <p class="text-lg text-muted-foreground italic mt-1">

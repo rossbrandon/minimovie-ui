@@ -1,6 +1,12 @@
+import { twMerge } from 'tailwind-merge';
+
 import type { AgeDisplayOptions } from './types';
 
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p';
+
+function cn(...classes: Array<string | undefined | null | false>): string {
+  return twMerge(classes.filter(Boolean).join(' '));
+}
 
 function formatDate(dateString?: string): string {
   if (!dateString) return '';
@@ -93,13 +99,20 @@ function truncateText(text: string, maxLength: number): string {
 }
 
 function formatAgeDisplay(options: AgeDisplayOptions): string | null {
-  const { ageAtRelease, currentAge, birthday, deathday, ageRange } = options;
+  const {
+    ageAtRelease,
+    currentAge,
+    birthday,
+    deathday,
+    ageRange,
+    showDeathAge = true,
+  } = options;
 
   if (ageRange) return `Ages ${ageRange}`;
 
   if (!ageAtRelease) return null;
 
-  if (birthday && deathday) {
+  if (showDeathAge && birthday && deathday) {
     const ageAtDeath = calculateAgeAtDate(birthday, deathday);
     return `Age ${ageAtRelease} (died at ${ageAtDeath})`;
   }
@@ -205,6 +218,7 @@ function debounce<T extends (...args: never[]) => void>(
 
 export {
   calculateAgeAtDate,
+  cn,
   debounce,
   escapeHtml,
   formatAgeDisplay,

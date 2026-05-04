@@ -1,10 +1,36 @@
 ---
-import AuthButtonIsland from './auth-button-island.astro';
+import { LoginButton } from '@components/user';
+
+import { UserMenu } from './user-menu';
 ---
 
-<AuthButtonIsland server:defer>
-  <span
-    slot="fallback"
-    aria-hidden="true"
-    class="inline-flex h-9 w-9 rounded-full bg-muted/60"></span>
-</AuthButtonIsland>
+{
+  /*
+    The anon-only and authed-only classes indicate the presence of the authenticated
+    user marker cookie: mm_authed. The pre-paint script in Layout.astro checks for this
+    cookie and adds `.authed` to <html> and allows CSS to show the appropriate container
+    and allow for efficient page HTML caching as well as dynamic user content via SolidJS
+    client islands.
+    The Solid client island only mounts inside the authed branch and only fetches
+    /auth/session once the marker confirms a session exists.
+  */
+}
+<span>
+  <span class="anon-only">
+    <LoginButton />
+  </span>
+  <span class="authed-only">
+    <span class="user-menu-shell relative inline-flex h-9 w-9">
+      <span
+        class="user-menu-skeleton bg-muted/50 absolute inset-0 rounded-full"
+        aria-hidden="true"></span>
+      <UserMenu client:only="solid-js" />
+    </span>
+  </span>
+</span>
+
+<style>
+  .user-menu-shell:has(button) .user-menu-skeleton {
+    display: none;
+  }
+</style>

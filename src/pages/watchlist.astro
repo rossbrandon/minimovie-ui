@@ -19,7 +19,9 @@ if (!Astro.locals.user) {
 }
 
 const sessionCookie = getSessionCookie(Astro.cookies);
-if (!sessionCookie) return Astro.redirect('/login');
+if (!sessionCookie) {
+  return Astro.redirect('/login');
+}
 
 interface WatchlistItem {
   id: string;

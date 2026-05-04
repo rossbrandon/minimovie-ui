@@ -1,13 +1,20 @@
 import cloudflare from '@astrojs/cloudflare';
+import solidJs from '@astrojs/solid-js';
 import tailwindcss from '@tailwindcss/vite';
 // @ts-check
 import { defineConfig, envField, fontProviders } from 'astro/config';
 
+const DEV_PORT = 4321;
+const isProd = process.env.NODE_ENV === 'production';
+
 // https://astro.build/config
 export default defineConfig({
+  site: isProd ? 'https://minimovie.info' : `http://localhost:${DEV_PORT}`,
+  server: { port: DEV_PORT },
   prefetch: false,
   output: 'server',
   adapter: cloudflare(),
+  integrations: [solidJs()],
   vite: {
     plugins: [tailwindcss()],
     server: {
@@ -27,17 +34,6 @@ export default defineConfig({
       fallbacks: ['sans-serif'],
     },
   ],
-  security: {
-    csp: {
-      directives: [
-        "default-src 'self'",
-        "img-src 'self' https://image.tmdb.org https://lh3.googleusercontent.com",
-      ],
-      scriptDirective: {
-        resources: ["'self'", 'https://static.cloudflareinsights.com'],
-      },
-    },
-  },
   env: {
     schema: {
       LOG_LEVEL: envField.string({
@@ -53,6 +49,11 @@ export default defineConfig({
       API_TOKEN: envField.string({
         context: 'server',
         access: 'secret',
+      }),
+      PUBLIC_API_BASE_URL: envField.string({
+        context: 'client',
+        access: 'public',
+        default: 'https://api.minimovie.info',
       }),
     },
   },

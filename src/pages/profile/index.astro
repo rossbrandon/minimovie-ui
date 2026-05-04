@@ -52,12 +52,15 @@ const user = Astro.locals.user;
               Download all your MiniMovie data as a JSON file.
             </p>
           </div>
-          <form method="POST" action="/api/export" data-export-form>
-            <Button type="submit" variant="outline" size="sm" class="gap-1.5">
-              <IconDownload class="h-4 w-4" />
-              Export my data
-            </Button>
-          </form>
+          <Button
+            variant="outline"
+            size="sm"
+            class="gap-1.5"
+            data-export-trigger
+          >
+            <IconDownload class="h-4 w-4" />
+            Export my data
+          </Button>
 
           <Separator />
 
@@ -144,13 +147,9 @@ const user = Astro.locals.user;
 </Layout>
 
 <script>
-  function bindProfileActions(): void {
-    const section = document.querySelector<HTMLElement>(
-      '[data-delete-section]'
-    );
-    if (!section || section.dataset.bound === 'true') return;
-    section.dataset.bound = 'true';
+  import { deleteAccount, exportData } from '@lib/user-api';
 
+  function bindDeleteAccount(section: HTMLElement): void {
     const trigger = section.querySelector<HTMLElement>('[data-delete-trigger]');
     const confirmBox = section.querySelector<HTMLElement>(
       '[data-delete-confirm]'
@@ -185,38 +184,50 @@ const user = Astro.locals.user;
       if (input?.value !== 'delete') return;
       submitBtn.disabled = true;
       submitBtn.textContent = 'Deleting...';
-
-      const res = await fetch('/api/account/delete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ confirm: 'delete' }),
-      });
-
-      if (res.redirected) {
-        window.location.href = res.url;
-      } else if (res.ok) {
+      try {
+        const result = await deleteAccount();
+        if (result.redirected) {
+          window.location.href = result.redirectUrl;
+          return;
+        }
+        // Account is gone: log out via the UI route to clear cookies, then redirect.
+        await fetch('/auth/logout', { method: 'POST' }).catch(() => {});
         window.location.href = '/?deleted=true';
-      } else {
+      } catch {
         submitBtn.textContent = 'Failed - try again';
         submitBtn.disabled = false;
       }
     });
+  }
 
-    const exportForm =
-      document.querySelector<HTMLFormElement>('[data-export-form]');
-    exportForm?.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const res = await fetch('/api/export', { method: 'POST' });
-      if (res.ok) {
-        const blob = await res.blob();
+  function bindExport(): void {
+    const trigger = document.querySelector<HTMLButtonElement>(
+      '[data-export-trigger]'
+    );
+    trigger?.addEventListener('click', async () => {
+      try {
+        const blob = await exportData();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
         a.download = 'minimovie-export.json';
         a.click();
         URL.revokeObjectURL(url);
+      } catch {
+        // Do nothing
       }
     });
+  }
+
+  function bindProfileActions(): void {
+    const section = document.querySelector<HTMLElement>(
+      '[data-delete-section]'
+    );
+    if (!section || section.dataset.bound === 'true') return;
+    section.dataset.bound = 'true';
+
+    bindDeleteAccount(section);
+    bindExport();
   }
 
   bindProfileActions();

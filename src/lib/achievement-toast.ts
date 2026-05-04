@@ -1,17 +1,19 @@
 import { toast } from '@components/starwind/toast/toast-manager';
 
-export async function checkAndShowAchievementToast(): Promise<void> {
+import { fetchUnseenAchievements, markAchievementsSeen } from './user-api';
+
+async function checkAndShowAchievementToast(): Promise<void> {
   let names: string[] = [];
   try {
-    const res = await fetch('/api/achievements/unseen');
-    if (!res.ok) return;
-    const data = await res.json();
-    names = (data.achievements || []).map((a: { name: string }) => a.name);
+    const data = await fetchUnseenAchievements();
+    names = data.achievements.map((a) => a.name);
   } catch {
     return;
   }
 
-  if (names.length === 0) return;
+  if (names.length === 0) {
+    return;
+  }
 
   const message =
     names.length === 1
@@ -34,5 +36,7 @@ export async function checkAndShowAchievementToast(): Promise<void> {
     }
   });
 
-  fetch('/api/achievements/seen', { method: 'PATCH' }).catch(() => {});
+  markAchievementsSeen().catch(() => {});
 }
+
+export { checkAndShowAchievementToast };
