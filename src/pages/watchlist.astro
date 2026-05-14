@@ -64,9 +64,7 @@ const watched = items.filter((i) => i.status === 'watched');
 const requestedTab = Astro.url.searchParams.get('tab');
 const validTabs = ['all', 'want_to_watch', 'watched'];
 const defaultTab =
-  requestedTab && validTabs.includes(requestedTab)
-    ? requestedTab
-    : 'want_to_watch';
+  requestedTab && validTabs.includes(requestedTab) ? requestedTab : 'all';
 ---
 
 <Layout title="Watchlist - MiniMovie" noindex>
