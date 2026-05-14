@@ -14,6 +14,8 @@ import {
   ensureProgressLoaded,
   getSeasonEvent,
   isEpisodeWatched,
+  isSeasonComplete,
+  listEpisodeEventsForSeason,
 } from '@lib/series-progress';
 import {
   addToWatchlist,
@@ -144,10 +146,29 @@ const MediaToolbar: Component<Props> = (props) => {
       props.seasonNumber !== undefined
     ) {
       const event = getSeasonEvent(props.seriesId, props.seasonNumber);
+      if (event) {
+        return {
+          hasWatched: true,
+          coveredBySeason: false,
+          watchEventId: event.id,
+        };
+      }
+      // Mirror SeasonStatus: treat the season as watched when the user has
+      // marked enough individual episodes to cover the aired set
+      const totalEpisodes = props.seasonEpisodeCount ?? 0;
+      if (
+        totalEpisodes > 0 &&
+        isSeasonComplete(props.seriesId, props.seasonNumber, totalEpisodes)
+      ) {
+        return {
+          hasWatched: true,
+          coveredBySeason: false,
+          watchEventId: null,
+        };
+      }
       return {
-        hasWatched: event !== undefined,
+        hasWatched: false,
         coveredBySeason: false,
-        watchEventId: event?.id,
       };
     }
     if (
@@ -336,21 +357,59 @@ const MediaToolbar: Component<Props> = (props) => {
     if (busy() || !props.seriesId || props.seasonNumber === undefined) {
       return;
     }
-    const event = getSeasonEvent(props.seriesId, props.seasonNumber);
-    if (!event) return;
     const seriesId = props.seriesId;
     const seasonNumber = props.seasonNumber;
-    const prior = event;
-    await runOptimistic({
-      setBusy,
-      optimistic: () => applySeasonMutation(seriesId, seasonNumber, 'unmark'),
-      api: () => deleteWatchEvent(prior.id),
-      rollback: () =>
-        applySeasonMutation(seriesId, seasonNumber, 'mark', prior),
-      successToast: 'Removed season from watch history',
-      errorToast: 'Failed to remove season from watch history',
-      postSuccess: () => scheduleInvalidate('series', seriesId),
-    });
+
+    // Path A: a real season-level event exists - delete just that row.
+    const seasonEvent = getSeasonEvent(seriesId, seasonNumber);
+    if (seasonEvent) {
+      const prior = seasonEvent;
+      await runOptimistic({
+        setBusy,
+        optimistic: () => applySeasonMutation(seriesId, seasonNumber, 'unmark'),
+        api: () => deleteWatchEvent(prior.id),
+        rollback: () =>
+          applySeasonMutation(seriesId, seasonNumber, 'mark', prior),
+        successToast: 'Removed season from watch history',
+        errorToast: 'Failed to remove season from watch history',
+        postSuccess: () => scheduleInvalidate('series', seriesId),
+      });
+      return;
+    }
+
+    // Path B: season is complete via individual episode marks. Bulk-delete
+    // every episode event for the season so the watched indicator clears.
+    const priorEpisodeEvents = listEpisodeEventsForSeason(
+      seriesId,
+      seasonNumber
+    );
+    if (priorEpisodeEvents.length === 0) {
+      return;
+    }
+    setBusy(true);
+    for (const ev of priorEpisodeEvents) {
+      applyEpisodeMutation(seriesId, seasonNumber, ev.episodeNumber, 'unmark');
+    }
+    try {
+      await Promise.all(
+        priorEpisodeEvents.map((ev) => deleteWatchEvent(ev.id))
+      );
+      toast.success('Removed season from watch history');
+      scheduleInvalidate('series', seriesId);
+    } catch {
+      // Best-effort rollback: re-mark every episode locally. If any of the
+      // DELETEs actually succeeded server-side, the next visibility-refresh
+      // (or invalidate) will reconcile the lingering "marked" entries away.
+      for (const ev of priorEpisodeEvents) {
+        applyEpisodeMutation(seriesId, seasonNumber, ev.episodeNumber, 'mark', {
+          id: ev.id,
+          createdAt: ev.createdAt,
+        });
+      }
+      toast.error('Failed to remove season from watch history');
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function recordEpisodeWatch(): Promise<void> {

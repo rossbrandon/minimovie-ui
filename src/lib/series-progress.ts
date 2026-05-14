@@ -125,6 +125,35 @@ function isSeasonComplete(
   return count >= totalEpisodes;
 }
 
+function listEpisodeEventsForSeason(
+  seriesId: number,
+  seasonNumber: number
+): Array<{ episodeNumber: number; id: string; createdAt: string }> {
+  const series = progress[seriesId];
+  if (!series) {
+    return [];
+  }
+  const prefix = `${seasonNumber}:`;
+  const result: Array<{
+    episodeNumber: number;
+    id: string;
+    createdAt: string;
+  }> = [];
+  for (const [key, event] of Object.entries(series.episodeEvents)) {
+    if (key.startsWith(prefix)) {
+      const episodeNumber = Number(key.slice(prefix.length));
+      if (Number.isFinite(episodeNumber)) {
+        result.push({
+          episodeNumber,
+          id: event.id,
+          createdAt: event.createdAt,
+        });
+      }
+    }
+  }
+  return result;
+}
+
 function getEpisodeEventsForSeason(
   seriesId: number,
   seasonNumber: number
@@ -350,6 +379,7 @@ export {
   getSeasonEvent,
   isEpisodeWatched,
   isSeasonComplete,
+  listEpisodeEventsForSeason,
 };
 
 export type { EpisodeEvent, EpisodeWatchedResult, SeasonEvent, SeriesProgress };
