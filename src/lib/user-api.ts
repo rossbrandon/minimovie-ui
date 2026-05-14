@@ -19,6 +19,26 @@ interface MediaState {
   watchEventId: string | null;
 }
 
+interface SeriesProgressSeasonEvent {
+  id: string;
+  seasonNumber: number;
+  episodeCount: number;
+  createdAt: string;
+}
+
+interface SeriesProgressEpisodeEvent {
+  id: string;
+  seasonNumber: number;
+  episodeNumber: number;
+  createdAt: string;
+}
+
+interface SeriesProgressResponse {
+  seriesId: number;
+  seasonEvents: SeriesProgressSeasonEvent[];
+  episodeEvents: SeriesProgressEpisodeEvent[];
+}
+
 interface MediaStateQuery {
   mediaType: MediaType;
   mediaId: number;
@@ -69,6 +89,13 @@ async function expectOk(res: Response, label: string): Promise<void> {
   if (!res.ok) {
     throw new Error(`${label} failed: ${res.status}`);
   }
+}
+
+async function fetchSeriesProgress(
+  seriesId: number
+): Promise<SeriesProgressResponse> {
+  const res = await fetchUserApi(`/users/me/progress/${seriesId}`);
+  return asJson(res, 'fetchSeriesProgress');
 }
 
 async function fetchMediaState(query: MediaStateQuery): Promise<MediaState> {
@@ -165,6 +192,7 @@ export {
   deleteWatchEvent,
   exportData,
   fetchMediaState,
+  fetchSeriesProgress,
   fetchSession,
   fetchUnseenAchievements,
   markAchievementsSeen,
@@ -177,6 +205,9 @@ export type {
   MediaState,
   MediaStateQuery,
   MediaType,
+  SeriesProgressEpisodeEvent,
+  SeriesProgressResponse,
+  SeriesProgressSeasonEvent,
   SessionResponse,
   UnseenAchievement,
   UnseenAchievementsResponse,

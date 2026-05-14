@@ -1,6 +1,7 @@
 ---
 import { IconCalendar, IconClock, IconStar } from '@components/icons';
 import { Badge } from '@components/starwind/badge';
+import EpisodeToggle from '@components/user/episode-toggle';
 import {
   formatDate,
   formatEpisodeCode,
@@ -13,6 +14,7 @@ interface Props {
   seriesId: number;
   seasonNumber: number;
   episodeNumber: number;
+  episodeId: number;
   name: string;
   stillPath?: string;
   runtime?: number;
@@ -26,6 +28,7 @@ const {
   seriesId,
   seasonNumber,
   episodeNumber,
+  episodeId,
   name,
   stillPath,
   runtime,
@@ -42,83 +45,99 @@ const stillUrl = getImageUrl(stillPath, 'w300');
 const isUpcoming = airDate ? new Date(airDate) > new Date() : false;
 ---
 
-<a
-  href={href}
-  class="group flex gap-4 p-3 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
-  data-astro-prefetch={prefetch ? '' : undefined}
->
-  <div class="shrink-0 w-40 aspect-video overflow-hidden rounded-lg bg-muted">
-    {
-      stillUrl ? (
-        <img
-          src={stillUrl}
-          alt={name}
-          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-          loading="lazy"
-        />
-      ) : (
-        <div class="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
-          {episodeCode}
-        </div>
-      )
-    }
-  </div>
+<div class="relative rounded-lg border border-border">
+  <a
+    href={href}
+    class="group flex gap-4 p-3 rounded-lg bg-card hover:bg-accent/50 transition-colors"
+    data-astro-prefetch={prefetch ? '' : undefined}
+  >
+    <div class="shrink-0 w-40 aspect-video overflow-hidden rounded-lg bg-muted">
+      {
+        stillUrl ? (
+          <img
+            src={stillUrl}
+            alt={name}
+            class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+            loading="lazy"
+          />
+        ) : (
+          <div class="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
+            {episodeCode}
+          </div>
+        )
+      }
+    </div>
 
-  <div class="flex-1 min-w-0">
-    <div class="flex items-center gap-2">
-      <span class="text-xs font-medium text-muted-foreground"
-        >{episodeCode}</span
+    <div class="flex-1 min-w-0">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-medium text-muted-foreground"
+          >{episodeCode}</span
+        >
+        {
+          rating && (
+            <div class="flex items-center gap-1 text-xs text-amber-500">
+              <IconStar class="h-3 w-3" />
+              <span>{rating}</span>
+            </div>
+          )
+        }
+      </div>
+
+      <h3
+        class="font-medium text-base group-hover:text-amber-500 transition-colors mt-0.5"
       >
+        {name}
+      </h3>
+
+      <div
+        class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground"
+      >
+        {
+          !!runtime && (
+            <div class="flex items-center gap-1">
+              <IconClock class="h-3.5 w-3.5" />
+              <span>{formatRuntime(runtime)}</span>
+            </div>
+          )
+        }
+        {
+          airDate && (
+            <div class="flex items-center gap-1">
+              <IconCalendar class="h-3.5 w-3.5" />
+              <span>{formatDate(airDate)}</span>
+            </div>
+          )
+        }
+        {
+          isUpcoming && (
+            <Badge variant="outline" class="text-xs">
+              Upcoming
+            </Badge>
+          )
+        }
+      </div>
+
       {
-        rating && (
-          <div class="flex items-center gap-1 text-xs text-amber-500">
-            <IconStar class="h-3 w-3" />
-            <span>{rating}</span>
-          </div>
+        overview && (
+          <p class="mt-2 text-sm text-muted-foreground line-clamp-2">
+            {overview}
+          </p>
         )
       }
     </div>
-
-    <h3
-      class="font-medium text-base group-hover:text-amber-500 transition-colors mt-0.5"
-    >
-      {name}
-    </h3>
-
-    <div
-      class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground"
-    >
-      {
-        !!runtime && (
-          <div class="flex items-center gap-1">
-            <IconClock class="h-3.5 w-3.5" />
-            <span>{formatRuntime(runtime)}</span>
-          </div>
-        )
-      }
-      {
-        airDate && (
-          <div class="flex items-center gap-1">
-            <IconCalendar class="h-3.5 w-3.5" />
-            <span>{formatDate(airDate)}</span>
-          </div>
-        )
-      }
-      {
-        isUpcoming && (
-          <Badge variant="outline" class="text-xs">
-            Upcoming
-          </Badge>
-        )
-      }
-    </div>
-
-    {
-      overview && (
-        <p class="mt-2 text-sm text-muted-foreground line-clamp-2">
-          {overview}
-        </p>
-      )
-    }
-  </div>
-</a>
+  </a>
+  {
+    !isUpcoming && (
+      <span class="authed-only">
+        <EpisodeToggle
+          client:only="solid-js"
+          seriesId={seriesId}
+          seasonNumber={seasonNumber}
+          episodeNumber={episodeNumber}
+          episodeId={episodeId}
+          airDate={airDate}
+        />
+      </span>
+    )
+  }
+</div>

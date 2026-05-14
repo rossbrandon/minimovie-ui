@@ -9,6 +9,8 @@ interface Props {
   seriesId?: number;
   seasonNumber?: number;
   episodeNumber?: number;
+  airDate?: string;
+  seasonEpisodeCount?: number;
 }
 
 const props = Astro.props;
@@ -23,13 +25,20 @@ const props = Astro.props;
     client islands.
   */
 }
+{
+  /* Only movies render two buttons (watchlist + watched). Series shows
+     watchlist only, season/episode show watched only — narrower skeleton. */
+}
 <div>
   <span class="anon-only">
     <SignInToTrack />
   </span>
   <span class="authed-only">
     <span
-      class="media-toolbar-shell relative inline-flex h-11 w-22 justify-end align-top"
+      class:list={[
+        'media-toolbar-shell relative inline-flex h-11 justify-end align-top',
+        props.mediaType === 'movie' ? 'w-22' : 'w-11',
+      ]}
     >
       <span
         class="media-toolbar-skeleton bg-muted/50 absolute inset-0 rounded-md"
@@ -41,6 +50,8 @@ const props = Astro.props;
         seriesId={props.seriesId}
         seasonNumber={props.seasonNumber}
         episodeNumber={props.episodeNumber}
+        airDate={props.airDate}
+        seasonEpisodeCount={props.seasonEpisodeCount}
       />
     </span>
   </span>

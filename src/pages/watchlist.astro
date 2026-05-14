@@ -1,8 +1,8 @@
 ---
-import { IconBookmark, IconEyeCheck, IconSearch } from '@components/icons';
+import { WatchlistCard } from '@components/cards';
+import { IconBookmark, IconSearch } from '@components/icons';
 import { Header } from '@components/layout';
 import { Badge } from '@components/starwind/badge';
-import { Card } from '@components/starwind/card';
 import {
   Tabs,
   TabsContent,
@@ -12,7 +12,6 @@ import {
 import Layout from '@layouts/Layout.astro';
 import { fetchUserAPI } from '@lib/api';
 import { getSessionCookie } from '@lib/session';
-import { getImageUrl } from '@lib/utils';
 
 if (!Astro.locals.user) {
   return Astro.redirect('/login');
@@ -32,7 +31,16 @@ interface WatchlistItem {
   status: string;
   addedAt: string;
   watchCount: number;
+  episodesWatched: number;
+  seasonsWatched: number;
+  totalEpisodes?: number | null;
+  totalSeasons?: number | null;
+  inProduction?: boolean | null;
+  nextAirDate?: string | null;
   genres: string[];
+  runtimeMinutes?: number | null;
+  voteAverage?: number | null;
+  releaseYear?: number | null;
 }
 
 let items: WatchlistItem[] = [];
@@ -56,7 +64,9 @@ const watched = items.filter((i) => i.status === 'watched');
 const requestedTab = Astro.url.searchParams.get('tab');
 const validTabs = ['all', 'want_to_watch', 'watched'];
 const defaultTab =
-  requestedTab && validTabs.includes(requestedTab) ? requestedTab : 'all';
+  requestedTab && validTabs.includes(requestedTab)
+    ? requestedTab
+    : 'want_to_watch';
 ---
 
 <Layout title="Watchlist - MiniMovie" noindex>
@@ -84,7 +94,12 @@ const defaultTab =
             <TabsList>
               <TabsTrigger value="all" default={defaultTab === 'all'}>
                 All
-                <Badge variant="outline" class="text-xs">
+                <Badge
+                  variant="outline"
+                  class="text-xs"
+                  data-tab-badge="all"
+                  data-original-count={items.length}
+                >
                   {items.length}
                 </Badge>
               </TabsTrigger>
@@ -93,219 +108,90 @@ const defaultTab =
                 default={defaultTab === 'want_to_watch'}
               >
                 Want to Watch
-                <Badge variant="outline" class="text-xs">
+                <Badge
+                  variant="outline"
+                  class="text-xs"
+                  data-tab-badge="want_to_watch"
+                  data-original-count={wantToWatch.length}
+                >
                   {wantToWatch.length}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="watched" default={defaultTab === 'watched'}>
                 Watched
-                <Badge variant="outline" class="text-xs">
+                <Badge
+                  variant="outline"
+                  class="text-xs"
+                  data-tab-badge="watched"
+                  data-original-count={watched.length}
+                >
                   {watched.length}
                 </Badge>
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="all" default={defaultTab === 'all'}>
-              {items.length > 6 && (
-                <div class="relative max-w-sm mb-6">
-                  <IconSearch class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Filter by title..."
-                    class="w-full h-9 rounded-md border border-input bg-background px-9 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    data-watchlist-search
-                  />
-                </div>
-              )}
-              <div
-                class="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4"
-                data-watchlist-grid
+            {[
+              { value: 'all', list: items, emptyText: '' },
+              {
+                value: 'want_to_watch',
+                list: wantToWatch,
+                emptyText: 'Nothing in your queue. Start exploring!',
+              },
+              {
+                value: 'watched',
+                list: watched,
+                emptyText: "You haven't marked anything as watched yet.",
+              },
+            ].map((panel) => (
+              <TabsContent
+                value={panel.value}
+                default={defaultTab === panel.value}
               >
-                {items.map((item) => (
-                  <a
-                    href={`/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaId}`}
-                    class="group block"
-                    data-astro-prefetch
-                    data-title={item.mediaTitle.toLowerCase()}
-                  >
-                    <Card class="overflow-hidden transition-colors hover:border-amber-500/50">
-                      <div class="aspect-2/3 bg-muted overflow-hidden">
-                        {item.posterPath ? (
-                          <img
-                            src={getImageUrl(item.posterPath, 'w342')}
-                            alt={item.mediaTitle}
-                            class="h-full w-full object-cover transition-transform group-hover:scale-105"
-                            loading="lazy"
-                          />
-                        ) : (
-                          <div class="flex h-full w-full items-center justify-center text-2xl font-semibold text-muted-foreground">
-                            {item.mediaTitle.charAt(0)}
-                          </div>
-                        )}
-                      </div>
-                      <div class="p-2 space-y-1">
-                        <div class="flex items-center gap-1.5">
-                          <p class="text-sm font-medium truncate">
-                            {item.mediaTitle}
-                          </p>
-                          {item.status === 'watched' && (
-                            <IconEyeCheck class="size-4 shrink-0 text-green-500" />
-                          )}
-                        </div>
-                        <Badge variant="outline" class="text-xs capitalize">
-                          {item.mediaType}
-                        </Badge>
-                      </div>
-                    </Card>
-                  </a>
-                ))}
-              </div>
-              <p
-                class="text-sm text-muted-foreground text-center hidden"
-                data-watchlist-no-results
-              >
-                No items match your search.
-              </p>
-            </TabsContent>
-
-            <TabsContent
-              value="want_to_watch"
-              default={defaultTab === 'want_to_watch'}
-            >
-              {wantToWatch.length === 0 ? (
-                <div class="text-center py-12">
-                  <p class="text-muted-foreground">
-                    Nothing in your queue. Start exploring!
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {wantToWatch.length > 6 && (
-                    <div class="relative max-w-sm mb-6">
-                      <IconSearch class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      <input
-                        type="text"
-                        placeholder="Filter by title..."
-                        class="w-full h-9 rounded-md border border-input bg-background px-9 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        data-watchlist-search
-                      />
-                    </div>
-                  )}
-                  <div
-                    class="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4"
-                    data-watchlist-grid
-                  >
-                    {wantToWatch.map((item) => (
-                      <a
-                        href={`/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaId}`}
-                        class="group block"
-                        data-astro-prefetch
-                        data-title={item.mediaTitle.toLowerCase()}
-                      >
-                        <Card class="overflow-hidden transition-colors hover:border-amber-500/50">
-                          <div class="aspect-2/3 bg-muted overflow-hidden">
-                            {item.posterPath ? (
-                              <img
-                                src={getImageUrl(item.posterPath, 'w342')}
-                                alt={item.mediaTitle}
-                                class="h-full w-full object-cover transition-transform group-hover:scale-105"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div class="flex h-full w-full items-center justify-center text-2xl font-semibold text-muted-foreground">
-                                {item.mediaTitle.charAt(0)}
-                              </div>
-                            )}
-                          </div>
-                          <div class="p-2 space-y-1">
-                            <p class="text-sm font-medium truncate">
-                              {item.mediaTitle}
-                            </p>
-                            <Badge variant="outline" class="text-xs capitalize">
-                              {item.mediaType}
-                            </Badge>
-                          </div>
-                        </Card>
-                      </a>
-                    ))}
+                {panel.list.length === 0 && panel.emptyText ? (
+                  <div class="text-center py-12">
+                    <p class="text-muted-foreground">{panel.emptyText}</p>
                   </div>
-                  <p
-                    class="text-sm text-muted-foreground text-center hidden"
-                    data-watchlist-no-results
-                  >
-                    No items match your search.
-                  </p>
-                </>
-              )}
-            </TabsContent>
-
-            <TabsContent value="watched" default={defaultTab === 'watched'}>
-              {watched.length === 0 ? (
-                <div class="text-center py-12">
-                  <p class="text-muted-foreground">
-                    You haven't marked anything as watched yet.
-                  </p>
-                </div>
-              ) : (
-                <>
-                  {watched.length > 6 && (
-                    <div class="relative max-w-sm mb-6">
-                      <IconSearch class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                      <input
-                        type="text"
-                        placeholder="Filter by title..."
-                        class="w-full h-9 rounded-md border border-input bg-background px-9 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        data-watchlist-search
-                      />
-                    </div>
-                  )}
-                  <div
-                    class="grid grid-cols-[repeat(auto-fill,minmax(160px,1fr))] gap-4"
-                    data-watchlist-grid
-                  >
-                    {watched.map((item) => (
-                      <a
-                        href={`/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaId}`}
-                        class="group block"
-                        data-astro-prefetch
-                        data-title={item.mediaTitle.toLowerCase()}
+                ) : (
+                  <>
+                    <div class="flex flex-wrap items-center gap-3 mb-6">
+                      <div class="relative max-w-sm flex-1">
+                        <IconSearch class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                        <input
+                          type="text"
+                          placeholder="Filter by title..."
+                          class="w-full h-9 rounded-md border border-input bg-background px-9 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          data-watchlist-search
+                        />
+                      </div>
+                      <select
+                        data-watchlist-type-filter
+                        class="h-9 rounded-md border border-input bg-background pl-3 pr-8 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        aria-label="Filter by type"
                       >
-                        <Card class="overflow-hidden transition-colors hover:border-amber-500/50">
-                          <div class="aspect-2/3 bg-muted overflow-hidden">
-                            {item.posterPath ? (
-                              <img
-                                src={getImageUrl(item.posterPath, 'w342')}
-                                alt={item.mediaTitle}
-                                class="h-full w-full object-cover transition-transform group-hover:scale-105"
-                                loading="lazy"
-                              />
-                            ) : (
-                              <div class="flex h-full w-full items-center justify-center text-2xl font-semibold text-muted-foreground">
-                                {item.mediaTitle.charAt(0)}
-                              </div>
-                            )}
-                          </div>
-                          <div class="p-2 space-y-1">
-                            <p class="text-sm font-medium truncate">
-                              {item.mediaTitle}
-                            </p>
-                            <Badge variant="outline" class="text-xs capitalize">
-                              {item.mediaType}
-                            </Badge>
-                          </div>
-                        </Card>
-                      </a>
-                    ))}
-                  </div>
-                  <p
-                    class="text-sm text-muted-foreground text-center hidden"
-                    data-watchlist-no-results
-                  >
-                    No items match your search.
-                  </p>
-                </>
-              )}
-            </TabsContent>
+                        <option value="all">All types</option>
+                        <option value="movie">Movies</option>
+                        <option value="series">TV</option>
+                      </select>
+                    </div>
+                    <div
+                      class="grid grid-cols-1 md:grid-cols-2 gap-3"
+                      data-watchlist-grid
+                      data-tab-value={panel.value}
+                    >
+                      {panel.list.map((item) => (
+                        <WatchlistCard item={item} />
+                      ))}
+                    </div>
+                    <p
+                      class="text-sm text-muted-foreground text-center hidden mt-6"
+                      data-watchlist-no-results
+                    >
+                      No items match your filters.
+                    </p>
+                  </>
+                )}
+              </TabsContent>
+            ))}
           </Tabs>
         )
       }
@@ -314,37 +200,65 @@ const defaultTab =
 </Layout>
 
 <script>
-  function bindWatchlistSearch(): void {
+  // Coordinates the title-search input and the media-type select inside each
+  // TabsContent panel. After every filter change we recompute the visible
+  // card count for the panel and write it back to the matching tab badge so
+  // the count never lies when filters are active.
+  function bindWatchlistFilters(): void {
     document
       .querySelectorAll<HTMLElement>('[data-tabs-content]')
       .forEach((panel) => {
         const input = panel.querySelector<HTMLInputElement>(
           '[data-watchlist-search]'
         );
+        const typeSelect = panel.querySelector<HTMLSelectElement>(
+          '[data-watchlist-type-filter]'
+        );
         const grid = panel.querySelector<HTMLElement>('[data-watchlist-grid]');
         const noResults = panel.querySelector<HTMLElement>(
           '[data-watchlist-no-results]'
         );
-        if (!input || !grid) return;
+        if (!grid) {
+          return;
+        }
 
-        input.addEventListener('input', () => {
-          const query = input.value.toLowerCase().trim();
-          const cards = grid.querySelectorAll<HTMLElement>('[data-title]');
+        const tabValue = grid.dataset.tabValue;
+        const badge = tabValue
+          ? document.querySelector<HTMLElement>(
+              `[data-tab-badge="${tabValue}"]`
+            )
+          : null;
+
+        function applyFilters(): void {
+          const query = (input?.value ?? '').toLowerCase().trim();
+          const type = typeSelect?.value ?? 'all';
+          const cards = grid!.querySelectorAll<HTMLElement>('[data-title]');
           let visible = 0;
 
           cards.forEach((card) => {
-            const match = !query || card.dataset.title!.includes(query);
+            const titleMatch =
+              !query || (card.dataset.title ?? '').includes(query);
+            const typeMatch = type === 'all' || card.dataset.mediaType === type;
+            const match = titleMatch && typeMatch;
             card.style.display = match ? '' : 'none';
-            if (match) visible++;
+            if (match) {
+              visible += 1;
+            }
           });
 
           if (noResults) {
             noResults.classList.toggle('hidden', visible > 0);
           }
-        });
+          if (badge) {
+            badge.textContent = String(visible);
+          }
+        }
+
+        input?.addEventListener('input', applyFilters);
+        typeSelect?.addEventListener('change', applyFilters);
       });
   }
 
-  bindWatchlistSearch();
-  document.addEventListener('astro:after-swap', bindWatchlistSearch);
+  bindWatchlistFilters();
+  document.addEventListener('astro:after-swap', bindWatchlistFilters);
 </script>

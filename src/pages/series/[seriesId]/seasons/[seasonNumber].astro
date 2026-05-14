@@ -59,6 +59,11 @@ const episodes = season?.episodes || [];
 const cast = season?.credits?.cast || [];
 const rating = formatRating(season?.voteAverage);
 
+const nowIso = new Date().toISOString();
+const airedEpisodeCount = episodes.filter(
+  (e) => !e.airDate || e.airDate <= nowIso
+).length;
+
 const keyCrewEntries = [
   { label: 'Director', person: season?.credits?.directors?.[0] },
   { label: 'Writer', person: season?.credits?.writers?.[0] },
@@ -159,6 +164,7 @@ const jsonLd =
                   mediaId={season.id}
                   seriesId={Number(seriesId)}
                   seasonNumber={season.seasonNumber}
+                  seasonEpisodeCount={airedEpisodeCount}
                 />
               </div>
 
@@ -251,6 +257,7 @@ const jsonLd =
                       seriesId={Number(seriesId)}
                       seasonNumber={episode.seasonNumber}
                       episodeNumber={episode.episodeNumber}
+                      episodeId={episode.id}
                       name={episode.name}
                       stillPath={episode.stillPath}
                       runtime={episode.runtime}

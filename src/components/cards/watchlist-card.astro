@@ -1,0 +1,119 @@
+---
+import { IconCircleCheckFilled } from '@components/icons';
+import { Badge } from '@components/starwind/badge';
+import { getImageUrl } from '@lib/utils';
+
+export interface WatchlistCardItem {
+  mediaType: 'movie' | 'series';
+  mediaId: number;
+  mediaTitle: string;
+  posterPath: string | null;
+  status: string;
+  episodesWatched: number;
+  seasonsWatched: number;
+  totalEpisodes?: number | null;
+  totalSeasons?: number | null;
+  genres: string[];
+  releaseYear?: number | null;
+}
+
+interface Props {
+  item: WatchlistCardItem;
+}
+
+const { item } = Astro.props;
+
+const posterUrl = getImageUrl(item.posterPath ?? undefined, 'w342');
+const showSeriesProgress =
+  item.mediaType === 'series' &&
+  item.totalEpisodes != null &&
+  item.totalSeasons != null;
+const showEpisodesOnlyFallback =
+  item.mediaType === 'series' &&
+  !showSeriesProgress &&
+  item.episodesWatched > 0;
+const metaParts = [
+  item.genres.slice(0, 2).join(', '),
+  item.releaseYear ? String(item.releaseYear) : '',
+].filter(Boolean);
+const href = `/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaId}`;
+---
+
+<a
+  href={href}
+  class="group relative flex gap-3 p-2.5 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
+  data-astro-prefetch
+  data-title={item.mediaTitle.toLowerCase()}
+  data-media-type={item.mediaType}
+>
+  <div
+    class="shrink-0 w-16 sm:w-20 aspect-2/3 overflow-hidden rounded-md bg-muted"
+  >
+    {
+      posterUrl ? (
+        <img
+          src={posterUrl}
+          alt={item.mediaTitle}
+          class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+        />
+      ) : (
+        <div class="flex h-full w-full items-center justify-center text-lg font-semibold text-muted-foreground">
+          {item.mediaTitle.charAt(0)}
+        </div>
+      )
+    }
+  </div>
+  <div class="flex-1 min-w-0 flex flex-col py-0.5">
+    <div class="flex items-center justify-between gap-2">
+      <Badge
+        variant={item.mediaType === 'series' ? 'tv' : 'movie'}
+        class="text-xs"
+      >
+        {item.mediaType === 'series' ? 'TV' : 'Movie'}
+      </Badge>
+      {
+        item.status === 'watched' && (
+          <span class="inline-flex items-center gap-1 text-xs text-green-500">
+            <IconCircleCheckFilled class="size-4" />
+            Watched
+          </span>
+        )
+      }
+    </div>
+    <div class="mt-2 min-w-0">
+      <h3
+        class="font-medium text-base group-hover:text-amber-500 transition-colors truncate"
+      >
+        {item.mediaTitle}
+      </h3>
+      {
+        metaParts.length > 0 && (
+          <p class="text-xs text-muted-foreground truncate mt-0.5">
+            {metaParts.join(' · ')}
+          </p>
+        )
+      }
+    </div>
+    {
+      showSeriesProgress ? (
+        <div class="mt-auto pt-2 flex flex-wrap items-center gap-1.5 text-xs">
+          <span class="text-muted-foreground">Watched</span>
+          <Badge variant="ghost" class="text-xs">
+            {`${item.seasonsWatched}/${item.totalSeasons} seasons`}
+          </Badge>
+          <Badge variant="ghost" class="text-xs">
+            {`${item.episodesWatched}/${item.totalEpisodes} episodes`}
+          </Badge>
+        </div>
+      ) : showEpisodesOnlyFallback ? (
+        <div class="mt-auto pt-2 flex flex-wrap items-center gap-1.5 text-xs">
+          <span class="text-muted-foreground">Watched</span>
+          <Badge variant="ghost" class="text-xs">
+            {`${item.episodesWatched} ${item.episodesWatched === 1 ? 'episode' : 'episodes'}`}
+          </Badge>
+        </div>
+      ) : null
+    }
+  </div>
+</a>

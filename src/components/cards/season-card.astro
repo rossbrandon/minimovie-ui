@@ -1,6 +1,7 @@
 ---
 import { IconCalendar, IconVideo } from '@components/icons';
 import { Badge } from '@components/starwind/badge';
+import SeasonStatus from '@components/user/season-status';
 import { formatDate, getImageUrl, getInitials } from '@lib/utils';
 
 interface Props {
@@ -54,11 +55,25 @@ const isUpcoming = airDate ? new Date(airDate) > new Date() : !episodeCount;
   </div>
 
   <div class="flex-1 min-w-0">
-    <h3
-      class="font-medium text-base group-hover:text-amber-500 transition-colors"
-    >
-      {name}
-    </h3>
+    <div class="flex items-center justify-between gap-2">
+      <h3
+        class="font-medium text-base group-hover:text-amber-500 transition-colors truncate"
+      >
+        {name}
+      </h3>
+      {
+        !isUpcoming && !!episodeCount && (
+          <span class="authed-only shrink-0">
+            <SeasonStatus
+              client:only="solid-js"
+              seriesId={seriesId}
+              seasonNumber={seasonNumber}
+              totalEpisodes={episodeCount}
+            />
+          </span>
+        )
+      }
+    </div>
 
     <div
       class="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1 text-sm text-muted-foreground"

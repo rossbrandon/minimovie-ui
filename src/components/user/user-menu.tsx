@@ -9,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from '@components/solid';
 import { clearAuthMarker, isMarkedAuthed } from '@lib/auth-marker';
+import { clearMediaStateCache } from '@lib/media-state-cache';
+import { clearProgress } from '@lib/series-progress';
 import { fetchSession } from '@lib/user-api';
 import {
   IconBookmark,
@@ -51,6 +53,11 @@ const logout = (): void => {
   const path = window.location.pathname;
   const isProtected = PROTECTED_PREFIXES.some((p) => path.startsWith(p));
 
+  // Wipe per-user client caches so the next sign-in starts fresh.
+  writeCachedUserData(null);
+  clearProgress();
+  clearMediaStateCache();
+
   const form = document.createElement('form');
   form.method = 'POST';
   form.action = '/auth/logout';
@@ -87,6 +94,8 @@ const UserMenu: Component = () => {
       if (!session) {
         clearAuthMarker();
         writeCachedUserData(null);
+        clearProgress();
+        clearMediaStateCache();
         return;
       }
 
@@ -108,9 +117,9 @@ const UserMenu: Component = () => {
           (data().givenName?.charAt(0) ?? '?').toUpperCase();
 
         return (
-          <DropdownMenu>
+          <DropdownMenu placement="bottom-end">
             <DropdownMenuTrigger
-              class="focus-visible:outline-foreground hover:bg-foreground/15 data-[expanded]:bg-foreground/15 inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+              class="focus-visible:outline-foreground hover:bg-foreground/15 data-expanded:bg-foreground/15 inline-flex h-10 w-10 items-center justify-center rounded-full transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
               aria-label="User menu"
             >
               <Avatar size="sm">
@@ -125,7 +134,7 @@ const UserMenu: Component = () => {
                 </AvatarFallback>
               </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent class="min-w-50" placement="bottom-end">
+            <DropdownMenuContent class="min-w-50">
               <DropdownMenuItem as="a" href="/watchlist" class="font-medium">
                 {data().givenName || 'Account'}
               </DropdownMenuItem>

@@ -4,6 +4,7 @@
 
 export { default as IconTmdb } from '@components/icons/tmdb.svg';
 export { default as IconBookmarkFilled } from '@tabler/icons/filled/bookmark.svg';
+export { default as IconCircleCheckFilled } from '@tabler/icons/filled/circle-check.svg';
 export { default as IconAlertCircle } from '@tabler/icons/outline/alert-circle.svg';
 export { default as IconAlertTriangle } from '@tabler/icons/outline/alert-triangle.svg';
 export { default as IconAntenna } from '@tabler/icons/outline/antenna.svg';
