@@ -89,10 +89,6 @@ interface Props {
 }
 
 const MediaToolbar: Component<Props> = (props) => {
-  if (!isMarkedAuthed()) {
-    return null;
-  }
-
   // Movie + series toolbars consult media-state for watchlist state.
   // Season + episode toolbars consult the series-progress store for watch state.
   const needsMediaState =
@@ -102,6 +98,9 @@ const MediaToolbar: Component<Props> = (props) => {
   // synchronous reads below return real data on second-and-later page views.
   // The ensureXxxLoaded calls below refresh in the background if stale.
   onMount(() => {
+    if (!isMarkedAuthed()) {
+      return;
+    }
     if (needsMediaState) {
       void ensureMediaStateLoaded({
         mediaType: props.mediaType,
@@ -217,11 +216,20 @@ const MediaToolbar: Component<Props> = (props) => {
 
   async function recordMovieWatch(): Promise<void> {
     if (busy()) return;
+    const prior = mediaState();
+    const priorInWatchlist = prior?.inWatchlist ?? false;
+    const priorWatchlistItemId = prior?.watchlistItemId ?? null;
     const patch = (changes: Parameters<typeof patchMediaStateInCache>[2]) =>
       patchMediaStateInCache(props.mediaType, props.mediaId, changes);
     await runOptimistic({
       setBusy,
-      optimistic: () => patch({ hasWatched: true, watchEventId: null }),
+      optimistic: () =>
+        patch({
+          hasWatched: true,
+          watchEventId: null,
+          inWatchlist: true,
+          watchlistItemId: priorWatchlistItemId,
+        }),
       api: () =>
         recordWatchEvent({
           mediaType: 'movie',
@@ -231,7 +239,13 @@ const MediaToolbar: Component<Props> = (props) => {
         }),
       confirm: (created) =>
         patch({ hasWatched: true, watchEventId: created.id }),
-      rollback: () => patch({ hasWatched: false, watchEventId: null }),
+      rollback: () =>
+        patch({
+          hasWatched: false,
+          watchEventId: null,
+          inWatchlist: priorInWatchlist,
+          watchlistItemId: priorWatchlistItemId,
+        }),
       successToast: 'Marked as watched',
       errorToast: 'Failed to mark as watched',
       postSuccess: () => {
@@ -271,14 +285,22 @@ const MediaToolbar: Component<Props> = (props) => {
     // lands with the correct episodeCount, matching what the server will
     // compute. Defaults to 0 when unavailable.
     const episodeCount = props.seasonEpisodeCount ?? 0;
+    const priorSeries = getMediaStateFromCache('series', seriesId);
+    const priorSeriesInWatchlist = priorSeries?.inWatchlist ?? false;
+    const priorSeriesItemId = priorSeries?.watchlistItemId ?? null;
     await runOptimistic({
       setBusy,
-      optimistic: () =>
+      optimistic: () => {
         applySeasonMutation(seriesId, seasonNumber, 'mark', {
           id: tempId,
           createdAt: now,
           episodeCount,
-        }),
+        });
+        patchMediaStateInCache('series', seriesId, {
+          inWatchlist: true,
+          watchlistItemId: priorSeriesItemId,
+        });
+      },
       api: () =>
         recordWatchEvent({
           mediaType: 'season',
@@ -294,7 +316,13 @@ const MediaToolbar: Component<Props> = (props) => {
           createdAt: now,
           episodeCount,
         }),
-      rollback: () => applySeasonMutation(seriesId, seasonNumber, 'unmark'),
+      rollback: () => {
+        applySeasonMutation(seriesId, seasonNumber, 'unmark');
+        patchMediaStateInCache('series', seriesId, {
+          inWatchlist: priorSeriesInWatchlist,
+          watchlistItemId: priorSeriesItemId,
+        });
+      },
       successToast: 'Marked season as watched',
       errorToast: 'Failed to mark season as watched',
       postSuccess: () => {
@@ -339,13 +367,21 @@ const MediaToolbar: Component<Props> = (props) => {
     const episodeNumber = props.episodeNumber;
     const tempId = getNextTempId();
     const now = new Date().toISOString();
+    const priorSeries = getMediaStateFromCache('series', seriesId);
+    const priorSeriesInWatchlist = priorSeries?.inWatchlist ?? false;
+    const priorSeriesItemId = priorSeries?.watchlistItemId ?? null;
     await runOptimistic({
       setBusy,
-      optimistic: () =>
+      optimistic: () => {
         applyEpisodeMutation(seriesId, seasonNumber, episodeNumber, 'mark', {
           id: tempId,
           createdAt: now,
-        }),
+        });
+        patchMediaStateInCache('series', seriesId, {
+          inWatchlist: true,
+          watchlistItemId: priorSeriesItemId,
+        });
+      },
       api: () =>
         recordWatchEvent({
           mediaType: 'episode',
@@ -361,8 +397,13 @@ const MediaToolbar: Component<Props> = (props) => {
           id: created.id,
           createdAt: now,
         }),
-      rollback: () =>
-        applyEpisodeMutation(seriesId, seasonNumber, episodeNumber, 'unmark'),
+      rollback: () => {
+        applyEpisodeMutation(seriesId, seasonNumber, episodeNumber, 'unmark');
+        patchMediaStateInCache('series', seriesId, {
+          inWatchlist: priorSeriesInWatchlist,
+          watchlistItemId: priorSeriesItemId,
+        });
+      },
       successToast: 'Marked as watched',
       errorToast: 'Failed to mark as watched',
       postSuccess: () => {
@@ -456,7 +497,7 @@ const MediaToolbar: Component<Props> = (props) => {
             when={mediaState()?.inWatchlist}
             fallback={<IconBookmark class="size-5!" />}
           >
-            <IconBookmarkFilled class="size-6! text-amber-500" />
+            <IconBookmarkFilled class="size-5! text-amber-500" />
           </Show>
         </Button>
       </Show>
@@ -473,7 +514,7 @@ const MediaToolbar: Component<Props> = (props) => {
               title="Mark as watched"
               onClick={onWatchedClick}
             >
-              <IconCircleCheck class="size-6!" />
+              <IconCircleCheck class="size-5!" />
             </Button>
           }
         >
@@ -497,7 +538,7 @@ const MediaToolbar: Component<Props> = (props) => {
             }
             onClick={onWatchedClick}
           >
-            <IconCircleCheckFilled class="size-6!" />
+            <IconCircleCheckFilled class="size-5!" />
           </Button>
         </Show>
       </Show>

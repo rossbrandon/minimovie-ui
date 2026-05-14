@@ -131,12 +131,27 @@ function isStale(entry: CacheEntry): boolean {
   return Date.now() - entry.fetchedAt > FRESHNESS_WINDOW_MS;
 }
 
+function isDefaultState(entry: CacheEntry): boolean {
+  return (
+    !entry.inWatchlist &&
+    entry.watchlistItemId === null &&
+    !entry.hasWatched &&
+    entry.watchEventId === null
+  );
+}
+
 function persist(): void {
   if (typeof sessionStorage === 'undefined') {
     return;
   }
   try {
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(unwrap(cache)));
+    const persistable: Record<string, CacheEntry> = {};
+    for (const [key, entry] of Object.entries(unwrap(cache))) {
+      if (!isDefaultState(entry)) {
+        persistable[key] = entry;
+      }
+    }
+    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(persistable));
   } catch {
     // Quota exceeded or storage disabled — in-memory state stays correct.
   }
