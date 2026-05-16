@@ -97,19 +97,6 @@ async function ensureMediaStateLoaded(query: MediaStateQuery): Promise<void> {
   }
 }
 
-async function invalidateMediaState(query: MediaStateQuery): Promise<void> {
-  const key = entryKey(query.mediaType, query.mediaId);
-  if (cache[key]) {
-    setCache(
-      key,
-      produce((entry: CacheEntry) => {
-        entry.fetchedAt = 0;
-      })
-    );
-  }
-  await refreshMediaStateCache(query);
-}
-
 function clearMediaStateCache(): void {
   setCache(
     produce((next: Record<string, CacheEntry>) => {
@@ -238,7 +225,5 @@ export {
   clearMediaStateCache,
   ensureMediaStateLoaded,
   getMediaStateFromCache,
-  invalidateMediaState,
   patchMediaStateInCache,
-  setMediaStateInCache,
 };

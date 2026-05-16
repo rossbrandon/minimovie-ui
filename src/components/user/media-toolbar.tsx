@@ -5,7 +5,6 @@ import { isMarkedAuthed } from '@lib/auth-marker';
 import {
   ensureMediaStateLoaded,
   getMediaStateFromCache,
-  invalidateMediaState,
   patchMediaStateInCache,
 } from '@lib/media-state-cache';
 import {
@@ -70,14 +69,6 @@ async function runOptimistic<T>(opts: OptimisticOpts<T>): Promise<void> {
   } finally {
     opts.setBusy(false);
   }
-}
-
-const INVALIDATE_DELAY_MS = 1500;
-
-function scheduleInvalidate(mediaType: MediaType, mediaId: number): void {
-  setTimeout(() => {
-    void invalidateMediaState({ mediaType, mediaId });
-  }, INVALIDATE_DELAY_MS);
 }
 
 interface Props {
@@ -259,7 +250,12 @@ const MediaToolbar: Component<Props> = (props) => {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
       confirm: (created) =>
-        patch({ hasWatched: true, watchEventId: created.id }),
+        patch({
+          hasWatched: true,
+          watchEventId: created.id,
+          inWatchlist: true,
+          watchlistItemId: created.watchlistItemId,
+        }),
       rollback: () =>
         patch({
           hasWatched: false,
@@ -271,7 +267,6 @@ const MediaToolbar: Component<Props> = (props) => {
       errorToast: 'Failed to mark as watched',
       postSuccess: () => {
         setTimeout(() => checkAndShowAchievementToast(), 1000);
-        scheduleInvalidate(props.mediaType, props.mediaId);
       },
     });
   }
@@ -290,7 +285,6 @@ const MediaToolbar: Component<Props> = (props) => {
       rollback: () => patch({ hasWatched: true, watchEventId: eventId }),
       successToast: 'Removed from watch history',
       errorToast: 'Failed to remove from watch history',
-      postSuccess: () => scheduleInvalidate(props.mediaType, props.mediaId),
     });
   }
 
@@ -331,12 +325,17 @@ const MediaToolbar: Component<Props> = (props) => {
           justWatched: true,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
-      confirm: (created) =>
+      confirm: (created) => {
         applySeasonMutation(seriesId, seasonNumber, 'mark', {
           id: created.id,
           createdAt: now,
           episodeCount,
-        }),
+        });
+        patchMediaStateInCache('series', seriesId, {
+          inWatchlist: true,
+          watchlistItemId: created.watchlistItemId,
+        });
+      },
       rollback: () => {
         applySeasonMutation(seriesId, seasonNumber, 'unmark');
         patchMediaStateInCache('series', seriesId, {
@@ -348,7 +347,6 @@ const MediaToolbar: Component<Props> = (props) => {
       errorToast: 'Failed to mark season as watched',
       postSuccess: () => {
         setTimeout(() => checkAndShowAchievementToast(), 1000);
-        scheduleInvalidate('series', seriesId);
       },
     });
   }
@@ -372,7 +370,6 @@ const MediaToolbar: Component<Props> = (props) => {
           applySeasonMutation(seriesId, seasonNumber, 'mark', prior),
         successToast: 'Removed season from watch history',
         errorToast: 'Failed to remove season from watch history',
-        postSuccess: () => scheduleInvalidate('series', seriesId),
       });
       return;
     }
@@ -395,7 +392,6 @@ const MediaToolbar: Component<Props> = (props) => {
         priorEpisodeEvents.map((ev) => deleteWatchEvent(ev.id))
       );
       toast.success('Removed season from watch history');
-      scheduleInvalidate('series', seriesId);
     } catch {
       // Best-effort rollback: re-mark every episode locally. If any of the
       // DELETEs actually succeeded server-side, the next visibility-refresh
@@ -451,11 +447,16 @@ const MediaToolbar: Component<Props> = (props) => {
           justWatched: true,
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         }),
-      confirm: (created) =>
+      confirm: (created) => {
         applyEpisodeMutation(seriesId, seasonNumber, episodeNumber, 'mark', {
           id: created.id,
           createdAt: now,
-        }),
+        });
+        patchMediaStateInCache('series', seriesId, {
+          inWatchlist: true,
+          watchlistItemId: created.watchlistItemId,
+        });
+      },
       rollback: () => {
         applyEpisodeMutation(seriesId, seasonNumber, episodeNumber, 'unmark');
         patchMediaStateInCache('series', seriesId, {
@@ -467,7 +468,6 @@ const MediaToolbar: Component<Props> = (props) => {
       errorToast: 'Failed to mark as watched',
       postSuccess: () => {
         setTimeout(() => checkAndShowAchievementToast(), 1000);
-        scheduleInvalidate('series', seriesId);
       },
     });
   }
@@ -498,7 +498,6 @@ const MediaToolbar: Component<Props> = (props) => {
         }),
       successToast: 'Removed from watch history',
       errorToast: 'Failed to remove from watch history',
-      postSuccess: () => scheduleInvalidate('series', seriesId),
     });
   }
 

@@ -64,6 +64,11 @@ interface CreatedResource {
   id: string;
 }
 
+interface WatchEventCreated {
+  id: string;
+  watchlistItemId: string;
+}
+
 interface UnseenAchievement {
   id: string;
   name: string;
@@ -145,7 +150,7 @@ async function removeFromWatchlist(itemId: string): Promise<void> {
 
 async function recordWatchEvent(
   input: WatchEventInput
-): Promise<CreatedResource> {
+): Promise<WatchEventCreated> {
   const res = await fetchUserApi('/users/me/watch-events', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -211,6 +216,7 @@ export type {
   SessionResponse,
   UnseenAchievement,
   UnseenAchievementsResponse,
+  WatchEventCreated,
   WatchEventInput,
   WatchlistTarget,
 };
