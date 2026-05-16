@@ -1,6 +1,11 @@
 ---
+import {
+  IconBookmark,
+  IconCircleCheckFilled,
+  IconEye,
+} from '@components/icons';
 import { Badge } from '@components/starwind/badge';
-import type { WatchlistItem } from '@lib/types';
+import type { WatchlistItem, WatchlistStatus } from '@lib/types';
 import { formatRelativeDate, getImageUrl } from '@lib/utils';
 
 type WatchlistCardField =
@@ -54,6 +59,31 @@ function getDateLabel(): string | null {
 }
 
 const dateLabel = getDateLabel();
+
+const statusIcon: Record<
+  WatchlistStatus,
+  { component: typeof IconBookmark; class: string; label: string }
+> = {
+  want_to_watch: {
+    component: IconBookmark,
+    class: 'text-muted-foreground',
+    label: 'Want to watch',
+  },
+  in_progress: {
+    component: IconEye,
+    class: 'text-amber-500',
+    label: 'Watching',
+  },
+  watched: {
+    component: IconCircleCheckFilled,
+    class: 'text-green-500',
+    label: 'Watched',
+  },
+};
+
+const StatusIcon = statusIcon[item.status].component;
+const statusIconClass = statusIcon[item.status].class;
+const statusIconLabel = statusIcon[item.status].label;
 ---
 
 <a
@@ -82,12 +112,18 @@ const dateLabel = getDateLabel();
     }
   </div>
   <div class="flex-1 min-w-0 flex flex-col py-0.5">
-    <Badge
-      variant={item.mediaType === 'series' ? 'tv' : 'movie'}
-      class="text-xs self-start"
-    >
-      {item.mediaType === 'series' ? 'TV' : 'Movie'}
-    </Badge>
+    <div class="flex items-center justify-between gap-2">
+      <Badge
+        variant={item.mediaType === 'series' ? 'tv' : 'movie'}
+        class="text-xs"
+      >
+        {item.mediaType === 'series' ? 'TV' : 'Movie'}
+      </Badge>
+      <StatusIcon
+        class={`size-5 shrink-0 ${statusIconClass}`}
+        aria-label={statusIconLabel}
+      />
+    </div>
     <div class="mt-2 min-w-0">
       <h3
         class="font-medium text-base group-hover:text-amber-500 transition-colors truncate"
