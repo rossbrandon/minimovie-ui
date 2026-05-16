@@ -1,21 +1,25 @@
 ---
-import { IconCircleCheckFilled } from '@components/icons';
 import { Badge } from '@components/starwind/badge';
-import { getImageUrl } from '@lib/utils';
+import type { WatchlistItem } from '@lib/types';
+import { formatRelativeDate, getImageUrl } from '@lib/utils';
 
-export interface WatchlistCardItem {
-  mediaType: 'movie' | 'series';
-  mediaId: number;
-  mediaTitle: string;
-  posterPath: string | null;
-  status: string;
-  episodesWatched: number;
-  seasonsWatched: number;
-  totalEpisodes?: number | null;
-  totalSeasons?: number | null;
-  genres: string[];
-  releaseYear?: number | null;
-}
+type WatchlistCardField =
+  | 'mediaType'
+  | 'mediaId'
+  | 'mediaTitle'
+  | 'posterPath'
+  | 'status'
+  | 'startedAt'
+  | 'finishedAt'
+  | 'lastWatchedAt'
+  | 'episodesWatched'
+  | 'seasonsWatched'
+  | 'totalEpisodes'
+  | 'totalSeasons'
+  | 'genres'
+  | 'releaseYear';
+
+export type WatchlistCardItem = Pick<WatchlistItem, WatchlistCardField>;
 
 interface Props {
   item: WatchlistCardItem;
@@ -37,6 +41,19 @@ const metaParts = [
   item.releaseYear ? String(item.releaseYear) : '',
 ].filter(Boolean);
 const href = `/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaId}`;
+
+function getDateLabel(): string | null {
+  if (item.status === 'watched' && item.finishedAt) {
+    const verb = item.mediaType === 'movie' ? 'Watched' : 'Finished';
+    return `${verb} ${formatRelativeDate(item.finishedAt)}`;
+  }
+  if (item.status === 'in_progress' && item.lastWatchedAt) {
+    return `Last watched ${formatRelativeDate(item.lastWatchedAt)}`;
+  }
+  return null;
+}
+
+const dateLabel = getDateLabel();
 ---
 
 <a
@@ -65,22 +82,12 @@ const href = `/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaI
     }
   </div>
   <div class="flex-1 min-w-0 flex flex-col py-0.5">
-    <div class="flex items-center justify-between gap-2">
-      <Badge
-        variant={item.mediaType === 'series' ? 'tv' : 'movie'}
-        class="text-xs"
-      >
-        {item.mediaType === 'series' ? 'TV' : 'Movie'}
-      </Badge>
-      {
-        item.status === 'watched' && (
-          <span class="inline-flex items-center gap-1 text-xs text-green-500">
-            <IconCircleCheckFilled class="size-4" />
-            Watched
-          </span>
-        )
-      }
-    </div>
+    <Badge
+      variant={item.mediaType === 'series' ? 'tv' : 'movie'}
+      class="text-xs self-start"
+    >
+      {item.mediaType === 'series' ? 'TV' : 'Movie'}
+    </Badge>
     <div class="mt-2 min-w-0">
       <h3
         class="font-medium text-base group-hover:text-amber-500 transition-colors truncate"
@@ -95,25 +102,28 @@ const href = `/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaI
         )
       }
     </div>
-    {
-      showSeriesProgress ? (
-        <div class="mt-auto pt-2 flex flex-wrap items-center gap-1.5 text-xs">
-          <span class="text-muted-foreground">Watched</span>
-          <Badge variant="ghost" class="text-xs">
-            {`${item.seasonsWatched}/${item.totalSeasons} seasons`}
-          </Badge>
-          <Badge variant="ghost" class="text-xs">
-            {`${item.episodesWatched}/${item.totalEpisodes} episodes`}
-          </Badge>
-        </div>
-      ) : showEpisodesOnlyFallback ? (
-        <div class="mt-auto pt-2 flex flex-wrap items-center gap-1.5 text-xs">
-          <span class="text-muted-foreground">Watched</span>
-          <Badge variant="ghost" class="text-xs">
-            {`${item.episodesWatched} ${item.episodesWatched === 1 ? 'episode' : 'episodes'}`}
-          </Badge>
-        </div>
-      ) : null
-    }
+    <div class="mt-auto pt-2 space-y-1.5">
+      {
+        showSeriesProgress ? (
+          <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            <span class="text-muted-foreground">Watched</span>
+            <Badge variant="ghost" class="text-xs">
+              {`${item.seasonsWatched}/${item.totalSeasons} seasons`}
+            </Badge>
+            <Badge variant="ghost" class="text-xs">
+              {`${item.episodesWatched}/${item.totalEpisodes} episodes`}
+            </Badge>
+          </div>
+        ) : showEpisodesOnlyFallback ? (
+          <div class="flex flex-wrap items-center gap-1.5 text-xs">
+            <span class="text-muted-foreground">Watched</span>
+            <Badge variant="ghost" class="text-xs">
+              {`${item.episodesWatched} ${item.episodesWatched === 1 ? 'episode' : 'episodes'}`}
+            </Badge>
+          </div>
+        ) : null
+      }
+      {dateLabel && <p class="text-xs text-muted-foreground">{dateLabel}</p>}
+    </div>
   </div>
 </a>

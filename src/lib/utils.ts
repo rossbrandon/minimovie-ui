@@ -24,6 +24,50 @@ function formatYear(dateString?: string): string {
   return new Date(dateString).getFullYear().toString();
 }
 
+function formatRelativeDate(input: string | Date | null | undefined): string {
+  if (!input) {
+    return '';
+  }
+  const date = input instanceof Date ? input : new Date(input);
+  if (isNaN(date.getTime())) {
+    return '';
+  }
+
+  const now = new Date();
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+  const startOfDate = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate()
+  );
+  const diffDays = Math.floor(
+    (startOfToday.getTime() - startOfDate.getTime()) / (1000 * 60 * 60 * 24)
+  );
+
+  if (diffDays === 0) {
+    return 'Today';
+  }
+  if (diffDays === 1) {
+    return 'Yesterday';
+  }
+  if (diffDays > 1 && diffDays < 7) {
+    return `${diffDays} days ago`;
+  }
+  if (diffDays >= 7 && diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return weeks === 1 ? '1 week ago' : `${weeks} weeks ago`;
+  }
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+}
+
 function formatYearsAgo(dateString?: string): string | null {
   if (!dateString) return null;
 
@@ -228,6 +272,7 @@ export {
   formatPersonAge,
   formatProfit,
   formatRating,
+  formatRelativeDate,
   formatRuntime,
   formatYear,
   formatYearsAgo,

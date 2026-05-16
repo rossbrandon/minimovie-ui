@@ -1,5 +1,39 @@
 export type MediaType = 'movie' | 'series' | 'person';
 
+export type WatchlistMediaType = 'movie' | 'series';
+
+export const WATCHLIST_STATUSES = [
+  'want_to_watch',
+  'in_progress',
+  'watched',
+] as const;
+
+export type WatchlistStatus = (typeof WATCHLIST_STATUSES)[number];
+
+export interface WatchlistItem {
+  id: string;
+  mediaType: WatchlistMediaType;
+  mediaId: number;
+  mediaTitle: string;
+  posterPath: string | null;
+  status: WatchlistStatus;
+  addedAt: string;
+  startedAt?: string | null;
+  finishedAt?: string | null;
+  lastWatchedAt?: string | null;
+  watchCount: number;
+  episodesWatched: number;
+  seasonsWatched: number;
+  totalEpisodes?: number | null;
+  totalSeasons?: number | null;
+  inProduction?: boolean | null;
+  nextAirDate?: string | null;
+  genres: string[];
+  runtimeMinutes?: number | null;
+  voteAverage?: number | null;
+  releaseYear?: number | null;
+}
+
 export interface Logger {
   debug(message: string, ...args: unknown[]): void;
   info(message: string, ...args: unknown[]): void;

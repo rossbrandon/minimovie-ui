@@ -12,6 +12,11 @@ import {
 import Layout from '@layouts/Layout.astro';
 import { fetchUserAPI } from '@lib/api';
 import { getSessionCookie } from '@lib/session';
+import {
+  WATCHLIST_STATUSES,
+  type WatchlistItem,
+  type WatchlistStatus,
+} from '@lib/types';
 
 if (!Astro.locals.user) {
   return Astro.redirect('/login');
@@ -20,27 +25,6 @@ if (!Astro.locals.user) {
 const sessionCookie = getSessionCookie(Astro.cookies);
 if (!sessionCookie) {
   return Astro.redirect('/login');
-}
-
-interface WatchlistItem {
-  id: string;
-  mediaType: 'movie' | 'series';
-  mediaId: number;
-  mediaTitle: string;
-  posterPath: string | null;
-  status: string;
-  addedAt: string;
-  watchCount: number;
-  episodesWatched: number;
-  seasonsWatched: number;
-  totalEpisodes?: number | null;
-  totalSeasons?: number | null;
-  inProduction?: boolean | null;
-  nextAirDate?: string | null;
-  genres: string[];
-  runtimeMinutes?: number | null;
-  voteAverage?: number | null;
-  releaseYear?: number | null;
 }
 
 let items: WatchlistItem[] = [];
@@ -59,12 +43,40 @@ try {
 }
 
 const wantToWatch = items.filter((i) => i.status === 'want_to_watch');
+const inProgress = items.filter((i) => i.status === 'in_progress');
 const watched = items.filter((i) => i.status === 'watched');
 
+function isWatchlistStatus(value: string): value is WatchlistStatus {
+  return (WATCHLIST_STATUSES as readonly string[]).includes(value);
+}
+
 const requestedTab = Astro.url.searchParams.get('tab');
-const validTabs = ['all', 'want_to_watch', 'watched'];
-const defaultTab =
-  requestedTab && validTabs.includes(requestedTab) ? requestedTab : 'all';
+const defaultTab: WatchlistStatus =
+  requestedTab && isWatchlistStatus(requestedTab)
+    ? requestedTab
+    : 'want_to_watch';
+
+const panels: ReadonlyArray<{
+  value: WatchlistStatus;
+  list: WatchlistItem[];
+  emptyText: string;
+}> = [
+  {
+    value: 'want_to_watch',
+    list: wantToWatch,
+    emptyText: 'Nothing in your queue. Start exploring!',
+  },
+  {
+    value: 'in_progress',
+    list: inProgress,
+    emptyText: "You're not watching anything yet.",
+  },
+  {
+    value: 'watched',
+    list: watched,
+    emptyText: "You haven't marked anything as watched yet.",
+  },
+];
 ---
 
 <Layout title="Watchlist - MiniMovie" noindex>
@@ -90,17 +102,6 @@ const defaultTab =
         ) : (
           <Tabs defaultValue={defaultTab}>
             <TabsList>
-              <TabsTrigger value="all" default={defaultTab === 'all'}>
-                All
-                <Badge
-                  variant="outline"
-                  class="text-xs"
-                  data-tab-badge="all"
-                  data-original-count={items.length}
-                >
-                  {items.length}
-                </Badge>
-              </TabsTrigger>
               <TabsTrigger
                 value="want_to_watch"
                 default={defaultTab === 'want_to_watch'}
@@ -113,6 +114,20 @@ const defaultTab =
                   data-original-count={wantToWatch.length}
                 >
                   {wantToWatch.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger
+                value="in_progress"
+                default={defaultTab === 'in_progress'}
+              >
+                Watching
+                <Badge
+                  variant="outline"
+                  class="text-xs"
+                  data-tab-badge="in_progress"
+                  data-original-count={inProgress.length}
+                >
+                  {inProgress.length}
                 </Badge>
               </TabsTrigger>
               <TabsTrigger value="watched" default={defaultTab === 'watched'}>
@@ -128,24 +143,12 @@ const defaultTab =
               </TabsTrigger>
             </TabsList>
 
-            {[
-              { value: 'all', list: items, emptyText: '' },
-              {
-                value: 'want_to_watch',
-                list: wantToWatch,
-                emptyText: 'Nothing in your queue. Start exploring!',
-              },
-              {
-                value: 'watched',
-                list: watched,
-                emptyText: "You haven't marked anything as watched yet.",
-              },
-            ].map((panel) => (
+            {panels.map((panel) => (
               <TabsContent
                 value={panel.value}
                 default={defaultTab === panel.value}
               >
-                {panel.list.length === 0 && panel.emptyText ? (
+                {panel.list.length === 0 ? (
                   <div class="text-center py-12">
                     <p class="text-muted-foreground">{panel.emptyText}</p>
                   </div>
@@ -161,15 +164,17 @@ const defaultTab =
                           data-watchlist-search
                         />
                       </div>
-                      <select
-                        data-watchlist-type-filter
-                        class="h-9 rounded-md border border-input bg-background pl-3 pr-8 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        aria-label="Filter by type"
-                      >
-                        <option value="all">All types</option>
-                        <option value="movie">Movies</option>
-                        <option value="series">TV</option>
-                      </select>
+                      {panel.value !== 'in_progress' && (
+                        <select
+                          data-watchlist-type-filter
+                          class="h-9 rounded-md border border-input bg-background pl-3 pr-8 text-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          aria-label="Filter by type"
+                        >
+                          <option value="all">All types</option>
+                          <option value="movie">Movies</option>
+                          <option value="series">TV</option>
+                        </select>
+                      )}
                     </div>
                     <div
                       class="grid grid-cols-1 md:grid-cols-2 gap-3"

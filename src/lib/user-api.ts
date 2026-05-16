@@ -1,4 +1,5 @@
 import { fetchUserApi } from './client-api';
+import type { WatchlistStatus } from './types';
 
 type MediaType = 'movie' | 'series' | 'episode' | 'season';
 
@@ -136,7 +137,10 @@ async function addToWatchlist(
   const res = await fetchUserApi('/users/me/watchlist', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ...target, status: 'want_to_watch' }),
+    body: JSON.stringify({
+      ...target,
+      status: 'want_to_watch' satisfies WatchlistStatus,
+    }),
   });
   return asJson(res, 'addToWatchlist');
 }
