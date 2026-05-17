@@ -31,6 +31,7 @@ interface Props {
 }
 
 const { item } = Astro.props;
+const timezone = Astro.locals.timezone ?? undefined;
 
 const posterUrl = getImageUrl(item.posterPath ?? undefined, 'w342');
 const showSeriesProgress =
@@ -50,10 +51,10 @@ const href = `/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaI
 function getDateLabel(): string | null {
   if (item.status === 'watched' && item.finishedAt) {
     const verb = item.mediaType === 'movie' ? 'Watched' : 'Finished';
-    return `${verb} ${formatRelativeDate(item.finishedAt)}`;
+    return `${verb} ${formatRelativeDate(item.finishedAt, timezone)}`;
   }
   if (item.status === 'in_progress' && item.lastWatchedAt) {
-    return `Last watched ${formatRelativeDate(item.lastWatchedAt)}`;
+    return `Last watched ${formatRelativeDate(item.lastWatchedAt, timezone)}`;
   }
   return null;
 }

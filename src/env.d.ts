@@ -11,5 +11,6 @@ declare namespace App {
   interface Locals {
     user: MiniMovieUser | null;
     unseenAchievementCount: number;
+    timezone: string | null;
   }
 }

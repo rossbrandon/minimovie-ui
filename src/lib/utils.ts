@@ -24,7 +24,29 @@ function formatYear(dateString?: string): string {
   return new Date(dateString).getFullYear().toString();
 }
 
-function formatRelativeDate(input: string | Date | null | undefined): string {
+function getStartOfDayMs(date: Date, timeZone?: string): number {
+  if (!timeZone) {
+    return new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    ).getTime();
+  }
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).formatToParts(date);
+  const get = (type: string): number =>
+    parseInt(parts.find((p) => p.type === type)?.value ?? '0', 10);
+  return Date.UTC(get('year'), get('month') - 1, get('day'));
+}
+
+function formatRelativeDate(
+  input: string | Date | null | undefined,
+  timeZone?: string
+): string {
   if (!input) {
     return '';
   }
@@ -34,19 +56,10 @@ function formatRelativeDate(input: string | Date | null | undefined): string {
   }
 
   const now = new Date();
-  const startOfToday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate()
-  );
-  const startOfDate = new Date(
-    date.getFullYear(),
-    date.getMonth(),
-    date.getDate()
-  );
-  const diffDays = Math.floor(
-    (startOfToday.getTime() - startOfDate.getTime()) / (1000 * 60 * 60 * 24)
-  );
+  const msInDay = 1000 * 60 * 60 * 24;
+  const msDiff =
+    getStartOfDayMs(now, timeZone) - getStartOfDayMs(date, timeZone);
+  const diffDays = Math.floor(msDiff / msInDay);
 
   if (diffDays === 0) {
     return 'Today';
@@ -65,6 +78,7 @@ function formatRelativeDate(input: string | Date | null | undefined): string {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
+    timeZone,
   });
 }
 

@@ -25,6 +25,20 @@ const SESSION_REQUIRED_PATHS = ['/login', '/profile', '/watchlist'];
 
 type MiddlewareContext = Parameters<Parameters<typeof defineMiddleware>[0]>[0];
 
+function getCfTimezone(request: Request): string | null {
+  const tz = (request as Request & { cf?: { timezone?: unknown } }).cf
+    ?.timezone;
+  if (typeof tz !== 'string' || tz.length === 0) {
+    return null;
+  }
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return tz;
+  } catch {
+    return null;
+  }
+}
+
 function isPrivateRoute(pathname: string): boolean {
   return NO_CACHE_PATHS.some((p) => pathname.startsWith(p));
 }
@@ -203,6 +217,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   context.locals.user = null;
   context.locals.unseenAchievementCount = 0;
+  context.locals.timezone = getCfTimezone(context.request);
 
   if (needsServerSideSession(context.url.pathname)) {
     await resolveSession(context);
