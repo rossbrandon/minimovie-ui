@@ -1,4 +1,5 @@
 ---
+import { getMediaHref } from '@lib/media-config';
 import type { Person } from '@lib/types';
 import { formatAgeDisplay, getImageUrl } from '@lib/utils';
 
@@ -17,7 +18,7 @@ const { title, people } = Astro.props;
       <div class="section-search-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {people.map((person) => (
           <a
-            href={`/people/${person.id}`}
+            href={getMediaHref('person', person)}
             class="group flex items-center gap-3 p-2 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors"
           >
             <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">

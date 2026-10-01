@@ -28,6 +28,7 @@ import {
 import { MediaActions } from '@components/user';
 import Layout from '@layouts/Layout.astro';
 import { getMovie } from '@lib/api';
+import { getMediaHref, parseSlugId } from '@lib/media-config';
 import { buildMovieSchema } from '@lib/schema';
 import type { MovieDetails } from '@lib/types';
 import {
@@ -44,15 +45,22 @@ import {
 import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
 
 const { id } = Astro.params;
+const movieId = parseSlugId(id);
 
 let movie: MovieDetails | null = null;
 let error: string | null = null;
 
 try {
-  movie = await getMovie(Number(id));
+  if (movieId) {
+    movie = await getMovie(movieId);
+  }
 } catch (e) {
   console.error('Failed to fetch movie:', e);
   error = 'Failed to load movie details.';
+}
+
+if (movie?.slug && id !== movie.slug) {
+  return Astro.redirect(getMediaHref('movie', movie) + Astro.url.search, 301);
 }
 
 if (error || !movie) {
@@ -246,7 +254,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                     <div class="grid grid-cols-2 gap-4 text-sm">
                       {director && (
                         <a
-                          href={`/people/${director.id}`}
+                          href={getMediaHref('person', director)}
                           class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors"
                           data-astro-prefetch
                         >
@@ -281,7 +289,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                       )}
                       {producer && (
                         <a
-                          href={`/people/${producer.id}`}
+                          href={getMediaHref('person', producer)}
                           class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors"
                           data-astro-prefetch
                         >
@@ -316,7 +324,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                       )}
                       {writer && (
                         <a
-                          href={`/people/${writer.id}`}
+                          href={getMediaHref('person', writer)}
                           class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors"
                           data-astro-prefetch
                         >
@@ -349,7 +357,7 @@ const jsonLd = movie ? buildMovieSchema(movie) : undefined;
                       )}
                       {cinematographer && (
                         <a
-                          href={`/people/${cinematographer.id}`}
+                          href={getMediaHref('person', cinematographer)}
                           class="group flex items-center gap-3 rounded-lg p-1 -m-1 hover:bg-muted/50 transition-colors"
                           data-astro-prefetch
                         >

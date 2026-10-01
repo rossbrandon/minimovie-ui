@@ -1,17 +1,24 @@
 import { SITE_URL } from '@lib/constants';
+import { MEDIA_CONFIG } from '@lib/media-config';
 import {
-  SEED_MOVIE_IDS,
-  SEED_PEOPLE_IDS,
-  SEED_SERIES_IDS,
+  SEED_MOVIE_SLUGS,
+  SEED_PEOPLE_SLUGS,
+  SEED_SERIES_SLUGS,
 } from '@lib/sitemap-seeds';
 import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = () => {
   const urls = [
     SITE_URL,
-    ...SEED_MOVIE_IDS.map((id) => `${SITE_URL}/movies/${id}`),
-    ...SEED_SERIES_IDS.map((id) => `${SITE_URL}/series/${id}`),
-    ...SEED_PEOPLE_IDS.map((id) => `${SITE_URL}/people/${id}`),
+    ...SEED_MOVIE_SLUGS.map(
+      (slug) => `${SITE_URL}${MEDIA_CONFIG.movie.route}/${slug}`
+    ),
+    ...SEED_SERIES_SLUGS.map(
+      (slug) => `${SITE_URL}${MEDIA_CONFIG.series.route}/${slug}`
+    ),
+    ...SEED_PEOPLE_SLUGS.map(
+      (slug) => `${SITE_URL}${MEDIA_CONFIG.person.route}/${slug}`
+    ),
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

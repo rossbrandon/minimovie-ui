@@ -21,6 +21,7 @@ import {
 } from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getPerson } from '@lib/api';
+import { getMediaHref, parseSlugId } from '@lib/media-config';
 import { buildPersonSchema } from '@lib/schema';
 import type { FilmCredit, PersonDetails } from '@lib/types';
 import {
@@ -31,15 +32,22 @@ import {
 } from '@lib/utils';
 
 const { id } = Astro.params;
+const personId = parseSlugId(id);
 
 let person: PersonDetails | null = null;
 let error: string | null = null;
 
 try {
-  person = await getPerson(Number(id));
+  if (personId) {
+    person = await getPerson(personId);
+  }
 } catch (e) {
   console.error('Failed to fetch person:', e);
   error = 'Failed to load person details.';
+}
+
+if (person?.slug && id !== person.slug) {
+  return Astro.redirect(getMediaHref('person', person) + Astro.url.search, 301);
 }
 
 if (error || !person) {
@@ -74,17 +82,82 @@ const knownForScore = (credit: FilmCredit, isTV: boolean): number => {
   return audienceReach * Math.min(roleSignificance, 1) * quality;
 };
 
-const sortedMovieCredits = [...movieCredits].sort(sortByDate);
-const sortedSeriesCredits = [...seriesCredits].sort(sortByDate);
+interface FilmographyEntry {
+  credit: FilmCredit;
+  mediaType: 'movie' | 'series';
+  credits: FilmCredit[];
+  roleLabel: string;
+}
 
-const knownFor = [...movieCredits, ...seriesCredits]
-  .map((c) => ({
-    credit: c,
-    score: knownForScore(c, seriesCredits.includes(c)),
+const JOB_PRIORITY = [
+  'Director',
+  'Screenplay',
+  'Writer',
+  'Story',
+  'Producer',
+  'Executive Producer',
+];
+
+const jobRank = (job: string): number => {
+  const rank = JOB_PRIORITY.indexOf(job);
+  return rank === -1 ? JOB_PRIORITY.length : rank;
+};
+
+const uniqueRoles = (credits: FilmCredit[], type: FilmCredit['type']) => [
+  ...new Set(
+    credits.flatMap((c) => (c.type === type && c.role ? [c.role] : []))
+  ),
+];
+
+const formatRoleLabel = (credits: FilmCredit[]): string => {
+  const characters = uniqueRoles(credits, 'cast');
+  const jobs = uniqueRoles(credits, 'crew').sort(
+    (a, b) => jobRank(a) - jobRank(b)
+  );
+  return [characters.length > 0 && `as ${characters.join(' / ')}`, ...jobs]
+    .filter(Boolean)
+    .join(' · ');
+};
+
+const mergeCredits = (
+  credits: FilmCredit[],
+  mediaType: FilmographyEntry['mediaType']
+): FilmographyEntry[] => {
+  const byTitle = new Map<number, FilmCredit[]>();
+  for (const credit of credits) {
+    byTitle.set(credit.id, [...(byTitle.get(credit.id) ?? []), credit]);
+  }
+  return [...byTitle.values()].map((group) => ({
+    credit: {
+      ...group[0],
+      episodeCount: Math.max(...group.map((c) => c.episodeCount ?? 0)),
+    },
+    mediaType,
+    credits: group,
+    roleLabel: formatRoleLabel(group),
+  }));
+};
+
+const filmography = [
+  ...mergeCredits(movieCredits, 'movie'),
+  ...mergeCredits(seriesCredits, 'series'),
+].sort((a, b) => sortByDate(a.credit, b.credit));
+
+const knownFor = filmography
+  .map((entry) => ({
+    entry,
+    score: Math.max(
+      ...entry.credits.map((c) =>
+        knownForScore(c, entry.mediaType === 'series')
+      )
+    ),
   }))
   .sort((a, b) => b.score - a.score)
   .slice(0, 16)
-  .map((x) => x.credit);
+  .map((x) => x.entry);
+
+const movieCount = filmography.filter((e) => e.mediaType === 'movie').length;
+const seriesCount = filmography.length - movieCount;
 
 const maxPopularity = Math.max(
   0,
@@ -101,8 +174,7 @@ const photoUrl = getImageUrl(person?.photoPath, 'h632');
 
 const tabValues = [
   knownFor.length > 0 && 'known-for',
-  sortedMovieCredits.length > 0 && 'movies',
-  sortedSeriesCredits.length > 0 && 'series',
+  filmography.length > 0 && 'filmography',
   'interesting-info',
 ].filter(Boolean) as string[];
 
@@ -186,16 +258,16 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                 )}
               </div>
               <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                {movieCredits.length > 0 && (
+                {movieCount > 0 && (
                   <div class="flex items-center gap-1.5">
                     <IconMovie class="h-4 w-4" />
-                    <span>{movieCredits.length} Movies</span>
+                    <span>{movieCount} Movies</span>
                   </div>
                 )}
-                {seriesCredits.length > 0 && (
+                {seriesCount > 0 && (
                   <div class="flex items-center gap-1.5">
                     <IconDeviceTv class="h-4 w-4" />
-                    <span>{seriesCredits.length} TV Shows</span>
+                    <span>{seriesCount} TV Shows</span>
                   </div>
                 )}
               </div>
@@ -221,19 +293,14 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                   <IconStar class="size-4" /> Known For
                 </TabsTrigger>
               )}
-              {sortedMovieCredits.length > 0 && (
-                <TabsTrigger value="movies" default={defaultTab === 'movies'}>
-                  <IconMovie class="size-4" /> Movies
+              {filmography.length > 0 && (
+                <TabsTrigger
+                  value="filmography"
+                  default={defaultTab === 'filmography'}
+                >
+                  <IconMovie class="size-4" /> Filmography
                   <span class="text-xs leading-none translate-y-px text-muted-foreground">
-                    {sortedMovieCredits.length}
-                  </span>
-                </TabsTrigger>
-              )}
-              {sortedSeriesCredits.length > 0 && (
-                <TabsTrigger value="series" default={defaultTab === 'series'}>
-                  <IconDeviceTv class="size-4" /> TV Series
-                  <span class="text-xs leading-none translate-y-px text-muted-foreground">
-                    {sortedSeriesCredits.length}
+                    {filmography.length}
                   </span>
                 </TabsTrigger>
               )}
@@ -251,17 +318,17 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
                 default={defaultTab === 'known-for'}
               >
                 <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
-                  {knownFor.map((credit) => (
+                  {knownFor.map((entry) => (
                     <CreditCard
-                      credit={credit}
-                      mediaType={
-                        movieCredits.includes(credit) ? 'movie' : 'series'
-                      }
-                      voteAverage={credit.voteAverage}
+                      credit={entry.credit}
+                      mediaType={entry.mediaType}
+                      roleLabel={entry.roleLabel}
+                      showMediaType
+                      voteAverage={entry.credit.voteAverage}
                       personBirthday={person.birthday}
                       personDeathday={person.deathday}
                       personCurrentAge={person.currentAge}
-                      personId={person.id}
+                      person={person}
                       prefetch={true}
                       showDeathAge={false}
                     />
@@ -270,41 +337,25 @@ const jsonLd = person ? buildPersonSchema(person) : undefined;
               </TabsContent>
             )}
 
-            {sortedMovieCredits.length > 0 && (
-              <TabsContent value="movies" default={defaultTab === 'movies'}>
+            {filmography.length > 0 && (
+              <TabsContent
+                value="filmography"
+                default={defaultTab === 'filmography'}
+              >
                 <div class="space-y-4">
-                  <SectionSearch placeholder="Search movies..." />
+                  <SectionSearch placeholder="Search filmography..." />
                   <div class="section-search-grid grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
-                    {sortedMovieCredits.map((credit) => (
+                    {filmography.map((entry) => (
                       <CreditCard
-                        credit={credit}
-                        mediaType="movie"
-                        voteAverage={credit.voteAverage}
+                        credit={entry.credit}
+                        mediaType={entry.mediaType}
+                        roleLabel={entry.roleLabel}
+                        showMediaType
+                        voteAverage={entry.credit.voteAverage}
                         personBirthday={person.birthday}
                         personDeathday={person.deathday}
                         personCurrentAge={person.currentAge}
-                        showDeathAge={false}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-            )}
-
-            {sortedSeriesCredits.length > 0 && (
-              <TabsContent value="series" default={defaultTab === 'series'}>
-                <div class="space-y-4">
-                  <SectionSearch placeholder="Search series..." />
-                  <div class="section-search-grid grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(140px,1fr))] gap-3 sm:gap-4">
-                    {sortedSeriesCredits.map((credit) => (
-                      <CreditCard
-                        credit={credit}
-                        mediaType="series"
-                        voteAverage={credit.voteAverage}
-                        personBirthday={person.birthday}
-                        personDeathday={person.deathday}
-                        personCurrentAge={person.currentAge}
-                        personId={person.id}
+                        person={person}
                         showDeathAge={false}
                       />
                     ))}

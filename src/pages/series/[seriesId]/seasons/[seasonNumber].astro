@@ -24,6 +24,7 @@ import {
 import { MediaActions } from '@components/user';
 import Layout from '@layouts/Layout.astro';
 import { getSeason, getSeries } from '@lib/api';
+import { getMediaHref, getSeasonHref, parseSlugId } from '@lib/media-config';
 import { buildBreadcrumbSchema, buildSeasonSchema } from '@lib/schema';
 import type { SeasonDetails, SeriesDetails } from '@lib/types';
 import {
@@ -35,23 +36,33 @@ import {
 
 import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
 
-const { seriesId, seasonNumber } = Astro.params;
+const { seriesId: seriesParam, seasonNumber } = Astro.params;
+const seriesId = parseSlugId(seriesParam);
 
 let season: SeasonDetails | null = null;
 let series: SeriesDetails | null = null;
 let error: string | null = null;
 
 try {
-  [season, series] = await Promise.all([
-    getSeason(Number(seriesId), Number(seasonNumber)),
-    getSeries(Number(seriesId)),
-  ]);
+  if (seriesId) {
+    [season, series] = await Promise.all([
+      getSeason(seriesId, Number(seasonNumber)),
+      getSeries(seriesId),
+    ]);
+  }
 } catch (e) {
   console.error('Failed to fetch season:', e);
   error = 'Failed to load season details.';
 }
 
-if (error || !season) {
+if (series?.slug && seriesParam !== series.slug) {
+  return Astro.redirect(
+    getSeasonHref(series, Number(seasonNumber)) + Astro.url.search,
+    301
+  );
+}
+
+if (error || !season || !series) {
   Astro.response.status = 404;
 }
 
@@ -74,7 +85,7 @@ const keyCrewEntries = [
 const breadcrumbItems =
   series && season
     ? [
-        { label: series.name, href: `/series/${seriesId}` },
+        { label: series.name, href: getMediaHref('series', series) },
         { label: season.name },
       ]
     : [];
@@ -99,7 +110,7 @@ const jsonLd =
     ? [
         buildSeasonSchema(season, series),
         buildBreadcrumbSchema([
-          { name: series.name, url: `/series/${seriesId}` },
+          { name: series.name, url: getMediaHref('series', series) },
           { name: season.name },
         ]),
       ]
@@ -118,7 +129,7 @@ const jsonLd =
 
   <main class="container mx-auto px-4 py-8 flex-1">
     {
-      error || !season ? (
+      error || !season || !series ? (
         <NotFound
           title="Season not found"
           message={error || "The season you're looking for doesn't exist."}
@@ -162,7 +173,7 @@ const jsonLd =
                 <MediaActions
                   mediaType="season"
                   mediaId={season.id}
-                  seriesId={Number(seriesId)}
+                  seriesId={series.id}
                   seasonNumber={season.seasonNumber}
                   seasonEpisodeCount={airedEpisodeCount}
                 />
@@ -254,7 +265,7 @@ const jsonLd =
                 <div class="grid grid-cols-1 gap-3">
                   {episodes.map((episode) => (
                     <EpisodeCard
-                      seriesId={Number(seriesId)}
+                      series={series}
                       seasonNumber={episode.seasonNumber}
                       episodeNumber={episode.episodeNumber}
                       episodeId={episode.id}
@@ -272,7 +283,7 @@ const jsonLd =
 
             {cast.length > 0 && (
               <TabsContent value="top-cast" default={defaultTab === 'top-cast'}>
-                <TopCast cast={cast} seriesId={Number(seriesId)} />
+                <TopCast cast={cast} series={series} />
               </TabsContent>
             )}
 
@@ -284,7 +295,7 @@ const jsonLd =
                 <FullCastCrew
                   cast={cast}
                   credits={season.credits}
-                  seriesId={Number(seriesId)}
+                  series={series}
                 />
               </TabsContent>
             )}

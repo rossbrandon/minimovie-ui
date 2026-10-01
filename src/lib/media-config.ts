@@ -14,8 +14,41 @@ export const MEDIA_CONFIG: Record<MediaType, MediaTypeConfig> = {
   person: { route: '/people', label: 'Person', badgeVariant: 'person' },
 };
 
-export function mediaHref(type: MediaType, id: number | string): string {
-  return `${MEDIA_CONFIG[type].route}/${id}`;
+export interface RouteTarget {
+  id: number;
+  slug?: string;
+}
+
+export function getMediaHref(type: MediaType, target: RouteTarget): string {
+  return `${MEDIA_CONFIG[type].route}/${target.slug ?? target.id}`;
+}
+
+export function getSeasonHref(
+  series: RouteTarget,
+  seasonNumber: number
+): string {
+  return `${getMediaHref('series', series)}/seasons/${seasonNumber}`;
+}
+
+export function getEpisodeHref(
+  series: RouteTarget,
+  seasonNumber: number,
+  episodeNumber: number
+): string {
+  return `${getSeasonHref(series, seasonNumber)}/episodes/${episodeNumber}`;
+}
+
+export function getSeriesPersonHref(
+  series: RouteTarget,
+  person: RouteTarget
+): string {
+  return `${getMediaHref('series', series)}/person/${person.slug ?? person.id}`;
+}
+
+// Gets the media id from the slug, e.g. "550-fight-club" -> 550
+export function parseSlugId(param: string | undefined): number | undefined {
+  const id = Number(param?.match(/^(\d+)(?:-|$)/)?.[1]);
+  return id > 0 ? id : undefined;
 }
 
 const BADGE_CLASSES: Record<MediaType, string> = {
@@ -24,6 +57,6 @@ const BADGE_CLASSES: Record<MediaType, string> = {
   person: 'bg-teal-500/90 text-white',
 };
 
-export function mediaBadgeClass(type: MediaType): string {
+export function getMediaBadgeClass(type: MediaType): string {
   return BADGE_CLASSES[type];
 }

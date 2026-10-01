@@ -12,19 +12,39 @@ import {
 } from '@components/starwind/tabs';
 import Layout from '@layouts/Layout.astro';
 import { getPersonSeriesCredits } from '@lib/api';
+import {
+  getMediaHref,
+  getSeriesPersonHref,
+  parseSlugId,
+} from '@lib/media-config';
 import type { PersonSeriesCredits } from '@lib/types';
 import { getImageUrl } from '@lib/utils';
 
-const { seriesId, personId } = Astro.params;
+const { seriesId: seriesParam, personId: personParam } = Astro.params;
+const seriesId = parseSlugId(seriesParam);
+const personId = parseSlugId(personParam);
 
 let data: PersonSeriesCredits | null = null;
 let error: string | null = null;
 
 try {
-  data = await getPersonSeriesCredits(Number(seriesId), Number(personId));
+  if (seriesId && personId) {
+    data = await getPersonSeriesCredits(seriesId, personId);
+  }
 } catch (e) {
   console.error('Failed to fetch person series credits:', e);
   error = 'Failed to load credits.';
+}
+
+if (
+  data &&
+  ((data.series.slug && seriesParam !== data.series.slug) ||
+    (data.person.slug && personParam !== data.person.slug))
+) {
+  return Astro.redirect(
+    getSeriesPersonHref(data.series, data.person) + Astro.url.search,
+    301
+  );
 }
 
 if (error || !data) {
@@ -39,7 +59,7 @@ const roles = data?.roles?.map((r) => r.character).join(', ') || '';
 
 const breadcrumbItems = data
   ? [
-      { label: data.series.name, href: `/series/${seriesId}` },
+      { label: data.series.name, href: getMediaHref('series', data.series) },
       { label: data.person.name },
     ]
   : [];
@@ -77,7 +97,7 @@ const defaultTab =
           {/* Hero */}
           <div class="flex flex-col md:flex-row gap-8">
             <a
-              href={`/people/${data.person.id}`}
+              href={getMediaHref('person', data.person)}
               class="shrink-0 mx-auto md:mx-0 group"
             >
               <div class="w-40 aspect-2/3 overflow-hidden rounded-lg bg-muted shadow-lg">
@@ -101,7 +121,7 @@ const defaultTab =
               <div>
                 <h1 class="text-3xl md:text-4xl font-bold">
                   <a
-                    href={`/people/${data.person.id}`}
+                    href={getMediaHref('person', data.person)}
                     class="hover:text-amber-500 transition-colors"
                   >
                     {personName}
@@ -110,7 +130,7 @@ const defaultTab =
                 <p class="text-lg text-muted-foreground mt-1">
                   in{' '}
                   <a
-                    href={`/series/${seriesId}`}
+                    href={getMediaHref('series', data.series)}
                     class="hover:text-amber-500 transition-colors"
                   >
                     {seriesName}
@@ -155,7 +175,7 @@ const defaultTab =
                   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                     {season.episodes.map((ep) => (
                       <EpisodeAppearanceCard
-                        seriesId={Number(seriesId)}
+                        series={data.series}
                         seasonNumber={season.seasonNumber}
                         episodeNumber={ep.episodeNumber}
                         name={ep.name}

@@ -1,4 +1,8 @@
-import { MEDIA_CONFIG, mediaBadgeClass, mediaHref } from '@lib/media-config';
+import {
+  getMediaBadgeClass,
+  getMediaHref,
+  MEDIA_CONFIG,
+} from '@lib/media-config';
 import type { SearchResult } from '@lib/types';
 import {
   debounce,
@@ -49,8 +53,8 @@ async function fetchSearchJson(
 }
 
 function renderDropdownRow(result: SearchResult, optionId: string): string {
-  const href = mediaHref(result.mediaType, result.id);
-  const badgeClass = mediaBadgeClass(result.mediaType);
+  const href = getMediaHref(result.mediaType, result);
+  const badgeClass = getMediaBadgeClass(result.mediaType);
   const label = MEDIA_CONFIG[result.mediaType].label;
   const posterUrl = getImageUrl(result.posterPath, 'w92');
   const initials = getInitials(result.title);
@@ -179,9 +183,9 @@ export function mountDropdown(
           results[activeIndex]
         ) {
           e.preventDefault();
-          window.location.href = mediaHref(
+          window.location.href = getMediaHref(
             results[activeIndex].mediaType,
-            results[activeIndex].id
+            results[activeIndex]
           );
         }
         return;
@@ -277,7 +281,7 @@ export function mountDropdown(
       const onClick = (e: MouseEvent) => {
         e.preventDefault();
         const result = results[index];
-        window.location.href = mediaHref(result.mediaType, result.id);
+        window.location.href = getMediaHref(result.mediaType, result);
       };
       item.addEventListener('click', onClick);
       itemCleanups.push(() => item.removeEventListener('click', onClick));

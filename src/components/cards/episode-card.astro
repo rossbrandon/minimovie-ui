@@ -2,6 +2,7 @@
 import { IconCalendar, IconClock, IconStar } from '@components/icons';
 import { Badge } from '@components/starwind/badge';
 import EpisodeToggle from '@components/user/episode-toggle';
+import { getEpisodeHref, type RouteTarget } from '@lib/media-config';
 import {
   formatDate,
   formatEpisodeCode,
@@ -11,7 +12,7 @@ import {
 } from '@lib/utils';
 
 interface Props {
-  seriesId: number;
+  series: RouteTarget;
   seasonNumber: number;
   episodeNumber: number;
   episodeId: number;
@@ -25,7 +26,7 @@ interface Props {
 }
 
 const {
-  seriesId,
+  series,
   seasonNumber,
   episodeNumber,
   episodeId,
@@ -38,7 +39,7 @@ const {
   prefetch = false,
 } = Astro.props;
 
-const href = `/series/${seriesId}/seasons/${seasonNumber}/episodes/${episodeNumber}`;
+const href = getEpisodeHref(series, seasonNumber, episodeNumber);
 const episodeCode = formatEpisodeCode(seasonNumber, episodeNumber);
 const rating = formatRating(voteAverage);
 const stillUrl = getImageUrl(stillPath, 'w300');
@@ -131,7 +132,7 @@ const isUpcoming = airDate ? new Date(airDate) > new Date() : false;
       <span class="authed-only">
         <EpisodeToggle
           client:only="solid-js"
-          seriesId={seriesId}
+          seriesId={series.id}
           seasonNumber={seasonNumber}
           episodeNumber={episodeNumber}
           episodeId={episodeId}

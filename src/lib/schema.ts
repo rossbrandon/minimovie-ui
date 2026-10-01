@@ -1,4 +1,10 @@
 import { SITE_NAME, SITE_URL } from './constants';
+import {
+  getEpisodeHref,
+  getMediaHref,
+  getSeasonHref,
+  type RouteTarget,
+} from './media-config';
 import type {
   EpisodeDetails,
   MovieDetails,
@@ -18,11 +24,11 @@ function toIsoDuration(minutes: number): string {
   return `PT${h}H${m}M`;
 }
 
-function personRef(person: { id: number; name: string }) {
+function personRef(person: RouteTarget & { name: string }) {
   return {
     '@type': 'Person' as const,
     name: person.name,
-    url: `${SITE_URL}/people/${person.id}`,
+    url: `${SITE_URL}${getMediaHref('person', person)}`,
   };
 }
 
@@ -31,7 +37,7 @@ function buildMovieSchema(movie: MovieDetails) {
     '@context': 'https://schema.org',
     '@type': 'Movie',
     name: movie.title,
-    url: `${SITE_URL}/movies/${movie.id}`,
+    url: `${SITE_URL}${getMediaHref('movie', movie)}`,
     ...(movie.overview && { description: movie.overview }),
     ...(movie.posterPath && { image: getImageUrl(movie.posterPath, 'w780') }),
     ...(movie.releaseDate && { datePublished: movie.releaseDate }),
@@ -60,7 +66,7 @@ function buildSeriesSchema(series: SeriesDetails) {
     '@context': 'https://schema.org',
     '@type': 'TVSeries',
     name: series.name,
-    url: `${SITE_URL}/series/${series.id}`,
+    url: `${SITE_URL}${getMediaHref('series', series)}`,
     ...(series.overview && { description: series.overview }),
     ...(series.posterPath && {
       image: getImageUrl(series.posterPath, 'w780'),
@@ -88,7 +94,7 @@ function buildSeasonSchema(season: SeasonDetails, series: SeriesDetails) {
     '@context': 'https://schema.org',
     '@type': 'TVSeason',
     name: season.name,
-    url: `${SITE_URL}/series/${series.id}/seasons/${season.seasonNumber}`,
+    url: `${SITE_URL}${getSeasonHref(series, season.seasonNumber)}`,
     ...(season.overview && { description: season.overview }),
     ...(season.posterPath && {
       image: getImageUrl(season.posterPath, 'w780'),
@@ -101,7 +107,7 @@ function buildSeasonSchema(season: SeasonDetails, series: SeriesDetails) {
     partOfSeries: {
       '@type': 'TVSeries',
       name: series.name,
-      url: `${SITE_URL}/series/${series.id}`,
+      url: `${SITE_URL}${getMediaHref('series', series)}`,
     },
   };
 }
@@ -115,7 +121,7 @@ function buildEpisodeSchema(
     '@context': 'https://schema.org',
     '@type': 'TVEpisode',
     name: episode.name,
-    url: `${SITE_URL}/series/${series.id}/seasons/${episode.seasonNumber}/episodes/${episode.episodeNumber}`,
+    url: `${SITE_URL}${getEpisodeHref(series, episode.seasonNumber, episode.episodeNumber)}`,
     ...(episode.overview && { description: episode.overview }),
     ...(episode.stillPath && {
       image: getImageUrl(episode.stillPath, 'original'),
@@ -133,12 +139,12 @@ function buildEpisodeSchema(
       '@type': 'TVSeason',
       name: seasonName,
       seasonNumber: episode.seasonNumber,
-      url: `${SITE_URL}/series/${series.id}/seasons/${episode.seasonNumber}`,
+      url: `${SITE_URL}${getSeasonHref(series, episode.seasonNumber)}`,
     },
     partOfSeries: {
       '@type': 'TVSeries',
       name: series.name,
-      url: `${SITE_URL}/series/${series.id}`,
+      url: `${SITE_URL}${getMediaHref('series', series)}`,
     },
   };
 }
@@ -148,7 +154,7 @@ function buildPersonSchema(person: PersonDetails) {
     '@context': 'https://schema.org',
     '@type': 'Person',
     name: person.name,
-    url: `${SITE_URL}/people/${person.id}`,
+    url: `${SITE_URL}${getMediaHref('person', person)}`,
     ...(person.biography && { description: person.biography.slice(0, 300) }),
     ...(person.photoPath && { image: getImageUrl(person.photoPath, 'h632') }),
     ...(person.birthday && { birthDate: person.birthday }),

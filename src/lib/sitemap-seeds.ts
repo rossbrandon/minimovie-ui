@@ -1,166 +1,169 @@
-export const SEED_MOVIE_IDS = [
-  278, // The Shawshank Redemption
-  238, // The Godfather
-  240, // The Godfather Part II
-  424, // Schindler's List
-  389, // 12 Angry Men
-  129, // Spirited Away
-  155, // The Dark Knight
-  497, // The Green Mile
-  680, // Pulp Fiction
-  13, // Forrest Gump
-  769, // GoodFellas
-  429, // The Good, the Bad and the Ugly
-  510, // One Flew Over the Cuckoo's Nest
-  274, // The Silence of the Lambs
-  539, // Psycho
-  637, // Life Is Beautiful
-  857, // Saving Private Ryan
-  197, // Braveheart
-  207, // Dead Poets Society
-  550, // Fight Club
-  346, // Se7en
-  73, // American History X
-  14, // American Beauty
-  98, // Gladiator
-  101, // Léon: The Professional
-  489, // Good Will Hunting
-  578, // Jaws
-  185, // A Beautiful Mind
-  568, // Apollo 13
-  603, // The Matrix
-  27205, // Inception
-  157336, // Interstellar
-  496243, // Parasite
-  372058, // Your Name
-  244786, // Whiplash
-  598, // City of God
-  76341, // Mad Max: Fury Road
-  264660, // Ex Machina
-  152601, // Her
-  335984, // Blade Runner 2049
-  475557, // Joker
-  414906, // The Batman
-  438631, // Dune (2021)
-  693134, // Dune: Part Two
-  533535, // Deadpool & Wolverine
-  1184918, // The Wild Robot
-  11, // Star Wars: A New Hope
-  1891, // The Empire Strikes Back
-  1892, // Return of the Jedi
-  120, // LOTR: The Fellowship of the Ring
-  121, // LOTR: The Two Towers
-  122, // LOTR: The Return of the King
-  671, // Harry Potter and the Philosopher's Stone
-  674, // Harry Potter and the Goblet of Fire
-  12444, // Harry Potter and the Deathly Hallows Part 2
-  1726, // Iron Man
-  24428, // The Avengers
-  299536, // Avengers: Infinity War
-  299534, // Avengers: Endgame
-  284054, // Black Panther
-  315635, // Spider-Man: Homecoming
-  634649, // Spider-Man: No Way Home
-  569094, // Spider-Man: Across the Spider-Verse
-  19995, // Avatar
-  76600, // Avatar: The Way of Water
-  348, // Alien
-  679, // Aliens
-  245891, // John Wick
-  50646, // Crazy, Stupid, Love
-  862, // Toy Story
-  150540, // Inside Out
-  585, // Monsters, Inc.
-  354912, // Coco
-  508, // Up
-  105, // Back to the Future
+// Catalog slugs (not TMDB ids). Regenerate from the API database with
+// `select slug from movies|series|people where source_id = <tmdb id>`.
+
+export const SEED_MOVIE_SLUGS = [
+  '231-the-shawshank-redemption',
+  '193-the-godfather',
+  '195-the-godfather-part-ii',
+  '333-schindler-s-list',
+  '306-12-angry-men',
+  '94-spirited-away',
+  '117-the-dark-knight',
+  '387-the-green-mile',
+  '551-pulp-fiction',
+  '9-forrest-gump',
+  '609-goodfellas',
+  '338-the-good-the-bad-and-the-ugly',
+  '399-one-flew-over-the-cuckoo-s-nest',
+  '227-the-silence-of-the-lambs',
+  '419-psycho',
+  '510-life-is-beautiful',
+  '697-saving-private-ryan',
+  '157-braveheart',
+  '166-dead-poets-society',
+  '429-fight-club',
+  '647-se7en',
+  '40-american-history-x',
+  '10-american-beauty',
+  '64-gladiator',
+  '67-leon-the-professional',
+  '380-good-will-hunting',
+  '454-jaws',
+  '355-a-beautiful-mind',
+  '445-apollo-13',
+  '478-the-matrix',
+  '16310-inception',
+  '96260-interstellar',
+  '339689-parasite',
+  '242854-your-name',
+  '139371-whiplash',
+  '473-city-of-god',
+  '53492-mad-max-fury-road',
+  '152976-ex-machina',
+  '94194-her',
+  '213600-blade-runner-2049',
+  '323822-joker',
+  '276439-the-batman',
+  '295127-dune',
+  '487099-dune-part-two',
+  '369620-deadpool-wolverine',
+  '828023-the-wild-robot',
+  '7-star-wars',
+  '1261-the-empire-strikes-back',
+  '1262-return-of-the-jedi',
+  '85-the-lord-of-the-rings-the-fellowship-of-the-ring',
+  '86-the-lord-of-the-rings-the-two-towers',
+  '87-the-lord-of-the-rings-the-return-of-the-king',
+  '542-harry-potter-and-the-philosopher-s-stone',
+  '545-harry-potter-and-the-goblet-of-fire',
+  '7093-harry-potter-and-the-deathly-hallows-part-2',
+  '1152-iron-man',
+  '14413-the-avengers',
+  '182438-avengers-infinity-war',
+  '182436-avengers-endgame',
+  '169445-black-panther',
+  '196340-spider-man-homecoming',
+  '443988-spider-man-no-way-home',
+  '395672-spider-man-across-the-spider-verse',
+  '12035-avatar',
+  '53702-avatar-the-way-of-water',
+  '292-alien',
+  '550-aliens',
+  '139927-john-wick',
+  '34159-crazy-stupid-love',
+  '702-toy-story',
+  '93330-inside-out',
+  '461-monsters-inc',
+  '229044-coco',
+  '8319-up',
+  '71-back-to-the-future',
 ];
 
-export const SEED_SERIES_IDS = [
-  1396, // Breaking Bad
-  1399, // Game of Thrones
-  94997, // House of the Dragon
-  66732, // Stranger Things
-  1418, // The Big Bang Theory
-  1668, // Friends
-  456, // The Simpsons
-  1402, // The Walking Dead
-  60574, // Peaky Blinders
-  63174, // Lucifer
-  82856, // The Mandalorian
-  1100, // How I Met Your Mother
-  44217, // Vikings
-  1416, // Grey's Anatomy
-  1421, // Modern Family
-  42009, // Black Mirror
-  4607, // Lost
-  1622, // Supernatural
-  93405, // Squid Game
-  84958, // Loki
-  60735, // The Flash
-  1403, // Prison Break
-  2190, // South Park
-  60059, // Better Call Saul
-  71712, // The Good Doctor
-  85552, // Euphoria
-  76479, // The Boys
-  94605, // Arcane
-  71446, // Money Heist
-  1398, // The Sopranos
-  1438, // The Wire
-  34307, // Shameless
-  62560, // Mr. Robot
-  246, // Avatar: The Last Airbender
-  1429, // Attack on Titan
-  37854, // One Piece
-  95557, // Invincible
-  100088, // The Last of Us
-  114472, // Shogun
-  84773, // The Rings of Power
+export const SEED_SERIES_SLUGS = [
+  '1310-breaking-bad',
+  '1312-game-of-thrones',
+  '80093-house-of-the-dragon',
+  '58358-stranger-things',
+  '1331-the-big-bang-theory',
+  '1565-friends',
+  '425-the-simpsons',
+  '1315-the-walking-dead',
+  '53666-peaky-blinders',
+  '55689-lucifer',
+  '70509-the-mandalorian',
+  '1031-how-i-met-your-mother',
+  '40002-vikings',
+  '1329-grey-s-anatomy',
+  '1334-modern-family',
+  '38242-black-mirror',
+  '4378-lost',
+  '1523-supernatural',
+  '78873-squid-game',
+  '72206-loki',
+  '53774-the-flash',
+  '2166-prison-break',
+  '2074-south-park',
+  '53275-better-call-saul',
+  '62140-the-good-doctor',
+  '72595-euphoria',
+  '65751-the-boys',
+  '79799-arcane',
+  '61943-money-heist',
+  '1311-the-sopranos',
+  '1351-the-wire',
+  '31436-shameless',
+  '55195-mr-robot',
+  '227-avatar-the-last-airbender',
+  '1342-attack-on-titan',
+  '34640-one-piece',
+  '80532-invincible',
+  '83945-the-last-of-us',
+  '104383-shogun',
+  '72058-the-lord-of-the-rings-the-rings-of-power',
 ];
 
-export const SEED_PEOPLE_IDS = [
-  6193, // Leonardo DiCaprio
-  31, // Tom Hanks
-  500, // Tom Cruise
-  3223, // Robert Downey Jr.
-  1245, // Scarlett Johansson
-  72129, // Jennifer Lawrence
-  6384, // Keanu Reeves
-  10859, // Ryan Reynolds
-  234352, // Margot Robbie
-  1136406, // Tom Holland
-  17276, // Zendaya
-  73457, // Chris Pratt
-  74568, // Chris Hemsworth
-  16828, // Chris Evans
-  5292, // Denzel Washington
-  192, // Morgan Freeman
-  2231, // Samuel L. Jackson
-  3489, // Brad Pitt
-  1158, // Al Pacino
-  380, // Robert De Niro
-  85, // Johnny Depp
-  2963, // Nicolas Cage
-  5530, // Jim Carrey
-  64, // Gary Oldman
-  1813, // Anne Hathaway
-  6885, // Charlize Theron
-  90633, // Gal Gadot
-  73968, // Henry Cavill
-  17605, // Idris Elba
-  976, // Jason Statham
-  18897, // Jackie Chan
-  8784, // Daniel Craig
-  1223786, // Timothée Chalamet
-  1373737, // Florence Pugh
-  2037, // Cillian Murphy
-  17419, // Bryan Cranston
-  115440, // Sydney Sweeney
-  54693, // Emma Stone
-  525, // Christopher Nolan
-  138, // Quentin Tarantino
-  1032, // Martin Scorsese
-  5655, // Denis Villeneuve
-  7467, // David Fincher
+export const SEED_PEOPLE_SLUGS = [
+  '5577-leonardo-dicaprio',
+  '26-tom-hanks',
+  '400-tom-cruise',
+  '2863-robert-downey-jr',
+  '1058-scarlett-johansson',
+  '59393-jennifer-lawrence',
+  '5758-keanu-reeves',
+  '10394-ryan-reynolds',
+  '147176-margot-robbie',
+  '262372-tom-holland',
+  '155674-zendaya',
+  '49657-chris-pratt',
+  '59565-chris-hemsworth',
+  '14768-chris-evans',
+  '4710-denzel-washington',
+  '153-morgan-freeman',
+  '1963-samuel-l-jackson',
+  '237-brad-pitt',
+  '983-al-pacino',
+  '304-robert-de-niro',
+  '73-johnny-depp',
+  '2626-nicolas-cage',
+  '165-jim-carrey',
+  '55-gary-oldman',
+  '1570-anne-hathaway',
+  '6214-charlize-theron',
+  '69079-gal-gadot',
+  '61692-henry-cavill',
+  '15433-idris-elba',
+  '819-jason-statham',
+  '16439-jackie-chan',
+  '7863-daniel-craig',
+  '299253-timothee-chalamet',
+  '447797-florence-pugh',
+  '1780-cillian-murphy',
+  '15263-bryan-cranston',
+  '96037-sydney-sweeney',
+  '44308-emma-stone',
+  '424-christopher-nolan',
+  '112-quentin-tarantino',
+  '869-martin-scorsese',
+  '112731-denis-villeneuve',
+  '6758-david-fincher',
 ];

@@ -29,6 +29,7 @@ import {
 import { MediaActions } from '@components/user';
 import Layout from '@layouts/Layout.astro';
 import { getSeries } from '@lib/api';
+import { getMediaHref, parseSlugId } from '@lib/media-config';
 import { buildSeriesSchema } from '@lib/schema';
 import type { SeriesDetails } from '@lib/types';
 import {
@@ -43,6 +44,7 @@ import {
 import IconPlayerPlay from '@tabler/icons/outline/player-play.svg';
 
 const { id } = Astro.params;
+const seriesId = parseSlugId(id);
 
 const MAX_CAST = 250;
 
@@ -50,10 +52,16 @@ let series: SeriesDetails | null = null;
 let error: string | null = null;
 
 try {
-  series = await getSeries(Number(id));
+  if (seriesId) {
+    series = await getSeries(seriesId);
+  }
 } catch (e) {
   console.error('Failed to fetch series:', e);
   error = 'Failed to load series details.';
+}
+
+if (series?.slug && id !== series.slug) {
+  return Astro.redirect(getMediaHref('series', series) + Astro.url.search, 301);
 }
 
 if (error || !series) {
@@ -64,6 +72,7 @@ const allCast = series?.credits?.cast || [];
 const cast = allCast.slice(0, MAX_CAST);
 const castOverflow = allCast.slice(MAX_CAST).map((p) => ({
   id: p.id,
+  slug: p.slug,
   name: p.name,
   photoPath: p.photoPath,
   role: p.role,
@@ -311,7 +320,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
 
             {cast.length > 0 && (
               <TabsContent value="top-cast" default={defaultTab === 'top-cast'}>
-                <TopCast cast={cast} seriesId={series.id} />
+                <TopCast cast={cast} series={series} />
               </TabsContent>
             )}
 
@@ -320,7 +329,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {seasons.map((season) => (
                     <SeasonCard
-                      seriesId={series.id}
+                      series={series}
                       seasonNumber={season.seasonNumber}
                       name={season.name}
                       posterPath={season.posterPath}
@@ -342,7 +351,7 @@ const jsonLd = series ? buildSeriesSchema(series) : undefined;
                 <FullCastCrew
                   cast={cast}
                   credits={series.credits}
-                  seriesId={series.id}
+                  series={series}
                   overflowData={castOverflow}
                   totalCastCount={allCast.length}
                 />

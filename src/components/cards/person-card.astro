@@ -3,7 +3,7 @@ import { IconStack2 } from '@components/icons';
 import { formatAgeDisplay, getImageUrl, getInitials } from '@lib/utils';
 
 interface Props {
-  id: number;
+  href: string;
   name: string;
   photoPath?: string;
   role?: string;
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const {
-  id,
+  href,
   name,
   photoPath,
   role,
@@ -47,8 +47,6 @@ const ageDisplay = formatAgeDisplay({
   deathday,
   ageRange,
 });
-
-const personHref = `/people/${id}`;
 ---
 
 <div
@@ -58,7 +56,7 @@ const personHref = `/people/${id}`;
   {
     linkToPerson && (
       <a
-        href={personHref}
+        href={href}
         class="absolute inset-0 z-0 sm:hidden"
         data-astro-prefetch={prefetch ? '' : undefined}
       >
@@ -70,7 +68,7 @@ const personHref = `/people/${id}`;
   {
     linkToPerson ? (
       <a
-        href={personHref}
+        href={href}
         class="shrink-0 pointer-events-none sm:pointer-events-auto sm:group sm:w-full"
         data-astro-prefetch={prefetch ? '' : undefined}
       >
@@ -115,7 +113,7 @@ const personHref = `/people/${id}`;
     {
       linkToPerson ? (
         <a
-          href={personHref}
+          href={href}
           class="hidden sm:block"
           data-astro-prefetch={prefetch ? '' : undefined}
         >

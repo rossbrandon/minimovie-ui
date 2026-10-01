@@ -18,6 +18,12 @@ import {
 import { MediaActions } from '@components/user';
 import Layout from '@layouts/Layout.astro';
 import { getEpisode, getSeries } from '@lib/api';
+import {
+  getEpisodeHref,
+  getMediaHref,
+  getSeasonHref,
+  parseSlugId,
+} from '@lib/media-config';
 import { buildBreadcrumbSchema, buildEpisodeSchema } from '@lib/schema';
 import type { EpisodeDetails, SeriesDetails } from '@lib/types';
 import {
@@ -29,23 +35,34 @@ import {
   getImageUrl,
 } from '@lib/utils';
 
-const { seriesId, seasonNumber, episodeNumber } = Astro.params;
+const { seriesId: seriesParam, seasonNumber, episodeNumber } = Astro.params;
+const seriesId = parseSlugId(seriesParam);
 
 let episode: EpisodeDetails | null = null;
 let series: SeriesDetails | null = null;
 let error: string | null = null;
 
 try {
-  [episode, series] = await Promise.all([
-    getEpisode(Number(seriesId), Number(seasonNumber), Number(episodeNumber)),
-    getSeries(Number(seriesId)),
-  ]);
+  if (seriesId) {
+    [episode, series] = await Promise.all([
+      getEpisode(seriesId, Number(seasonNumber), Number(episodeNumber)),
+      getSeries(seriesId),
+    ]);
+  }
 } catch (e) {
   console.error('Failed to fetch episode:', e);
   error = 'Failed to load episode details.';
 }
 
-if (error || !episode) {
+if (series?.slug && seriesParam !== series.slug) {
+  return Astro.redirect(
+    getEpisodeHref(series, Number(seasonNumber), Number(episodeNumber)) +
+      Astro.url.search,
+    301
+  );
+}
+
+if (error || !episode || !series) {
   Astro.response.status = 404;
 }
 
@@ -69,10 +86,10 @@ const keyCrewEntries = [
 const breadcrumbItems =
   series && episode
     ? [
-        { label: series.name, href: `/series/${seriesId}` },
+        { label: series.name, href: getMediaHref('series', series) },
         {
           label: seasonName,
-          href: `/series/${seriesId}/seasons/${seasonNumber}`,
+          href: getSeasonHref(series, episode.seasonNumber),
         },
         { label: `Episode ${episode.episodeNumber}` },
       ]
@@ -95,10 +112,10 @@ const jsonLd =
     ? [
         buildEpisodeSchema(episode, series, seasonName),
         buildBreadcrumbSchema([
-          { name: series.name, url: `/series/${seriesId}` },
+          { name: series.name, url: getMediaHref('series', series) },
           {
             name: seasonName,
-            url: `/series/${seriesId}/seasons/${seasonNumber}`,
+            url: getSeasonHref(series, episode.seasonNumber),
           },
           { name: `Episode ${episode.episodeNumber}` },
         ]),
@@ -118,7 +135,7 @@ const jsonLd =
 
   <main class="container mx-auto px-4 py-8 flex-1">
     {
-      error || !episode ? (
+      error || !episode || !series ? (
         <NotFound
           title="Episode not found"
           message={error || "The episode you're looking for doesn't exist."}
@@ -174,7 +191,7 @@ const jsonLd =
                   <MediaActions
                     mediaType="episode"
                     mediaId={episode.id}
-                    seriesId={Number(seriesId)}
+                    seriesId={series.id}
                     seasonNumber={episode.seasonNumber}
                     episodeNumber={episode.episodeNumber}
                     airDate={episode.airDate}

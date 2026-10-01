@@ -1,14 +1,19 @@
 ---
 import { PersonCard } from '@components/cards';
+import {
+  getMediaHref,
+  getSeriesPersonHref,
+  type RouteTarget,
+} from '@lib/media-config';
 import type { Person } from '@lib/types';
 
 interface Props {
   cast: Person[];
-  seriesId?: number;
+  series?: RouteTarget;
   limit?: number;
 }
 
-const { cast, seriesId, limit = 16 } = Astro.props;
+const { cast, series, limit = 16 } = Astro.props;
 
 const topCast = cast.slice(0, limit);
 ---
@@ -18,14 +23,14 @@ const topCast = cast.slice(0, limit);
     <div class="grid grid-cols-1 sm:grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3 sm:gap-6 pt-1">
       {topCast.map((person) => (
         <PersonCard
-          id={person.id}
+          href={getMediaHref('person', person)}
           name={person.name}
           photoPath={person.photoPath}
           role={person.role}
           episodeCount={person.episodeCount}
           episodeCountHref={
-            seriesId && person.episodeCount
-              ? `/series/${seriesId}/person/${person.id}`
+            series && person.episodeCount
+              ? getSeriesPersonHref(series, person)
               : undefined
           }
           birthday={person.birthday}

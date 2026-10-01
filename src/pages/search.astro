@@ -145,6 +145,7 @@ const visiblePages = getVisiblePages(page, results.totalPages);
               {results.results.map((result) => (
                 <MediaCard
                   id={result.id}
+                  slug={result.slug}
                   mediaType={result.mediaType}
                   title={result.title}
                   posterPath={result.posterPath}

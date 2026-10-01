@@ -31,7 +31,7 @@ interface EpisodeWatchedResult {
   episodeEventId?: string;
 }
 
-const STORAGE_KEY = 'mm_series_progress_v1';
+const STORAGE_KEY = 'mm_series_progress_v2';
 const FRESHNESS_WINDOW_MS = 5 * 60 * 1000;
 
 const [progress, setProgress] = createStore<Record<number, SeriesProgress>>({});

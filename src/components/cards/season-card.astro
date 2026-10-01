@@ -2,10 +2,11 @@
 import { IconCalendar, IconVideo } from '@components/icons';
 import { Badge } from '@components/starwind/badge';
 import SeasonStatus from '@components/user/season-status';
+import { getSeasonHref, type RouteTarget } from '@lib/media-config';
 import { formatDate, getImageUrl, getInitials } from '@lib/utils';
 
 interface Props {
-  seriesId: number;
+  series: RouteTarget;
   seasonNumber: number;
   name: string;
   posterPath?: string;
@@ -16,7 +17,7 @@ interface Props {
 }
 
 const {
-  seriesId,
+  series,
   seasonNumber,
   name,
   posterPath,
@@ -26,7 +27,7 @@ const {
   prefetch = false,
 } = Astro.props;
 
-const href = `/series/${seriesId}/seasons/${seasonNumber}`;
+const href = getSeasonHref(series, seasonNumber);
 const initials = getInitials(name);
 const posterUrl = getImageUrl(posterPath, 'w185');
 const isUpcoming = airDate ? new Date(airDate) > new Date() : !episodeCount;
@@ -66,7 +67,7 @@ const isUpcoming = airDate ? new Date(airDate) > new Date() : !episodeCount;
           <span class="authed-only shrink-0">
             <SeasonStatus
               client:only="solid-js"
-              seriesId={seriesId}
+              seriesId={series.id}
               seasonNumber={seasonNumber}
               totalEpisodes={episodeCount}
             />

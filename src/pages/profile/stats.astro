@@ -16,6 +16,7 @@ import {
 } from '@components/starwind/card';
 import Layout from '@layouts/Layout.astro';
 import { fetchUserAPI } from '@lib/api';
+import { getMediaHref } from '@lib/media-config';
 import { getSessionCookie } from '@lib/session';
 
 if (!Astro.locals.user) {
@@ -47,7 +48,7 @@ interface Achievement {
   achievementId: string;
   name: string;
   description: string;
-  earnedViaMediaType?: string;
+  earnedViaMediaType?: 'movie' | 'series';
   earnedViaMediaId?: number;
   earnedViaMediaTitle?: string;
   seenAt?: string;
@@ -242,11 +243,9 @@ const tierColors: Record<string, string> = {
                 const tier = getTierFromId(a.achievementId);
                 const mediaLink =
                   a.earnedViaMediaType && a.earnedViaMediaId
-                    ? a.earnedViaMediaType === 'movie'
-                      ? `/movies/${a.earnedViaMediaId}`
-                      : a.earnedViaMediaType === 'series'
-                        ? `/series/${a.earnedViaMediaId}`
-                        : null
+                    ? getMediaHref(a.earnedViaMediaType, {
+                        id: a.earnedViaMediaId,
+                      })
                     : null;
                 return (
                   <Card class={`border ${tier ? tierColors[tier] || '' : ''}`}>

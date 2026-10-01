@@ -10,7 +10,7 @@ interface CacheEntry extends MediaState {
   fetchedAt: number;
 }
 
-const STORAGE_KEY = 'mm_media_state_v1';
+const STORAGE_KEY = 'mm_media_state_v2';
 const FRESHNESS_WINDOW_MS = 5 * 60 * 1000;
 
 const [cache, setCache] = createStore<Record<string, CacheEntry>>({});

@@ -1,5 +1,12 @@
 ---
 import { IconStack2, IconStar } from '@components/icons';
+import { Badge } from '@components/starwind/badge';
+import {
+  getMediaHref,
+  getSeriesPersonHref,
+  MEDIA_CONFIG,
+  type RouteTarget,
+} from '@lib/media-config';
 import type { FilmCredit } from '@lib/types';
 import {
   calculateAgeAtDate,
@@ -17,9 +24,11 @@ interface Props {
   personBirthday?: string;
   personDeathday?: string;
   personCurrentAge?: number;
-  personId?: number;
+  person?: RouteTarget;
   prefetch?: boolean;
   showDeathAge?: boolean;
+  roleLabel?: string;
+  showMediaType?: boolean;
 }
 
 const {
@@ -29,15 +38,16 @@ const {
   personBirthday,
   personDeathday,
   personCurrentAge,
-  personId,
+  person,
   prefetch = false,
   showDeathAge = true,
+  roleLabel,
+  showMediaType = false,
 } = Astro.props;
 
 const rating = formatRating(voteAverage);
 
-const href =
-  mediaType === 'movie' ? `/movies/${credit.id}` : `/series/${credit.id}`;
+const href = getMediaHref(mediaType, credit);
 const year = formatYear(credit.releaseDate);
 const initials = getInitials(credit.title);
 const posterUrl = getImageUrl(credit.posterPath, 'w342');
@@ -56,13 +66,23 @@ const ageDisplay = formatAgeDisplay({
 });
 
 const episodeCountHref =
-  credit.episodeCount && mediaType === 'series' && personId
-    ? `/series/${credit.id}/person/${personId}`
+  credit.episodeCount && mediaType === 'series' && person
+    ? getSeriesPersonHref(credit, person)
     : undefined;
 
 const eps = credit.episodeCount
   ? `${credit.episodeCount} ep${credit.episodeCount !== 1 ? 's' : ''}`
   : '';
+
+const roleLine =
+  roleLabel ??
+  (credit.role
+    ? credit.type === 'cast'
+      ? `as ${credit.role}`
+      : credit.role
+    : '');
+
+const mediaBadge = showMediaType ? MEDIA_CONFIG[mediaType] : undefined;
 ---
 
 <div
@@ -72,13 +92,14 @@ const eps = credit.episodeCount
   <a
     href={href}
     class="absolute inset-0 z-0"
+    title={roleLabel || undefined}
     data-astro-prefetch={prefetch ? '' : undefined}
   >
     <span class="sr-only">{credit.title}</span>
   </a>
 
   <div
-    class="pointer-events-none shrink-0 w-12 aspect-2/3 overflow-hidden rounded-lg bg-muted ml-3
+    class="pointer-events-none relative shrink-0 w-12 aspect-2/3 overflow-hidden rounded-lg bg-muted ml-3
            sm:ml-0 sm:w-auto"
   >
     {
@@ -93,6 +114,17 @@ const eps = credit.episodeCount
         <div class="flex h-full w-full items-center justify-center text-sm sm:text-2xl font-semibold text-muted-foreground">
           {initials}
         </div>
+      )
+    }
+    {
+      mediaBadge && (
+        <Badge
+          variant={mediaBadge.badgeVariant}
+          size="sm"
+          class="hidden sm:inline-flex absolute top-1.5 left-1.5 px-1.5 py-0 text-[10px] uppercase tracking-wider"
+        >
+          {mediaBadge.label}
+        </Badge>
       )
     }
   </div>
@@ -115,11 +147,22 @@ const eps = credit.episodeCount
           </span>
         )
       }
+      {
+        mediaBadge && (
+          <Badge
+            variant={mediaBadge.badgeVariant}
+            size="sm"
+            class="sm:hidden px-1.5 py-0 text-[10px] uppercase tracking-wider opacity-80"
+          >
+            {mediaBadge.label}
+          </Badge>
+        )
+      }
     </div>
     {
-      credit.role && (
+      roleLine && (
         <p class="text-xs text-muted-foreground italic line-clamp-1">
-          {credit.type === 'cast' ? `as ${credit.role}` : credit.role}
+          {roleLine}
         </p>
       )
     }

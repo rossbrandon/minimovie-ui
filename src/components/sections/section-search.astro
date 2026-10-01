@@ -40,11 +40,12 @@ const { placeholder = 'Search by name or character...', overflowData } =
 </div>
 
 <script>
+  import { getMediaHref } from '@lib/media-config';
   import type { OverflowItem } from '@lib/types';
 
   function createPersonLink(item: OverflowItem): HTMLAnchorElement {
     const a = document.createElement('a');
-    a.href = `/people/${item.id}`;
+    a.href = getMediaHref('person', item);
     a.className =
       'group flex items-center gap-3 p-2 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors';
     a.dataset.dynamic = 'true';

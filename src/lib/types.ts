@@ -14,6 +14,7 @@ export interface WatchlistItem {
   id: string;
   mediaType: WatchlistMediaType;
   mediaId: number;
+  slug?: string;
   mediaTitle: string;
   posterPath: string | null;
   status: WatchlistStatus;
@@ -59,6 +60,7 @@ export interface AgeDisplayOptions {
 
 export interface SearchResult {
   id: number;
+  slug?: string;
   mediaType: MediaType;
   title: string;
   overview?: string;
@@ -90,6 +92,7 @@ export interface WhereToWatch {
 
 export interface Person {
   id: number;
+  slug?: string;
   name: string;
   photoPath?: string;
   role?: string;
@@ -104,6 +107,7 @@ export interface Person {
 
 export interface OverflowItem {
   id: number;
+  slug?: string;
   name: string;
   photoPath?: string;
   role?: string;
@@ -125,6 +129,7 @@ export interface Credits {
 
 export interface CollectionPart {
   id: number;
+  slug?: string;
   title: string;
   overview?: string;
   posterPath?: string;
@@ -142,6 +147,7 @@ export interface CollectionInfo {
 
 export interface MovieDetails {
   id: number;
+  slug?: string;
   imdbID?: string;
   title: string;
   tagline?: string;
@@ -185,6 +191,7 @@ export interface Season {
 
 export interface SeriesDetails {
   id: number;
+  slug?: string;
   name: string;
   tagline?: string;
   overview?: string;
@@ -213,6 +220,7 @@ export interface SeriesDetails {
 
 export interface FilmCredit {
   id: number;
+  slug?: string;
   title: string;
   posterPath?: string;
   releaseDate?: string;
@@ -227,6 +235,7 @@ export interface FilmCredit {
 
 export interface PersonDetails {
   id: number;
+  slug?: string;
   imdbId?: string;
   name: string;
   biography?: string;
@@ -285,11 +294,13 @@ export interface PersonSeriesSeason {
 export interface PersonSeriesCredits {
   person: {
     id: number;
+    slug?: string;
     name: string;
     photoPath?: string;
   };
   series: {
     id: number;
+    slug?: string;
     name: string;
     posterPath?: string;
   };

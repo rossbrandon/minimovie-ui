@@ -1,5 +1,10 @@
 ---
 import { IconStack2 } from '@components/icons';
+import {
+  getMediaHref,
+  getSeriesPersonHref,
+  type RouteTarget,
+} from '@lib/media-config';
 import type { Credits, OverflowItem, Person } from '@lib/types';
 import { formatAgeDisplay, getImageUrl } from '@lib/utils';
 
@@ -11,10 +16,10 @@ interface Props {
   credits?: Credits;
   overflowData?: OverflowItem[];
   totalCastCount?: number;
-  seriesId?: number;
+  series?: RouteTarget;
 }
 
-const { cast, credits, overflowData, totalCastCount, seriesId } = Astro.props;
+const { cast, credits, overflowData, totalCastCount, series } = Astro.props;
 
 const showOverflowNote =
   totalCastCount !== undefined && totalCastCount > cast.length;
@@ -44,14 +49,14 @@ const crewSections = [
               ? `${person.episodeCount} ep${person.episodeCount !== 1 ? 's' : ''}`
               : '';
             const epsHref =
-              seriesId && person.episodeCount
-                ? `/series/${seriesId}/person/${person.id}`
+              series && person.episodeCount
+                ? getSeriesPersonHref(series, person)
                 : undefined;
 
             return (
               <div class="flex items-center gap-3 p-2 rounded-lg border border-border bg-card hover:bg-accent/50 transition-colors">
                 <a
-                  href={`/people/${person.id}`}
+                  href={getMediaHref('person', person)}
                   class="group flex items-center gap-3 min-w-0 flex-1"
                 >
                   <div class="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-muted">

@@ -5,12 +5,14 @@ import {
   IconEye,
 } from '@components/icons';
 import { Badge } from '@components/starwind/badge';
+import { getMediaHref } from '@lib/media-config';
 import type { WatchlistItem, WatchlistStatus } from '@lib/types';
 import { formatRelativeDate, getImageUrl } from '@lib/utils';
 
 type WatchlistCardField =
   | 'mediaType'
   | 'mediaId'
+  | 'slug'
   | 'mediaTitle'
   | 'posterPath'
   | 'status'
@@ -46,7 +48,10 @@ const metaParts = [
   item.genres.slice(0, 2).join(', '),
   item.releaseYear ? String(item.releaseYear) : '',
 ].filter(Boolean);
-const href = `/${item.mediaType === 'movie' ? 'movies' : 'series'}/${item.mediaId}`;
+const href = getMediaHref(item.mediaType, {
+  id: item.mediaId,
+  slug: item.slug,
+});
 
 function getDateLabel(): string | null {
   if (item.status === 'watched' && item.finishedAt) {

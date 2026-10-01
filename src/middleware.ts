@@ -102,9 +102,12 @@ async function readFromCache(
   }
 }
 
-// Only HTML 2xx responses are worth caching at the edge. JSON, redirects,
-// and errors short-circuit and pass through unmodified.
+// HTML 2xx responses and the bare-id -> slug 301s are worth caching at the
+// edge. JSON, other redirects, and errors pass through unmodified.
 function isCacheableResponse(response: Response): boolean {
+  if (response.status === 301) {
+    return true;
+  }
   if (response.status >= 400) {
     return false;
   }

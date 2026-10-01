@@ -1,10 +1,11 @@
 ---
 import { IconCalendar } from '@components/icons';
 import { Badge } from '@components/starwind/badge';
+import { getEpisodeHref, type RouteTarget } from '@lib/media-config';
 import { formatDate, formatEpisodeCode, getImageUrl } from '@lib/utils';
 
 interface Props {
-  seriesId: number;
+  series: RouteTarget;
   seasonNumber: number;
   episodeNumber: number;
   name: string;
@@ -12,10 +13,10 @@ interface Props {
   airDate?: string;
 }
 
-const { seriesId, seasonNumber, episodeNumber, name, stillPath, airDate } =
+const { series, seasonNumber, episodeNumber, name, stillPath, airDate } =
   Astro.props;
 
-const href = `/series/${seriesId}/seasons/${seasonNumber}/episodes/${episodeNumber}`;
+const href = getEpisodeHref(series, seasonNumber, episodeNumber);
 const episodeCode = formatEpisodeCode(seasonNumber, episodeNumber);
 const stillUrl = getImageUrl(stillPath, 'w300');
 const isUpcoming = airDate ? new Date(airDate) > new Date() : false;

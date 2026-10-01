@@ -1,4 +1,8 @@
-import { MEDIA_CONFIG, mediaBadgeClass, mediaHref } from '@lib/media-config';
+import {
+  getMediaBadgeClass,
+  getMediaHref,
+  MEDIA_CONFIG,
+} from '@lib/media-config';
 import type { SearchResult } from '@lib/types';
 import { escapeHtml, formatYear, getImageUrl, getInitials } from '@lib/utils';
 
@@ -28,8 +32,8 @@ function renderAgeSuffix(result: SearchResult): string {
 }
 
 export function renderCard(result: SearchResult): string {
-  const href = mediaHref(result.mediaType, result.id);
-  const badgeClass = mediaBadgeClass(result.mediaType);
+  const href = getMediaHref(result.mediaType, result);
+  const badgeClass = getMediaBadgeClass(result.mediaType);
   const label = MEDIA_CONFIG[result.mediaType].label;
 
   return `

@@ -94,7 +94,7 @@ export async function search(
   type: SearchType = 'all'
 ): Promise<SearchResponse> {
   const params = new URLSearchParams({
-    q: encodeURIComponent(query),
+    q: query,
     page: String(page),
     type,
   });
